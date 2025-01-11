@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package sparkapi;
+
+service SparkApi {
+    rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
+    rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
+}
+
+
+// --- Resonses ---
+
+message PysparkGeneralResponse {
+    string id = 1;
+    string msg = 2;
+    string columns_json = 3;
+    int32 num_rows = 4;
+}
+
+message DatasetRowResponse {
+    string row_json = 1;
+}
+
+
+// --- Requests ---
+
+message NewDatasetRequest {
+    string id = 1;
+    string df_path = 2;
+    string df_type = 3;
+}
+
+message PreviewDatasetRequest {
+    string id = 1;
+    int32 limit = 2;
+}
