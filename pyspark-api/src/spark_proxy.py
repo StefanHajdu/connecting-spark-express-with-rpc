@@ -1,8 +1,9 @@
 import grpc
-from concurrent import futures
 import sparkapi_pb2
-import json
-from pyspark.sql import SparkSession
+import sparkapi_session_pb2
+import sparkapi_session_pb2_grpc
+from concurrent import futures
+import multiprocessing as mp
 import time
 
 from typing import Iterable
@@ -12,58 +13,27 @@ from sparkapi_pb2_grpc import (
 )
 
 
+from spark_session_instance import session_serve
+
+
 class DuplicateSessionException(Exception):
     def __init__(self, message="Duplicate sessions"):
         super(DuplicateSessionException, self).__init__(message)
-
-
-spark = (
-    SparkSession.builder.appName("SparkSession")
-    .master("local[1]")
-    .config("spark.driver.memory", "5096m")
-    .config("spark.driver.cores", "2")
-    .getOrCreate()
-)
-
-
-def read_spark_df(spark_session: SparkSession, path: str, dataset_type: str):
-    if dataset_type == "csv":
-        return (
-            spark_session.read.option("delimiter", ";").option("header", True).csv(path)
-        )
-    elif dataset_type == "json":
-        return spark_session.read.json(path)
-
-
-class SparkApiSession:
-    def __init__(self, path, df_type):
-        self.spark_session = spark.newSession()
-        self.df = read_spark_df(self.spark_session, path, df_type)
-        self.eager_cache()
-
-    def summarize(self):
-        cols = json.dumps(self.df.columns)
-        rows = self.df.count()
-        return cols, rows
-
-    def eager_cache(self):
-        self.df.cache().count()
-
-    def to_json(self, limit):
-        return self.df.limit(limit).toPandas().to_json(orient="records")
-
-    def get_session_info(self):
-        return f"session: {self.spark_session},\ndf: {self.df.count()}"
 
 
 class SparkSessionTable:
     def __init__(self):
         self.session_table = {}
 
-    def add(self, id, path, df_type):
+    def add(self, id, port):
         if id in self.session_table:
             raise DuplicateSessionException()
-        self.session_table[id] = SparkApiSession(path, df_type)
+        else:
+            channel = grpc.insecure_channel(f"localhost:{port}")
+            stub = sparkapi_session_pb2_grpc.SparkApiSessionStub(channel)
+            self.session_table.update(
+                {id: {"port": port, "channel": channel, "stub": stub}}
+            )
 
     def get_result_as_json(self, id, limit):
         return self.session_table[id].to_json(limit)
@@ -82,43 +52,72 @@ class SparkSessionTable:
             print()
 
 
+BASE_SESSION_PORT = 50051
+
 s = SparkSessionTable()
+mp_ctx = mp.get_context("spawn")
+
+
+def get_new_port(s: SparkSessionTable) -> int:
+    return BASE_SESSION_PORT + len(s.session_table.keys()) + 1
 
 
 class SparkApiServicer(SparkApiServicer):
     def previewDataset(
         self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_pb2.DatasetRowResponse]:
-        print(f"preview for id: {req.id}")
-        json_str_rows = s.get_result_as_json(req.id, req.limit)
-        for row in json.loads(json_str_rows):
+        print(f"/preview: {req.id}")
+        for row in ["row1", "row2", "row3"]:
             time.sleep(0.5)
-            row_json_obj = sparkapi_pb2.DatasetRowResponse(row_json=json.dumps(row))
+            row_json_obj = sparkapi_pb2.DatasetRowResponse(row_json=row)
             yield row_json_obj
 
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
         print(f"/load: {req.id, req.df_path, req.df_type}")
-        s.print_session_table()
+        res = s.session_table[req.id]["stub"].loadsDataset(
+            sparkapi_session_pb2.NewDatasetRequest(
+                id=req.id,
+                df_path=req.df_path,
+                df_type=req.df_type,
+            )
+        )
+        return sparkapi_pb2.PysparkGeneralResponse(
+            id=res.id,
+            msg=res.msg,
+            columns_json=res.columns_json,
+            num_rows=res.num_rows,
+        )
 
-        try:
-            s.add(req.id, req.df_path, req.df_type)
-            columns, rows = s.get_summary(req.id)
-            return sparkapi_pb2.PysparkGeneralResponse(
-                id=req.id,
-                msg=f"dataset loaded",
-                columns_json=columns,
-                num_rows=rows,
-            )
-        except DuplicateSessionException as e:
-            columns, rows = s.get_summary(req.id)
-            return sparkapi_pb2.PysparkGeneralResponse(
-                id=req.id,
-                msg=f"dataset already loaded with {s.session_info(req.id)}",
-                columns_json=columns,
-                num_rows=rows,
-            )
+    def createSession(
+        self, req: sparkapi_pb2.NewSessionRequest, unused_context
+    ) -> sparkapi_pb2.NewSessionResponse:
+        print(f"/createSession: {req.id}")
+
+        # spawn new session server process
+        session_port = get_new_port(s)
+        session_server = mp_ctx.Process(
+            target=session_serve, args=[session_port], daemon=True
+        )
+        session_server.start()
+
+        # confirm connection
+        print(
+            f"confirming connection with session server -> id: {req.id} | port: {session_port}"
+        )
+        time.sleep(3)
+        s.add(req.id, session_port)
+        res = s.session_table[req.id]["stub"].createSession(
+            sparkapi_session_pb2.NewSessionRequest(id=req.id)
+        )
+
+        # send response with child answer
+        return sparkapi_pb2.NewSessionResponse(
+            id=res.id,
+            session_server_pid=res.session_server_pid,
+            msg=res.msg,
+        )
 
 
 def serve():

@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import sparkapi_pb2 as sparkapi__pb2
+import sparkapi_session_pb2 as sparkapi__session__pb2
 
 GRPC_GENERATED_VERSION = '1.68.1'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in sparkapi_pb2_grpc.py depends on'
+        + f' but the generated code in sparkapi_session_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class SparkApiStub(object):
+class SparkApiSessionStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -35,23 +35,23 @@ class SparkApiStub(object):
             channel: A grpc.Channel.
         """
         self.previewDataset = channel.unary_stream(
-                '/sparkapi.SparkApi/previewDataset',
-                request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.DatasetRowResponse.FromString,
+                '/sparkapisession.SparkApiSession/previewDataset',
+                request_serializer=sparkapi__session__pb2.PreviewDatasetRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.DatasetRowResponse.FromString,
                 _registered_method=True)
         self.loadsDataset = channel.unary_unary(
-                '/sparkapi.SparkApi/loadsDataset',
-                request_serializer=sparkapi__pb2.NewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
+                '/sparkapisession.SparkApiSession/loadsDataset',
+                request_serializer=sparkapi__session__pb2.NewDatasetRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
         self.createSession = channel.unary_unary(
-                '/sparkapi.SparkApi/createSession',
-                request_serializer=sparkapi__pb2.NewSessionRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.NewSessionResponse.FromString,
+                '/sparkapisession.SparkApiSession/createSession',
+                request_serializer=sparkapi__session__pb2.NewSessionRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.NewSessionResponse.FromString,
                 _registered_method=True)
 
 
-class SparkApiServicer(object):
+class SparkApiSessionServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def previewDataset(self, request, context):
@@ -73,32 +73,32 @@ class SparkApiServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_SparkApiServicer_to_server(servicer, server):
+def add_SparkApiSessionServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'previewDataset': grpc.unary_stream_rpc_method_handler(
                     servicer.previewDataset,
-                    request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.DatasetRowResponse.SerializeToString,
+                    request_deserializer=sparkapi__session__pb2.PreviewDatasetRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.DatasetRowResponse.SerializeToString,
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
-                    request_deserializer=sparkapi__pb2.NewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
+                    request_deserializer=sparkapi__session__pb2.NewDatasetRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.PysparkGeneralResponse.SerializeToString,
             ),
             'createSession': grpc.unary_unary_rpc_method_handler(
                     servicer.createSession,
-                    request_deserializer=sparkapi__pb2.NewSessionRequest.FromString,
-                    response_serializer=sparkapi__pb2.NewSessionResponse.SerializeToString,
+                    request_deserializer=sparkapi__session__pb2.NewSessionRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.NewSessionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'sparkapi.SparkApi', rpc_method_handlers)
+            'sparkapisession.SparkApiSession', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('sparkapi.SparkApi', rpc_method_handlers)
+    server.add_registered_method_handlers('sparkapisession.SparkApiSession', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class SparkApi(object):
+class SparkApiSession(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -115,9 +115,9 @@ class SparkApi(object):
         return grpc.experimental.unary_stream(
             request,
             target,
-            '/sparkapi.SparkApi/previewDataset',
-            sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-            sparkapi__pb2.DatasetRowResponse.FromString,
+            '/sparkapisession.SparkApiSession/previewDataset',
+            sparkapi__session__pb2.PreviewDatasetRequest.SerializeToString,
+            sparkapi__session__pb2.DatasetRowResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -142,9 +142,9 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/loadsDataset',
-            sparkapi__pb2.NewDatasetRequest.SerializeToString,
-            sparkapi__pb2.PysparkGeneralResponse.FromString,
+            '/sparkapisession.SparkApiSession/loadsDataset',
+            sparkapi__session__pb2.NewDatasetRequest.SerializeToString,
+            sparkapi__session__pb2.PysparkGeneralResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -169,9 +169,9 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/createSession',
-            sparkapi__pb2.NewSessionRequest.SerializeToString,
-            sparkapi__pb2.NewSessionResponse.FromString,
+            '/sparkapisession.SparkApiSession/createSession',
+            sparkapi__session__pb2.NewSessionRequest.SerializeToString,
+            sparkapi__session__pb2.NewSessionResponse.FromString,
             options,
             channel_credentials,
             insecure,

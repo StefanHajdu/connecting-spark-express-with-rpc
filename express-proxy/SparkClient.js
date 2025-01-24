@@ -35,4 +35,17 @@ export class SparkClient {
       }
     );
   }
+
+  _createSession(newSessionRequestBody, expressResponse) {
+    return this.client.createSession(
+      newSessionRequestBody,
+      (err, newSessionResponse) => {
+        if (err) {
+          console.log(err);
+        } else {
+          expressResponse.json(newSessionResponse);
+        }
+      }
+    );
+  }
 }

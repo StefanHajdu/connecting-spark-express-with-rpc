@@ -26,9 +26,14 @@ app.post("/preview", (req, res) => {
   });
 });
 
-// curl -X POST http://localhost:4444/load -H 'Content-Type: application/json' -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Programming/01_Blogs/rpc-with-spark-api/data/cars/cars.json", "df_type": "json"}'
+// curl -X POST http://localhost:4444/load -H 'Content-Type: application/json' -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub2.csv", "df_type": "csv"}' -w '\nTotal: %{time_total}s\n'
 app.post("/load", (req, res) => {
   sp._loadDataset(req.body, res);
+});
+
+// curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}'
+app.post("/createSession", (req, res) => {
+  sp._createSession(req.body, res);
 });
 
 app.listen(4444);

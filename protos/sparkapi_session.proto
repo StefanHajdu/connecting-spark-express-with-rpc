@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package sparkapi;
+package sparkapisession;
 
-service SparkApi {
+service SparkApiSession {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
