@@ -8,7 +8,7 @@ service SparkApi {
 }
 
 
-// --- Resonses ---
+// --- Responses ---
 
 message PysparkGeneralResponse {
     string id = 1;

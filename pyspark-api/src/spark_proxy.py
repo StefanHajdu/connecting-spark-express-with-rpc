@@ -20,7 +20,7 @@ class DuplicateSessionException(Exception):
 spark = (
     SparkSession.builder.appName("SparkSession")
     .master("local[1]")
-    .config("spark.driver.memory", "2048m")
+    .config("spark.driver.memory", "5096m")
     .config("spark.driver.cores", "2")
     .getOrCreate()
 )
@@ -29,7 +29,7 @@ spark = (
 def read_spark_df(spark_session: SparkSession, path: str, dataset_type: str):
     if dataset_type == "csv":
         return (
-            spark_session.read.option("delimiter", ",").option("header", True).csv(path)
+            spark_session.read.option("delimiter", ";").option("header", True).csv(path)
         )
     elif dataset_type == "json":
         return spark_session.read.json(path)
@@ -39,6 +39,7 @@ class SparkApiSession:
     def __init__(self, path, df_type):
         self.spark_session = spark.newSession()
         self.df = read_spark_df(self.spark_session, path, df_type)
+        self.eager_cache()
 
     def summarize(self):
         cols = json.dumps(self.df.columns)
@@ -52,7 +53,7 @@ class SparkApiSession:
         return self.df.limit(limit).toPandas().to_json(orient="records")
 
     def get_session_info(self):
-        return f"session: {self.spark_session},\ndf: {self.df.limit(10).show()}"
+        return f"session: {self.spark_session},\ndf: {self.df.count()}"
 
 
 class SparkSessionTable:
@@ -73,6 +74,13 @@ class SparkSessionTable:
     def session_info(self, id):
         return self.session_table[id].get_session_info()
 
+    def print_session_table(self):
+        print(self.session_table)
+        for session_id, session in self.session_table:
+            print(session_id)
+            print(session.get_session_info())
+            print()
+
 
 s = SparkSessionTable()
 
@@ -91,6 +99,9 @@ class SparkApiServicer(SparkApiServicer):
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
+        print(f"/load: {req.id, req.df_path, req.df_type}")
+        s.print_session_table()
+
         try:
             s.add(req.id, req.df_path, req.df_type)
             columns, rows = s.get_summary(req.id)
