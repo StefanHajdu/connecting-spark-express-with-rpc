@@ -1,6 +1,7 @@
 import grpc
 import sparkapi_session_pb2
 import os
+import time
 
 from concurrent import futures
 from typing import Iterable
@@ -14,8 +15,9 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def previewDataset(
         self, req: sparkapi_session_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_session_pb2.DatasetRowResponse]:
-        print(f"[child] /preview: {req.id}")
-        for row in ["row1", "row2", "row3"]:
+        print(f"[child] /preview: {req.id}, limit: {req.limit}")
+        for row in ["row1"] * req.limit:
+            time.sleep(0.5)
             row_json_obj = sparkapi_session_pb2.DatasetRowResponse(row_json=row)
             yield row_json_obj
 

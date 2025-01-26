@@ -67,10 +67,14 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_pb2.DatasetRowResponse]:
         print(f"/preview: {req.id}")
-        for row in ["row1", "row2", "row3"]:
-            time.sleep(0.5)
-            row_json_obj = sparkapi_pb2.DatasetRowResponse(row_json=row)
-            yield row_json_obj
+        res = s.session_table[req.id]["stub"].previewDataset(
+            sparkapi_session_pb2.PreviewDatasetRequest(
+                id=req.id,
+                limit=req.limit,
+            )
+        )
+        for datasetRowResponse in res:
+            yield datasetRowResponse
 
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
@@ -106,7 +110,7 @@ class SparkApiServicer(SparkApiServicer):
         print(
             f"confirming connection with session server -> id: {req.id} | port: {session_port}"
         )
-        time.sleep(3)
+        time.sleep(2)
         s.add(req.id, session_port)
         res = s.session_table[req.id]["stub"].createSession(
             sparkapi_session_pb2.NewSessionRequest(id=req.id)

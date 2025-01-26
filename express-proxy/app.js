@@ -7,7 +7,7 @@ app.use(express.json());
 
 let sp = new SparkClient();
 
-// curl -X POST http://localhost:4444/preview -H 'Content-Type: application/json' -d '{"id": "0000", "limit": 12}' -N
+// curl -X POST http://localhost:4444/preview -H 'Content-Type: application/json' -d '{"id": "0000", "limit": 12}' -N -w '\nTotal: %{time_total}s\n'
 app.post("/preview", (req, res) => {
   let rowStream = sp._previewDataset(req.body);
 
@@ -31,7 +31,7 @@ app.post("/load", (req, res) => {
   sp._loadDataset(req.body, res);
 });
 
-// curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}'
+// curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
 app.post("/createSession", (req, res) => {
   sp._createSession(req.body, res);
 });
