@@ -2,16 +2,15 @@ import grpc
 import sparkapi_pb2
 import sparkapi_session_pb2
 import sparkapi_session_pb2_grpc
-from concurrent import futures
 import multiprocessing as mp
 import time
 
+from concurrent import futures
 from typing import Iterable
 from sparkapi_pb2_grpc import (
     SparkApiServicer,
     add_SparkApiServicer_to_server,
 )
-
 
 from spark_session_instance import session_serve
 
@@ -21,7 +20,7 @@ class DuplicateSessionException(Exception):
         super(DuplicateSessionException, self).__init__(message)
 
 
-class SparkSessionTable:
+class SessionTable:
     def __init__(self):
         self.session_table = {}
 
@@ -54,11 +53,11 @@ class SparkSessionTable:
 
 BASE_SESSION_PORT = 50051
 
-s = SparkSessionTable()
+sessionTable = SessionTable()
 mp_ctx = mp.get_context("spawn")
 
 
-def get_new_port(s: SparkSessionTable) -> int:
+def get_new_port(s: SessionTable) -> int:
     return BASE_SESSION_PORT + len(s.session_table.keys()) + 1
 
 
@@ -67,7 +66,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_pb2.DatasetRowResponse]:
         print(f"/preview: {req.id}")
-        res = s.session_table[req.id]["stub"].previewDataset(
+        res = sessionTable.session_table[req.id]["stub"].previewDataset(
             sparkapi_session_pb2.PreviewDatasetRequest(
                 id=req.id,
                 limit=req.limit,
@@ -80,7 +79,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
         print(f"/load: {req.id, req.df_path, req.df_type}")
-        res = s.session_table[req.id]["stub"].loadsDataset(
+        res = sessionTable.session_table[req.id]["stub"].loadsDataset(
             sparkapi_session_pb2.NewDatasetRequest(
                 id=req.id,
                 df_path=req.df_path,
@@ -100,7 +99,7 @@ class SparkApiServicer(SparkApiServicer):
         print(f"/createSession: {req.id}")
 
         # spawn new session server process
-        session_port = get_new_port(s)
+        session_port = get_new_port(sessionTable)
         session_server = mp_ctx.Process(
             target=session_serve, args=[session_port], daemon=True
         )
@@ -111,8 +110,8 @@ class SparkApiServicer(SparkApiServicer):
             f"confirming connection with session server -> id: {req.id} | port: {session_port}"
         )
         time.sleep(2)
-        s.add(req.id, session_port)
-        res = s.session_table[req.id]["stub"].createSession(
+        sessionTable.add(req.id, session_port)
+        res = sessionTable.session_table[req.id]["stub"].createSession(
             sparkapi_session_pb2.NewSessionRequest(id=req.id)
         )
 
