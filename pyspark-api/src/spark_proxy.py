@@ -75,6 +75,21 @@ class SparkApiServicer(SparkApiServicer):
         for datasetRowResponse in res:
             yield datasetRowResponse
 
+    def summarizeDataset(
+        self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context
+    ) -> sparkapi_pb2.PysparkGeneralResponse:
+        print(f"/summarize: {req.id}")
+        res = sessionTable.session_table[req.id]["stub"].summarizeDataset(
+            sparkapi_session_pb2.SummarizeDatasetRequest(id=req.id)
+        )
+        return sparkapi_pb2.PysparkGeneralResponse(
+            id=res.id,
+            msg=res.msg,
+            columns_json=res.columns_json,
+            num_rows=res.num_rows,
+            schema_tree=res.schema_tree,
+        )
+
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
@@ -91,6 +106,7 @@ class SparkApiServicer(SparkApiServicer):
             msg=res.msg,
             columns_json=res.columns_json,
             num_rows=res.num_rows,
+            schema_tree=res.schema_tree,
         )
 
     def filterDataset(

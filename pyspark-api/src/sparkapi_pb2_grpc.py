@@ -39,6 +39,11 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.DatasetRowResponse.FromString,
                 _registered_method=True)
+        self.summarizeDataset = channel.unary_unary(
+                '/sparkapi.SparkApi/summarizeDataset',
+                request_serializer=sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
+                _registered_method=True)
         self.loadsDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/loadsDataset',
                 request_serializer=sparkapi__pb2.NewDatasetRequest.SerializeToString,
@@ -60,6 +65,12 @@ class SparkApiServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def previewDataset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def summarizeDataset(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -90,6 +101,11 @@ def add_SparkApiServicer_to_server(servicer, server):
                     servicer.previewDataset,
                     request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.DatasetRowResponse.SerializeToString,
+            ),
+            'summarizeDataset': grpc.unary_unary_rpc_method_handler(
+                    servicer.summarizeDataset,
+                    request_deserializer=sparkapi__pb2.SummarizeDatasetRequest.FromString,
+                    response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
@@ -134,6 +150,33 @@ class SparkApi(object):
             '/sparkapi.SparkApi/previewDataset',
             sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
             sparkapi__pb2.DatasetRowResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def summarizeDataset(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/summarizeDataset',
+            sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
+            sparkapi__pb2.PysparkGeneralResponse.FromString,
             options,
             channel_credentials,
             insecure,

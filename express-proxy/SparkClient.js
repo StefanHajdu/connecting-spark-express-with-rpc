@@ -23,6 +23,19 @@ export class SparkClient {
     return this.client.previewDataset(previewDatasetRequestBody);
   }
 
+  _summarizeDataset(summarizeDatasetRequest, expressResponse) {
+    return this.client.summarizeDataset(
+      summarizeDatasetRequest,
+      (err, pysparkGeneralResponse) => {
+        if (err) {
+          console.log(err);
+        } else {
+          expressResponse.json(pysparkGeneralResponse);
+        }
+      }
+    );
+  }
+
   _loadDataset(newDatasetRequestBody, expressResponse) {
     return this.client.loadsDataset(
       newDatasetRequestBody,

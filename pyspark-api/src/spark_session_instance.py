@@ -65,23 +65,29 @@ class SparkApiSession:
         print(f"dataset `{path}` loaded")
 
     def spark_action_summarize(self):
-        # schema to str: schemaString = self.df_current._jdf.schema().treeString()
-        self.df_current.printSchema()
         cols = json.dumps(self.df_current.columns)
         num_rows = self.df_current.count()
-        return cols, num_rows
+        schema_str = self.df_current._jdf.schema().treeString()
+        return cols, num_rows, schema_str
 
     def spark_action_to_json(self, limit):
         return self.df_current.limit(limit).toPandas().to_json(orient="records")
 
-    def get_general_spark_response(self):
-        columns, num_rows = self.spark_action_summarize()
-
+    def get_general_spark_response(self, msg):
+        if session.check_load():
+            columns, num_rows, schema_str = self.spark_action_summarize()
+            msg = "filter accepted"
+        else:
+            msg = "[Error] no dataset loaded"
+            num_rows = 0
+            schema_str = "err"
+            columns = "err"
         return sparkapi_session_pb2.PysparkGeneralResponse(
             id=self.id,
-            msg="msg: data load",
+            msg=msg,
             columns_json=columns,
             num_rows=num_rows,
+            schema_tree=schema_str,
         )
 
     # spark transforms:
@@ -123,13 +129,18 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             )
             yield row_json_obj
 
+    def summarizeDataset(
+        self, req: sparkapi_session_pb2.SummarizeDatasetRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkGeneralResponse:
+        session.log_(f"/summarize: {req.id}")
+        return session.get_general_spark_response(msg="data available")
+
     def loadsDataset(
         self, req: sparkapi_session_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
         session.log_(f"/load: {req.id, req.df_path, req.df_type}")
-
         session.spark_action_load_dataset(req.df_path, req.df_type)
-        return session.get_general_spark_response()
+        return session.get_general_spark_response(msg="msg: data loaded")
 
     def filterDataset(
         self, req: sparkapi_session_pb2.FilterDatasetRequest, unused_context

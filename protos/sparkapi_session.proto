@@ -4,6 +4,7 @@ package sparkapisession;
 
 service SparkApiSession {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
+    rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc filterDataset(FilterDatasetRequest) returns (PysparkTransformResponse) {}
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
@@ -22,7 +23,8 @@ message PysparkGeneralResponse {
     string id = 1;
     string msg = 2;
     string columns_json = 3;
-    int32 num_rows = 4;
+    string schema_tree = 4;
+    int32 num_rows = 5;
 }
 
 message PysparkTransformResponse {
@@ -55,4 +57,8 @@ message NewDatasetRequest {
 message PreviewDatasetRequest {
     string id = 1;
     int32 limit = 2;
+}
+
+message SummarizeDatasetRequest {
+    string id = 1;
 }

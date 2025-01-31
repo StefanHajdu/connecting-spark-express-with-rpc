@@ -37,6 +37,11 @@ app.post("/filter", (req, res) => {
   sp._filterDataset(req.body, res);
 });
 
+// curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
+app.post("/summarize", (req, res) => {
+  sp._summarizeDataset(req.body, res);
+});
+
 // curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
 app.post("/createSession", (req, res) => {
   sp._createSession(req.body, res);
