@@ -71,7 +71,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
 
         json_str_rows = session.to_json(req.limit)
         for row in json.loads(json_str_rows):
-            time.sleep(0.5)
+            # time.sleep(0.5)
             row_json_obj = sparkapi_session_pb2.DatasetRowResponse(
                 row_json=json.dumps(row)
             )
