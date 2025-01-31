@@ -14,43 +14,89 @@ from sparkapi_session_pb2_grpc import (
 )
 
 
+class DfUtils:
+    @classmethod
+    def eager_cache_df(cls, df):
+        df.cache().count()
+
+    @classmethod
+    def filter_df(cls, df, filter_sql):
+        return df.filter(filter_sql)
+
+    @classmethod
+    def read_spark_df(cls, spark, path: str, dataset_type: str):
+        if dataset_type == "csv":
+            return spark.read.option("delimiter", ";").option("header", True).csv(path)
+        elif dataset_type == "json":
+            return spark.read.json(path)
+
+
 class SparkApiSession:
     def __init__(self, pid, spark):
         self.pid = pid
         self.spark = spark
-        self.df = None
+        self.df_init = None
+        self.df_current = None
+
+    # setters:
 
     def set_id(self, id):
         self.id = id
 
-    def load_dataset(self, path, df_type):
-        self.df = self.read_spark_df(path, df_type)
-        self.eager_cache()
-        print(f"dataset `{path}` loaded")
+    # utilities:
 
-    def read_spark_df(self, path: str, dataset_type: str):
-        if dataset_type == "csv":
-            return (
-                self.spark.read.option("delimiter", ";")
-                .option("header", True)
-                .csv(path)
-            )
-        elif dataset_type == "json":
-            return self.spark.read.json(path)
+    def check_load(self):
+        return True if self.df_current else False
 
-    def summarize(self):
-        cols = json.dumps(self.df.columns)
-        num_rows = self.df.count()
-        return cols, num_rows
-
-    def eager_cache(self):
-        self.df.cache().count()
-
-    def to_json(self, limit):
-        return self.df.limit(limit).toPandas().to_json(orient="records")
+    def log_(self, msg):
+        print(f"    [child_session-{self.id}] " + msg)
 
     def get_session_info(self):
-        return f"session: {self.spark_session},\ndf: {self.df.count()}"
+        return f"session: {self.spark_session},\ndf: {self.df_current.count()}"
+
+    # spark actions:
+
+    def spark_action_load_dataset(self, path, df_type):
+        self.df_init = self.df_current = DfUtils.read_spark_df(
+            self.spark, path, df_type
+        )
+        DfUtils.eager_cache_df(self.df_current)
+        DfUtils.eager_cache_df(self.df_init)
+        print(f"dataset `{path}` loaded")
+
+    def spark_action_summarize(self):
+        # schema to str: schemaString = self.df_current._jdf.schema().treeString()
+        self.df_current.printSchema()
+        cols = json.dumps(self.df_current.columns)
+        num_rows = self.df_current.count()
+        return cols, num_rows
+
+    def spark_action_to_json(self, limit):
+        return self.df_current.limit(limit).toPandas().to_json(orient="records")
+
+    def get_general_spark_response(self):
+        columns, num_rows = self.spark_action_summarize()
+
+        return sparkapi_session_pb2.PysparkGeneralResponse(
+            id=self.id,
+            msg="msg: data load",
+            columns_json=columns,
+            num_rows=num_rows,
+        )
+
+    # spark transforms:
+
+    def spark_transform_filter(self, filter_sql: str):
+        if session.check_load():
+            session.df_current = DfUtils.filter_df(session.df_current, filter_sql)
+            msg = "filter accepted"
+        else:
+            msg = "[Error] no dataset loaded"
+
+        return sparkapi_session_pb2.PysparkTransformResponse(
+            id=session.id,
+            msg=msg,
+        )
 
 
 spark = (
@@ -67,9 +113,9 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def previewDataset(
         self, req: sparkapi_session_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_session_pb2.DatasetRowResponse]:
-        print(f"[child] /preview: {req.id}, limit: {req.limit}")
+        session.log_(f"/preview: {req.id}, limit: {req.limit}")
 
-        json_str_rows = session.to_json(req.limit)
+        json_str_rows = session.spark_action_to_json(req.limit)
         for row in json.loads(json_str_rows):
             # time.sleep(0.5)
             row_json_obj = sparkapi_session_pb2.DatasetRowResponse(
@@ -80,24 +126,23 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def loadsDataset(
         self, req: sparkapi_session_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
-        print(f"[child] /load: {req.id, req.df_path, req.df_type}")
+        session.log_(f"/load: {req.id, req.df_path, req.df_type}")
 
-        session.load_dataset(req.df_path, req.df_type)
-        columns, num_rows = session.summarize()
+        session.spark_action_load_dataset(req.df_path, req.df_type)
+        return session.get_general_spark_response()
 
-        return sparkapi_session_pb2.PysparkGeneralResponse(
-            id=session.id,
-            msg="msg: data load",
-            columns_json=columns,
-            num_rows=num_rows,
-        )
+    def filterDataset(
+        self, req: sparkapi_session_pb2.FilterDatasetRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkTransformResponse:
+        session.log_(f"/filter: {req.id, req.filter_sql}")
+        return session.spark_transform_filter(req.filter_sql)
 
     def createSession(
         self, req: sparkapi_session_pb2.NewSessionRequest, unused_context
     ) -> sparkapi_session_pb2.NewSessionResponse:
-        print(f"[child] /createSession: {req.id}")
         session.set_id(req.id)
-        print(f"spark session init: {session.spark}")
+        session.log_(f"/createSession: {req.id}")
+        session.log_(f"spark session id: {session.spark}")
 
         return sparkapi_session_pb2.NewSessionResponse(
             id=f"{session.id}",

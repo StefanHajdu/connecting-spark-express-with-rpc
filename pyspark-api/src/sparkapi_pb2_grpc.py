@@ -44,6 +44,11 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NewDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
+        self.filterDataset = channel.unary_unary(
+                '/sparkapi.SparkApi/filterDataset',
+                request_serializer=sparkapi__pb2.FilterDatasetRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+                _registered_method=True)
         self.createSession = channel.unary_unary(
                 '/sparkapi.SparkApi/createSession',
                 request_serializer=sparkapi__pb2.NewSessionRequest.SerializeToString,
@@ -61,6 +66,12 @@ class SparkApiServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def loadsDataset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def filterDataset(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -84,6 +95,11 @@ def add_SparkApiServicer_to_server(servicer, server):
                     servicer.loadsDataset,
                     request_deserializer=sparkapi__pb2.NewDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
+            ),
+            'filterDataset': grpc.unary_unary_rpc_method_handler(
+                    servicer.filterDataset,
+                    request_deserializer=sparkapi__pb2.FilterDatasetRequest.FromString,
+                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
             ),
             'createSession': grpc.unary_unary_rpc_method_handler(
                     servicer.createSession,
@@ -145,6 +161,33 @@ class SparkApi(object):
             '/sparkapi.SparkApi/loadsDataset',
             sparkapi__pb2.NewDatasetRequest.SerializeToString,
             sparkapi__pb2.PysparkGeneralResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def filterDataset(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/filterDataset',
+            sparkapi__pb2.FilterDatasetRequest.SerializeToString,
+            sparkapi__pb2.PysparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

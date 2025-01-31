@@ -36,6 +36,19 @@ export class SparkClient {
     );
   }
 
+  _filterDataset(filterDatasetRequestBody, expressResponse) {
+    return this.client.filterDataset(
+      filterDatasetRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          console.log(err);
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
   _createSession(newSessionRequestBody, expressResponse) {
     return this.client.createSession(
       newSessionRequestBody,

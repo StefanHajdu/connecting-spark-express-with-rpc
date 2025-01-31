@@ -93,6 +93,20 @@ class SparkApiServicer(SparkApiServicer):
             num_rows=res.num_rows,
         )
 
+    def filterDataset(
+        self, req: sparkapi_pb2.FilterDatasetRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        print(f"/filter: {req.id, req.filter_sql}")
+        res = sessionTable.session_table[req.id]["stub"].filterDataset(
+            sparkapi_session_pb2.FilterDatasetRequest(
+                id=req.id, filter_sql=req.filter_sql
+            )
+        )
+        return sparkapi_pb2.PysparkTransformResponse(
+            id=res.id,
+            msg=res.msg,
+        )
+
     def createSession(
         self, req: sparkapi_pb2.NewSessionRequest, unused_context
     ) -> sparkapi_pb2.NewSessionResponse:

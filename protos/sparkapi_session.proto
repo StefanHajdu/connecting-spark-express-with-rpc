@@ -5,6 +5,7 @@ package sparkapisession;
 service SparkApiSession {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
+    rpc filterDataset(FilterDatasetRequest) returns (PysparkTransformResponse) {}
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
 }
 
@@ -24,12 +25,22 @@ message PysparkGeneralResponse {
     int32 num_rows = 4;
 }
 
+message PysparkTransformResponse {
+    string id = 1;
+    string msg = 2;
+}
+
 message DatasetRowResponse {
     string row_json = 1;
 }
 
 
 // --- Requests ---
+
+message FilterDatasetRequest {
+    string id = 1;
+    string filter_sql = 2;
+}
 
 message NewSessionRequest {
     string id = 1;
