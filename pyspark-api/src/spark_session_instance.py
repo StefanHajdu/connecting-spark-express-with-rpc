@@ -20,6 +20,14 @@ class DfUtils:
         df.cache().count()
 
     @classmethod
+    def cache_df(cls, df):
+        df.cache()
+
+    @classmethod
+    def drop_from_cache_df(cls, df):
+        df.unpersist()
+
+    @classmethod
     def filter_df(cls, df, filter_sql):
         return df.filter(filter_sql)
 
@@ -92,6 +100,10 @@ class SparkApiSession:
 
     # spark transforms:
 
+    def cache_just_current(self):
+        DfUtils.drop_from_cache_df(self.df_current)
+        DfUtils.cache_df(self.df_current)
+
     def spark_transform_filter(self, filter_sql: str):
         if session.check_load():
             session.df_current = DfUtils.filter_df(session.df_current, filter_sql)
@@ -133,6 +145,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.SummarizeDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
         session.log_(f"/summarize: {req.id}")
+        # session.cache_just_current()
         return session.get_general_spark_response(msg="data available")
 
     def loadsDataset(
