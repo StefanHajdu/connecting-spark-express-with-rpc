@@ -17,7 +17,7 @@ from spark_session_instance import session_serve
 
 class DuplicateSessionException(Exception):
     def __init__(self, message="Duplicate sessions"):
-        super(DuplicateSessionException, self).__init__(message)
+        super().__init__(message)
 
 
 class SessionTable:
@@ -128,8 +128,11 @@ class SparkApiServicer(SparkApiServicer):
     ) -> sparkapi_pb2.NewSessionResponse:
         print(f"/createSession: {req.id}")
 
-        # spawn new session server process
+        # try to add new session
         session_port = get_new_port(sessionTable)
+        sessionTable.add(req.id, session_port)
+
+        # spawn new session server process
         session_server = mp_ctx.Process(
             target=session_serve, args=[session_port], daemon=True
         )
@@ -140,7 +143,6 @@ class SparkApiServicer(SparkApiServicer):
             f"confirming connection with session server -> id: {req.id} | port: {session_port}"
         )
         time.sleep(2)
-        sessionTable.add(req.id, session_port)
         res = sessionTable.session_table[req.id]["stub"].createSession(
             sparkapi_session_pb2.NewSessionRequest(id=req.id)
         )
