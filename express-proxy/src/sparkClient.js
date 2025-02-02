@@ -1,6 +1,8 @@
 import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
 
+import { ApplicationError } from "./errors/applicationError.js";
+
 export class SparkClient {
   #protoPath = "../protos/sparkapi.proto";
 
@@ -23,12 +25,17 @@ export class SparkClient {
     return this.client.previewDataset(previewDatasetRequestBody);
   }
 
-  _summarizeDataset(summarizeDatasetRequest, expressResponse) {
+  _summarizeDataset(summarizeDatasetRequest, expressResponse, next) {
     return this.client.summarizeDataset(
       summarizeDatasetRequest,
       (err, pysparkGeneralResponse) => {
         if (err) {
-          console.log(err);
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
         } else {
           expressResponse.json(pysparkGeneralResponse);
         }
@@ -36,12 +43,17 @@ export class SparkClient {
     );
   }
 
-  _loadDataset(newDatasetRequestBody, expressResponse) {
+  _loadDataset(newDatasetRequestBody, expressResponse, next) {
     return this.client.loadsDataset(
       newDatasetRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
-          console.log(err);
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
         } else {
           expressResponse.json(pysparkGeneralResponse);
         }
@@ -49,12 +61,17 @@ export class SparkClient {
     );
   }
 
-  _filterDataset(filterDatasetRequestBody, expressResponse) {
+  _filterDataset(filterDatasetRequestBody, expressResponse, next) {
     return this.client.filterDataset(
       filterDatasetRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
-          console.log(err);
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
         } else {
           expressResponse.json(pysparkTransformResponse);
         }
@@ -62,12 +79,17 @@ export class SparkClient {
     );
   }
 
-  _createSession(newSessionRequestBody, expressResponse) {
+  _createSession(newSessionRequestBody, expressResponse, next) {
     return this.client.createSession(
       newSessionRequestBody,
       (err, newSessionResponse) => {
         if (err) {
-          console.log(err);
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
         } else {
           expressResponse.json(newSessionResponse);
         }

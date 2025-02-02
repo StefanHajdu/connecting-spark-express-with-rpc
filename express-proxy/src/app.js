@@ -1,5 +1,6 @@
 import express from "express";
-import { SparkClient } from "./SparkClient.js";
+import { SparkClient } from "./sparkClient.js";
+import { errorHandler } from "./errors/errorHandler.js";
 
 const app = express();
 
@@ -27,24 +28,26 @@ app.post("/preview", (req, res) => {
 });
 
 // curl -X POST http://localhost:4444/load -H 'Content-Type: application/json' -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub2.csv", "df_type": "csv"}' -w '\nTotal: %{time_total}s\n'
-app.post("/load", (req, res) => {
-  sp._loadDataset(req.body, res);
+app.post("/load", (req, res, next) => {
+  sp._loadDataset(req.body, res, next);
 });
 
 // escape single quotes in json body
 // curl -X POST http://localhost:4444/filter -H 'Content-Type: application/json' -d '{"id": "0000", "filter_sql": "registrar = '\''unknown'\''"}' -w '\nTotal: %{time_total}s\n'
-app.post("/filter", (req, res) => {
-  sp._filterDataset(req.body, res);
+app.post("/filter", (req, res, next) => {
+  sp._filterDataset(req.body, res, next);
 });
 
 // curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
-app.post("/summarize", (req, res) => {
-  sp._summarizeDataset(req.body, res);
+app.post("/summarize", (req, res, next) => {
+  sp._summarizeDataset(req.body, res, next);
 });
 
 // curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
-app.post("/createSession", (req, res) => {
-  sp._createSession(req.body, res);
+app.post("/createSession", (req, res, next) => {
+  sp._createSession(req.body, res, next);
 });
+
+app.use(errorHandler);
 
 app.listen(4444);
