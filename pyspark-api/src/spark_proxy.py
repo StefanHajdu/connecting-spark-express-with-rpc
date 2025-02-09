@@ -41,22 +41,6 @@ class SessionTable:
     def log_df_query(self, id: str, query_details: dict[str:any]):
         self.session_logs[id].append(query_details)
 
-    def get_result_as_json(self, id, limit):
-        return self.session_table[id].to_json(limit)
-
-    def get_summary(self, id):
-        return self.session_table[id].summarize()
-
-    def session_info(self, id):
-        return self.session_table[id].get_session_info()
-
-    def print_session_table(self):
-        print(self.session_table)
-        for session_id, session in self.session_table:
-            print(session_id)
-            print(session.get_session_info())
-            print()
-
 
 BASE_SESSION_PORT = 50051
 
@@ -188,9 +172,6 @@ class SparkApiServicer(SparkApiServicer):
         session_server.start()
 
         # confirm connection
-        print(
-            f"confirming connection with session server -> id: {req.id} | port: {session_port}"
-        )
         time.sleep(2)
         res = sessionTable.session_table[req.id]["stub"].createSession(
             sparkapi_session_pb2.NewSessionRequest(id=req.id)

@@ -90,7 +90,6 @@ class SparkApiSession:
         )
         if to_cache:
             DfUtils.eager_cache_df(self.df_init)
-        print(f"dataset `{path}` loaded")
 
     def spark_action_summarize(self):
         cols = json.dumps(self.df_current.columns)
@@ -219,7 +218,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.NewSessionResponse:
         session.set_id(req.id)
         session.log_(f"/createSession: {req.id}")
-        session.log_(f"spark session id: {session.spark}")
 
         return sparkapi_session_pb2.NewSessionResponse(
             id=f"{session.id}",
