@@ -2,6 +2,7 @@ import grpc
 import multiprocessing as mp
 import time
 import json
+import hashlib
 
 import sparkapi_pb2
 import sparkapi_session_pb2
@@ -22,10 +23,44 @@ class DuplicateSessionException(Exception):
         super().__init__(message)
 
 
+class SessionLogger:
+    def __init__(self):
+        self.session_logs = {}
+
+    def init_log(self, id: str):
+        self.session_logs.update({id: {"logs": [], "state_hash": None}})
+
+    def get_log(self, id: str):
+        return json.dumps(self.session_logs.get(id, {}).get("logs", {}))
+
+    def _hash_log_state(self, id: str):
+        self.session_logs[id]["state_hash"] = hashlib.sha256(
+            str(self.session_logs[id]["logs"]).encode("utf-8")
+        ).hexdigest()
+
+    def notify_input_change(self, id: str):
+        pass
+
+    def handle_log_change(self, id):
+        ids_to_notify = self._get_session_dependency(id)
+        print(f"    ***{id} {ids_to_notify} ***")
+
+    def _get_session_dependency(self, master_id):
+        ls = []
+        for id, log_obj in self.session_logs.items():
+            for log in log_obj["logs"]:
+                if log["op"] == "loadFromSession" and log["input_id"] == master_id:
+                    ls.append(id)
+        return ls
+
+    def add_query_to_log(self, id: str, query_details: dict[str:any]):
+        self.session_logs[id]["logs"].append(query_details)
+        self.handle_log_change(id)
+
+
 class SessionTable:
     def __init__(self):
         self.session_table = {}
-        self.session_logs = {}
 
     def add(self, id, port):
         if id in self.session_table:
@@ -36,15 +71,12 @@ class SessionTable:
             self.session_table.update(
                 {id: {"port": port, "channel": channel, "stub": stub}}
             )
-            self.session_logs.update({id: []})
-
-    def log_df_query(self, id: str, query_details: dict[str:any]):
-        self.session_logs[id].append(query_details)
 
 
 BASE_SESSION_PORT = 50051
 
 sessionTable = SessionTable()
+sessionLogger = SessionLogger()
 mp_ctx = mp.get_context("spawn")
 
 
@@ -93,7 +125,7 @@ class SparkApiServicer(SparkApiServicer):
             )
         )
 
-        sessionTable.log_df_query(
+        sessionLogger.add_query_to_log(
             req.id, {"op": "load", "df_path": req.df_path, "df_type": req.df_type}
         )
 
@@ -116,7 +148,7 @@ class SparkApiServicer(SparkApiServicer):
             )
         )
 
-        sessionTable.log_df_query(
+        sessionLogger.add_query_to_log(
             req.id,
             {"op": "loadFromSession", "input_id": req.input_id},
         )
@@ -141,7 +173,7 @@ class SparkApiServicer(SparkApiServicer):
             )
         )
 
-        sessionTable.log_df_query(
+        sessionLogger.add_query_to_log(
             req.id,
             {
                 "op": "sql",
@@ -164,6 +196,7 @@ class SparkApiServicer(SparkApiServicer):
         # try to add new session
         session_port = get_new_port(sessionTable)
         sessionTable.add(req.id, session_port)
+        sessionLogger.init_log(req.id)
 
         # spawn new session server process
         session_server = mp_ctx.Process(
@@ -188,7 +221,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.LogRequest, unused_context
     ) -> sparkapi_pb2.LogResponse:
         return sparkapi_pb2.LogResponse(
-            id=req.id, log_json=json.dumps(sessionTable.session_logs[req.id])
+            id=req.id, log_json=sessionLogger.get_log(req.id)
         )
 
 

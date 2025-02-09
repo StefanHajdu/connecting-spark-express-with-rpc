@@ -92,6 +92,10 @@ class SparkApiSession:
             DfUtils.eager_cache_df(self.df_init)
 
     def spark_action_summarize(self):
+        print()
+        session.df_current.explain()
+        print()
+
         cols = json.dumps(self.df_current.columns)
         num_rows = self.df_current.count()
         schema_str = self.df_current._jdf.schema().treeString()
@@ -129,7 +133,6 @@ class SparkApiSession:
             msg = "Query accepted"
         else:
             msg = "[Error] no dataset loaded"
-
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
             msg=msg,
@@ -149,6 +152,17 @@ session = SparkApiSession(os.getpid(), spark)
 
 
 class SparkApiSessionServicer(SparkApiSessionServicer):
+    def createSession(
+        self, req: sparkapi_session_pb2.NewSessionRequest, unused_context
+    ) -> sparkapi_session_pb2.NewSessionResponse:
+        session.set_id(req.id)
+        session.log_(f"/createSession: {req.id}")
+        return sparkapi_session_pb2.NewSessionResponse(
+            id=f"{session.id}",
+            session_server_pid=f"{session.pid}",
+            msg="session created",
+        )
+
     def previewDataset(
         self, req: sparkapi_session_pb2.PreviewDatasetRequest, unused_context
     ) -> Iterable[sparkapi_session_pb2.DatasetRowResponse]:
@@ -165,7 +179,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.SummarizeDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
         session.log_(f"/summarize: {req.id}")
-        # session.cache_just_current()
         return session.get_general_spark_response(msg="data available")
 
     def loadsDataset(
@@ -180,6 +193,9 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/loadFromSession: {req.id, req.input_id}")
         log_plan = self._get_session_log(req.input_id)
+
+        print(log_plan)
+
         msg = self._load_df_from_session_log(log_plan)
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
@@ -212,18 +228,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             f"/sql: {req.id, req.parametrized_query, req.query_name, req.params_json}"
         )
         return session.spark_transform_sql(req.parametrized_query, req.params_json)
-
-    def createSession(
-        self, req: sparkapi_session_pb2.NewSessionRequest, unused_context
-    ) -> sparkapi_session_pb2.NewSessionResponse:
-        session.set_id(req.id)
-        session.log_(f"/createSession: {req.id}")
-
-        return sparkapi_session_pb2.NewSessionResponse(
-            id=f"{session.id}",
-            session_server_pid=f"{session.pid}",
-            msg="session created",
-        )
 
 
 def session_serve(port: int):
