@@ -23,6 +23,7 @@ class DuplicateSessionException(Exception):
 class SessionTable:
     def __init__(self):
         self.session_table = {}
+        self.session_log = {}
 
     def add(self, id, port):
         if id in self.session_table:
@@ -33,6 +34,10 @@ class SessionTable:
             self.session_table.update(
                 {id: {"port": port, "channel": channel, "stub": stub}}
             )
+            self.session_log.update({id: []})
+
+    def log_df_query(self, id: str, query_details: dict[str:any]):
+        self.session_log[id].append(query_details)
 
     def get_result_as_json(self, id, limit):
         return self.session_table[id].to_json(limit)
@@ -101,6 +106,11 @@ class SparkApiServicer(SparkApiServicer):
                 df_type=req.df_type,
             )
         )
+
+        sessionTable.log_df_query(
+            req.id, {"op": "load", "df_path": req.df_path, "df_type": req.df_type}
+        )
+
         return sparkapi_pb2.PysparkGeneralResponse(
             id=res.id,
             msg=res.msg,
@@ -123,6 +133,21 @@ class SparkApiServicer(SparkApiServicer):
                 params_json=req.params_json,
             )
         )
+
+        sessionTable.log_df_query(
+            req.id,
+            {
+                "op": "sql",
+                "parametrized_query": req.parametrized_query,
+                "query_name": req.query_name,
+                "params_json": req.params_json,
+            },
+        )
+
+        print()
+        print(sessionTable.session_log[req.id])
+        print()
+
         return sparkapi_pb2.PysparkTransformResponse(
             id=res.id,
             msg=res.msg,
