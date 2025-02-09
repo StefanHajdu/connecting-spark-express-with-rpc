@@ -59,6 +59,11 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NewSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.NewSessionResponse.FromString,
                 _registered_method=True)
+        self.getDataframeLog = channel.unary_unary(
+                '/sparkapi.SparkApi/getDataframeLog',
+                request_serializer=sparkapi__pb2.LogRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.LogResponse.FromString,
+                _registered_method=True)
 
 
 class SparkApiServicer(object):
@@ -94,6 +99,12 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def getDataframeLog(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SparkApiServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -121,6 +132,11 @@ def add_SparkApiServicer_to_server(servicer, server):
                     servicer.createSession,
                     request_deserializer=sparkapi__pb2.NewSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.NewSessionResponse.SerializeToString,
+            ),
+            'getDataframeLog': grpc.unary_unary_rpc_method_handler(
+                    servicer.getDataframeLog,
+                    request_deserializer=sparkapi__pb2.LogRequest.FromString,
+                    response_serializer=sparkapi__pb2.LogResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -258,6 +274,33 @@ class SparkApi(object):
             '/sparkapi.SparkApi/createSession',
             sparkapi__pb2.NewSessionRequest.SerializeToString,
             sparkapi__pb2.NewSessionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def getDataframeLog(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/getDataframeLog',
+            sparkapi__pb2.LogRequest.SerializeToString,
+            sparkapi__pb2.LogResponse.FromString,
             options,
             channel_credentials,
             insecure,

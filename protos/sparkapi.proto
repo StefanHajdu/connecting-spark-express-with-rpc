@@ -8,6 +8,7 @@ service SparkApi {
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc runSql(SqlRequest) returns (PysparkTransformResponse) {}
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
+    rpc getDataframeLog(LogRequest) returns (LogResponse) {}
 }
 
 
@@ -34,6 +35,11 @@ message PysparkTransformResponse {
 
 message DatasetRowResponse {
     string row_json = 1;
+}
+
+message LogResponse {
+    string id = 1;
+    string log_json = 2;
 }
 
 
@@ -63,4 +69,8 @@ message SqlRequest {
     string parametrized_query = 2;
     string query_name = 3;
     string params_json = 4;
+}
+
+message LogRequest {
+    string id = 1;
 }

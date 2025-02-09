@@ -1,9 +1,11 @@
 import grpc
+import multiprocessing as mp
+import time
+import json
+
 import sparkapi_pb2
 import sparkapi_session_pb2
 import sparkapi_session_pb2_grpc
-import multiprocessing as mp
-import time
 
 from concurrent import futures
 from typing import Iterable
@@ -23,7 +25,7 @@ class DuplicateSessionException(Exception):
 class SessionTable:
     def __init__(self):
         self.session_table = {}
-        self.session_log = {}
+        self.session_logs = {}
 
     def add(self, id, port):
         if id in self.session_table:
@@ -34,10 +36,10 @@ class SessionTable:
             self.session_table.update(
                 {id: {"port": port, "channel": channel, "stub": stub}}
             )
-            self.session_log.update({id: []})
+            self.session_logs.update({id: []})
 
     def log_df_query(self, id: str, query_details: dict[str:any]):
-        self.session_log[id].append(query_details)
+        self.session_logs[id].append(query_details)
 
     def get_result_as_json(self, id, limit):
         return self.session_table[id].to_json(limit)
@@ -144,10 +146,6 @@ class SparkApiServicer(SparkApiServicer):
             },
         )
 
-        print()
-        print(sessionTable.session_log[req.id])
-        print()
-
         return sparkapi_pb2.PysparkTransformResponse(
             id=res.id,
             msg=res.msg,
@@ -182,6 +180,13 @@ class SparkApiServicer(SparkApiServicer):
             id=res.id,
             session_server_pid=res.session_server_pid,
             msg=res.msg,
+        )
+
+    def getDataframeLog(
+        self, req: sparkapi_pb2.LogRequest, unused_context
+    ) -> sparkapi_pb2.LogResponse:
+        return sparkapi_pb2.LogResponse(
+            id=req.id, log_json=json.dumps(sessionTable.session_logs[req.id])
         )
 
 

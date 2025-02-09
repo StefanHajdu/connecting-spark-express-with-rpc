@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"n\n\x16PysparkGeneralResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\"3\n\x18PysparkTransformResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"&\n\x12\x44\x61tasetRowResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"A\n\x11NewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"2\n\x15PreviewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"%\n\x17SummarizeDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\"]\n\nSqlRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12parametrized_query\x18\x02 \x01(\t\x12\x12\n\nquery_name\x18\x03 \x01(\t\x12\x13\n\x0bparams_json\x18\x04 \x01(\t2\x9f\x03\n\x08SparkApi\x12S\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1c.sparkapi.DatasetRowResponse\"\x00\x30\x01\x12Y\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12O\n\x0cloadsDataset\x12\x1b.sparkapi.NewDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12\x44\n\x06runSql\x12\x14.sparkapi.SqlRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"n\n\x16PysparkGeneralResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\"3\n\x18PysparkTransformResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"&\n\x12\x44\x61tasetRowResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\"+\n\x0bLogResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08log_json\x18\x02 \x01(\t\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"A\n\x11NewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"2\n\x15PreviewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"%\n\x17SummarizeDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\"]\n\nSqlRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12parametrized_query\x18\x02 \x01(\t\x12\x12\n\nquery_name\x18\x03 \x01(\t\x12\x13\n\x0bparams_json\x18\x04 \x01(\t\"\x18\n\nLogRequest\x12\n\n\x02id\x18\x01 \x01(\t2\xe1\x03\n\x08SparkApi\x12S\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1c.sparkapi.DatasetRowResponse\"\x00\x30\x01\x12Y\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12O\n\x0cloadsDataset\x12\x1b.sparkapi.NewDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12\x44\n\x06runSql\x12\x14.sparkapi.SqlRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x12@\n\x0fgetDataframeLog\x12\x14.sparkapi.LogRequest\x1a\x15.sparkapi.LogResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -39,16 +39,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PYSPARKTRANSFORMRESPONSE']._serialized_end=266
   _globals['_DATASETROWRESPONSE']._serialized_start=268
   _globals['_DATASETROWRESPONSE']._serialized_end=306
-  _globals['_NEWSESSIONREQUEST']._serialized_start=308
-  _globals['_NEWSESSIONREQUEST']._serialized_end=339
-  _globals['_NEWDATASETREQUEST']._serialized_start=341
-  _globals['_NEWDATASETREQUEST']._serialized_end=406
-  _globals['_PREVIEWDATASETREQUEST']._serialized_start=408
-  _globals['_PREVIEWDATASETREQUEST']._serialized_end=458
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=460
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=497
-  _globals['_SQLREQUEST']._serialized_start=499
-  _globals['_SQLREQUEST']._serialized_end=592
-  _globals['_SPARKAPI']._serialized_start=595
-  _globals['_SPARKAPI']._serialized_end=1010
+  _globals['_LOGRESPONSE']._serialized_start=308
+  _globals['_LOGRESPONSE']._serialized_end=351
+  _globals['_NEWSESSIONREQUEST']._serialized_start=353
+  _globals['_NEWSESSIONREQUEST']._serialized_end=384
+  _globals['_NEWDATASETREQUEST']._serialized_start=386
+  _globals['_NEWDATASETREQUEST']._serialized_end=451
+  _globals['_PREVIEWDATASETREQUEST']._serialized_start=453
+  _globals['_PREVIEWDATASETREQUEST']._serialized_end=503
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=505
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=542
+  _globals['_SQLREQUEST']._serialized_start=544
+  _globals['_SQLREQUEST']._serialized_end=637
+  _globals['_LOGREQUEST']._serialized_start=639
+  _globals['_LOGREQUEST']._serialized_end=663
+  _globals['_SPARKAPI']._serialized_start=666
+  _globals['_SPARKAPI']._serialized_end=1147
 # @@protoc_insertion_point(module_scope)

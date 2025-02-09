@@ -1,17 +1,20 @@
 import grpc
-import sparkapi_session_pb2
 import os
-import time
 import json
 
-from pyspark.sql import SparkSession, DataFrame
+import sparkapi_session_pb2
+import sparkapi_pb2_grpc
+import sparkapi_pb2
 
+from pyspark.sql import SparkSession, DataFrame
 from concurrent import futures
 from typing import Iterable
 from sparkapi_session_pb2_grpc import (
     SparkApiSessionServicer,
     add_SparkApiSessionServicer_to_server,
 )
+
+BASE_SESSION_PORT = 50051
 
 
 class DfUtils:
@@ -134,6 +137,8 @@ class SparkApiSession:
         )
 
 
+channel = grpc.insecure_channel(f"localhost:{BASE_SESSION_PORT}")
+stub = sparkapi_pb2_grpc.SparkApiStub(channel)
 spark = (
     SparkSession.builder.appName("SparkSession")
     .master("local[1]")
@@ -185,6 +190,11 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         session.set_id(req.id)
         session.log_(f"/createSession: {req.id}")
         session.log_(f"spark session id: {session.spark}")
+
+        if not req.id == "0000":
+            res = stub.getDataframeLog(sparkapi_pb2.LogRequest(id="0000"))
+            session.log_(f"\log {res}")
+
         return sparkapi_session_pb2.NewSessionResponse(
             id=f"{session.id}",
             session_server_pid=f"{session.pid}",
