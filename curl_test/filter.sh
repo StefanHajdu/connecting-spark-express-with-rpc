@@ -2,5 +2,5 @@ curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/j
 curl -X POST http://localhost:4444/load -H 'Content-Type: application/json' -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub2.csv", "df_type": "csv"}' -w '\nTotal: %{time_total}s\n'
 curl -X POST http://localhost:4444/filter -H 'Content-Type: application/json' -d '{"id": "0000", "filter_sql": "registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''Wix.com Ltd.'\'' OR registrar = '\''unknown'\''"}' -w '\nTotal: %{time_total}s\n'
 curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
-curl -X POST http://localhost:4444/filter -H 'Content-Type: application/json' -d '{"id": "0000", "filter_sql": "registrar = '\''unknown'\''"}' -w '\nTotal: %{time_total}s\n'
+curl -X POST http://localhost:4444/filter -H 'Content-Type: application/json' -d '{"id": "0000", "filter_sql": "registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''unknown'\''"}' -w '\nTotal: %{time_total}s\n'
 curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'

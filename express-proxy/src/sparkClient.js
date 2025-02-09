@@ -61,6 +61,24 @@ export class SparkClient {
     );
   }
 
+  _loadFromSession(datasetFromSessionRequestBody, expressResponse, next) {
+    return this.client.loadFromSession(
+      datasetFromSessionRequestBody,
+      (err, pysparkGeneralResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkGeneralResponse);
+        }
+      }
+    );
+  }
+
   _runSql(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
     return this.client.runSql(

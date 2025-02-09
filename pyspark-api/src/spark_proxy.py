@@ -121,6 +121,27 @@ class SparkApiServicer(SparkApiServicer):
             schema_tree=res.schema_tree,
         )
 
+    def loadFromSession(
+        self, req: sparkapi_pb2.DatasetFromSessionRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        print(f"/loadFromSession: {req.id, req.input_id}")
+        res = sessionTable.session_table[req.id]["stub"].loadFromSession(
+            sparkapi_session_pb2.DatasetFromSessionRequest(
+                id=req.id,
+                input_id=req.input_id,
+            )
+        )
+
+        sessionTable.log_df_query(
+            req.id,
+            {"op": "loadFromSession", "input_id": req.input_id},
+        )
+
+        return sparkapi_pb2.PysparkTransformResponse(
+            id=res.id,
+            msg=res.msg,
+        )
+
     def runSql(
         self, req: sparkapi_pb2.SqlRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:

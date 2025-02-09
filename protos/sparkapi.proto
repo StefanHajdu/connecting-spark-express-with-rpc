@@ -3,12 +3,16 @@ syntax = "proto3";
 package sparkapi;
 
 service SparkApi {
+    rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
+    
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc runSql(SqlRequest) returns (PysparkTransformResponse) {}
-    rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     rpc getDataframeLog(LogRequest) returns (LogResponse) {}
+    
+    rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
+    rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
+    
+    rpc runSql(SqlRequest) returns (PysparkTransformResponse) {}
 }
 
 
@@ -69,6 +73,11 @@ message SqlRequest {
     string parametrized_query = 2;
     string query_name = 3;
     string params_json = 4;
+}
+
+message DatasetFromSessionRequest {
+    string id = 1;
+    string input_id = 2;
 }
 
 message LogRequest {

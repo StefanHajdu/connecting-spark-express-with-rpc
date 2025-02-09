@@ -34,6 +34,11 @@ class SparkApiSessionStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.createSession = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/createSession',
+                request_serializer=sparkapi__session__pb2.NewSessionRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.NewSessionResponse.FromString,
+                _registered_method=True)
         self.previewDataset = channel.unary_stream(
                 '/sparkapisession.SparkApiSession/previewDataset',
                 request_serializer=sparkapi__session__pb2.PreviewDatasetRequest.SerializeToString,
@@ -49,20 +54,26 @@ class SparkApiSessionStub(object):
                 request_serializer=sparkapi__session__pb2.NewDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
+        self.loadFromSession = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/loadFromSession',
+                request_serializer=sparkapi__session__pb2.DatasetFromSessionRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.PysparkTransformResponse.FromString,
+                _registered_method=True)
         self.runSql = channel.unary_unary(
                 '/sparkapisession.SparkApiSession/runSql',
                 request_serializer=sparkapi__session__pb2.SqlRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkTransformResponse.FromString,
                 _registered_method=True)
-        self.createSession = channel.unary_unary(
-                '/sparkapisession.SparkApiSession/createSession',
-                request_serializer=sparkapi__session__pb2.NewSessionRequest.SerializeToString,
-                response_deserializer=sparkapi__session__pb2.NewSessionResponse.FromString,
-                _registered_method=True)
 
 
 class SparkApiSessionServicer(object):
     """Missing associated documentation comment in .proto file."""
+
+    def createSession(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def previewDataset(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -82,13 +93,13 @@ class SparkApiSessionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def runSql(self, request, context):
+    def loadFromSession(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def createSession(self, request, context):
+    def runSql(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -97,6 +108,11 @@ class SparkApiSessionServicer(object):
 
 def add_SparkApiSessionServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'createSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.createSession,
+                    request_deserializer=sparkapi__session__pb2.NewSessionRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.NewSessionResponse.SerializeToString,
+            ),
             'previewDataset': grpc.unary_stream_rpc_method_handler(
                     servicer.previewDataset,
                     request_deserializer=sparkapi__session__pb2.PreviewDatasetRequest.FromString,
@@ -112,15 +128,15 @@ def add_SparkApiSessionServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__session__pb2.NewDatasetRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkGeneralResponse.SerializeToString,
             ),
+            'loadFromSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.loadFromSession,
+                    request_deserializer=sparkapi__session__pb2.DatasetFromSessionRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.PysparkTransformResponse.SerializeToString,
+            ),
             'runSql': grpc.unary_unary_rpc_method_handler(
                     servicer.runSql,
                     request_deserializer=sparkapi__session__pb2.SqlRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkTransformResponse.SerializeToString,
-            ),
-            'createSession': grpc.unary_unary_rpc_method_handler(
-                    servicer.createSession,
-                    request_deserializer=sparkapi__session__pb2.NewSessionRequest.FromString,
-                    response_serializer=sparkapi__session__pb2.NewSessionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -132,6 +148,33 @@ def add_SparkApiSessionServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class SparkApiSession(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def createSession(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/createSession',
+            sparkapi__session__pb2.NewSessionRequest.SerializeToString,
+            sparkapi__session__pb2.NewSessionResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def previewDataset(request,
@@ -215,6 +258,33 @@ class SparkApiSession(object):
             _registered_method=True)
 
     @staticmethod
+    def loadFromSession(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/loadFromSession',
+            sparkapi__session__pb2.DatasetFromSessionRequest.SerializeToString,
+            sparkapi__session__pb2.PysparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def runSql(request,
             target,
             options=(),
@@ -231,33 +301,6 @@ class SparkApiSession(object):
             '/sparkapisession.SparkApiSession/runSql',
             sparkapi__session__pb2.SqlRequest.SerializeToString,
             sparkapi__session__pb2.PysparkTransformResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def createSession(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/sparkapisession.SparkApiSession/createSession',
-            sparkapi__session__pb2.NewSessionRequest.SerializeToString,
-            sparkapi__session__pb2.NewSessionResponse.FromString,
             options,
             channel_credentials,
             insecure,
