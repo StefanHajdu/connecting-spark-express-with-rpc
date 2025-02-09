@@ -6,7 +6,7 @@ service SparkApiSession {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc filterDataset(FilterDatasetRequest) returns (PysparkTransformResponse) {}
+    rpc runSql(SqlRequest) returns (PysparkTransformResponse) {}
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
 }
 
@@ -39,11 +39,6 @@ message DatasetRowResponse {
 
 // --- Requests ---
 
-message FilterDatasetRequest {
-    string id = 1;
-    string filter_sql = 2;
-}
-
 message NewSessionRequest {
     string id = 1;
 }
@@ -61,4 +56,11 @@ message PreviewDatasetRequest {
 
 message SummarizeDatasetRequest {
     string id = 1;
+}
+
+message SqlRequest {
+    string id = 1;
+    string parametrized_query = 2;
+    string query_name = 3;
+    string params_json = 4;
 }

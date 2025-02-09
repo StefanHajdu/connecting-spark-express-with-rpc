@@ -61,9 +61,10 @@ export class SparkClient {
     );
   }
 
-  _filterDataset(filterDatasetRequestBody, expressResponse, next) {
-    return this.client.filterDataset(
-      filterDatasetRequestBody,
+  _runSql(sqlRequestBody, expressResponse, next) {
+    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
+    return this.client.runSql(
+      sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
           return next(

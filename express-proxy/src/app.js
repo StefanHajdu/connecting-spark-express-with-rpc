@@ -32,10 +32,8 @@ app.post("/load", (req, res, next) => {
   sp._loadDataset(req.body, res, next);
 });
 
-// escape single quotes in json body
-// curl -X POST http://localhost:4444/filter -H 'Content-Type: application/json' -d '{"id": "0000", "filter_sql": "registrar = '\''unknown'\''"}' -w '\nTotal: %{time_total}s\n'
-app.post("/filter", (req, res, next) => {
-  sp._filterDataset(req.body, res, next);
+app.post("/sql", (req, res, next) => {
+  sp._runSql(req.body, res, next);
 });
 
 // curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'

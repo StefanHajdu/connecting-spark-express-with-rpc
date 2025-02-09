@@ -49,9 +49,9 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NewDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
-        self.filterDataset = channel.unary_unary(
-                '/sparkapi.SparkApi/filterDataset',
-                request_serializer=sparkapi__pb2.FilterDatasetRequest.SerializeToString,
+        self.runSql = channel.unary_unary(
+                '/sparkapi.SparkApi/runSql',
+                request_serializer=sparkapi__pb2.SqlRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
                 _registered_method=True)
         self.createSession = channel.unary_unary(
@@ -82,7 +82,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def filterDataset(self, request, context):
+    def runSql(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -112,9 +112,9 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.NewDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
             ),
-            'filterDataset': grpc.unary_unary_rpc_method_handler(
-                    servicer.filterDataset,
-                    request_deserializer=sparkapi__pb2.FilterDatasetRequest.FromString,
+            'runSql': grpc.unary_unary_rpc_method_handler(
+                    servicer.runSql,
+                    request_deserializer=sparkapi__pb2.SqlRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
             ),
             'createSession': grpc.unary_unary_rpc_method_handler(
@@ -215,7 +215,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def filterDataset(request,
+    def runSql(request,
             target,
             options=(),
             channel_credentials=None,
@@ -228,8 +228,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/filterDataset',
-            sparkapi__pb2.FilterDatasetRequest.SerializeToString,
+            '/sparkapi.SparkApi/runSql',
+            sparkapi__pb2.SqlRequest.SerializeToString,
             sparkapi__pb2.PysparkTransformResponse.FromString,
             options,
             channel_credentials,

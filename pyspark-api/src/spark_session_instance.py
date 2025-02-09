@@ -4,7 +4,7 @@ import os
 import time
 import json
 
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 
 from concurrent import futures
 from typing import Iterable
@@ -28,15 +28,33 @@ class DfUtils:
         df.unpersist()
 
     @classmethod
-    def filter_df(cls, df, filter_sql):
-        return df.filter(filter_sql)
-
-    @classmethod
     def read_spark_df(cls, spark, path: str, dataset_type: str):
         if dataset_type == "csv":
             return spark.read.option("delimiter", ";").option("header", True).csv(path)
         elif dataset_type == "json":
             return spark.read.json(path)
+
+
+class SqlUtils(DfUtils):
+    @classmethod
+    def execute_sql(
+        cls, spark: SparkSession, query: str, params_json: str
+    ) -> DataFrame:
+        kwargs = cls.to_named_params(params_json)
+        print(f"query: {query} | {kwargs}")
+        return spark.sql(
+            query,
+            **kwargs,
+        )
+
+    @classmethod
+    def to_named_params(cls, params_json: str):
+        params_named = {}
+        param_names = json.loads(params_json)
+        for param_name in param_names:
+            if param_name == "df":
+                params_named[param_name] = session.df_current
+        return params_named
 
 
 class SparkApiSession:
@@ -68,7 +86,6 @@ class SparkApiSession:
         self.df_init = self.df_current = DfUtils.read_spark_df(
             self.spark, path, df_type
         )
-        DfUtils.eager_cache_df(self.df_current)
         DfUtils.eager_cache_df(self.df_init)
         print(f"dataset `{path}` loaded")
 
@@ -104,10 +121,10 @@ class SparkApiSession:
         DfUtils.drop_from_cache_df(self.df_current)
         DfUtils.cache_df(self.df_current)
 
-    def spark_transform_filter(self, filter_sql: str):
+    def spark_transform_sql(self, query: str, params_json: str):
         if session.check_load():
-            session.df_current = DfUtils.filter_df(session.df_current, filter_sql)
-            msg = "filter accepted"
+            session.df_current = SqlUtils.execute_sql(spark, query, params_json)
+            msg = "Query accepted"
         else:
             msg = "[Error] no dataset loaded"
 
@@ -135,7 +152,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
 
         json_str_rows = session.spark_action_to_json(req.limit)
         for row in json.loads(json_str_rows):
-            # time.sleep(0.5)
             row_json_obj = sparkapi_session_pb2.DatasetRowResponse(
                 row_json=json.dumps(row)
             )
@@ -155,11 +171,13 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         session.spark_action_load_dataset(req.df_path, req.df_type)
         return session.get_general_spark_response(msg="msg: data loaded")
 
-    def filterDataset(
-        self, req: sparkapi_session_pb2.FilterDatasetRequest, unused_context
+    def runSql(
+        self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/filter: {req.id, req.filter_sql}")
-        return session.spark_transform_filter(req.filter_sql)
+        session.log_(
+            f"/sql: {req.id, req.parametrized_query, req.query_name, req.params_json}"
+        )
+        return session.spark_transform_sql(req.parametrized_query, req.params_json)
 
     def createSession(
         self, req: sparkapi_session_pb2.NewSessionRequest, unused_context
@@ -167,7 +185,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         session.set_id(req.id)
         session.log_(f"/createSession: {req.id}")
         session.log_(f"spark session id: {session.spark}")
-
         return sparkapi_session_pb2.NewSessionResponse(
             id=f"{session.id}",
             session_server_pid=f"{session.pid}",

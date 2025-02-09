@@ -109,13 +109,18 @@ class SparkApiServicer(SparkApiServicer):
             schema_tree=res.schema_tree,
         )
 
-    def filterDataset(
-        self, req: sparkapi_pb2.FilterDatasetRequest, unused_context
+    def runSql(
+        self, req: sparkapi_pb2.SqlRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/filter: {req.id, req.filter_sql}")
-        res = sessionTable.session_table[req.id]["stub"].filterDataset(
-            sparkapi_session_pb2.FilterDatasetRequest(
-                id=req.id, filter_sql=req.filter_sql
+        print(
+            f"/sql: {req.id, req.parametrized_query, req.query_name, req.params_json}"
+        )
+        res = sessionTable.session_table[req.id]["stub"].runSql(
+            sparkapi_session_pb2.SqlRequest(
+                id=req.id,
+                parametrized_query=req.parametrized_query,
+                query_name=req.query_name,
+                params_json=req.params_json,
             )
         )
         return sparkapi_pb2.PysparkTransformResponse(
