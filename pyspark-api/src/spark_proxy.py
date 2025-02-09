@@ -39,11 +39,17 @@ class SessionLogger:
         ).hexdigest()
 
     def notify_input_change(self, id: str):
-        pass
+        _ = sessionTable.session_table[id]["stub"].rebuildMasterDataframe(
+            sparkapi_session_pb2.RebuildRequest(
+                id=id,
+                log_json=self.get_log(id),
+            )
+        )
 
     def handle_log_change(self, id):
         ids_to_notify = self._get_session_dependency(id)
-        print(f"    ***{id} {ids_to_notify} ***")
+        for id_to_notify in ids_to_notify:
+            self.notify_input_change(id_to_notify)
 
     def _get_session_dependency(self, master_id):
         ls = []
@@ -217,7 +223,7 @@ class SparkApiServicer(SparkApiServicer):
             msg=res.msg,
         )
 
-    def getDataframeLog(
+    def getMasterDataframeLog(
         self, req: sparkapi_pb2.LogRequest, unused_context
     ) -> sparkapi_pb2.LogResponse:
         return sparkapi_pb2.LogResponse(

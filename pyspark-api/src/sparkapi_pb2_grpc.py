@@ -49,8 +49,8 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
-        self.getDataframeLog = channel.unary_unary(
-                '/sparkapi.SparkApi/getDataframeLog',
+        self.getMasterDataframeLog = channel.unary_unary(
+                '/sparkapi.SparkApi/getMasterDataframeLog',
                 request_serializer=sparkapi__pb2.LogRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.LogResponse.FromString,
                 _registered_method=True)
@@ -92,7 +92,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def getDataframeLog(self, request, context):
+    def getMasterDataframeLog(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -134,8 +134,8 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.SummarizeDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
             ),
-            'getDataframeLog': grpc.unary_unary_rpc_method_handler(
-                    servicer.getDataframeLog,
+            'getMasterDataframeLog': grpc.unary_unary_rpc_method_handler(
+                    servicer.getMasterDataframeLog,
                     request_deserializer=sparkapi__pb2.LogRequest.FromString,
                     response_serializer=sparkapi__pb2.LogResponse.SerializeToString,
             ),
@@ -247,7 +247,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def getDataframeLog(request,
+    def getMasterDataframeLog(request,
             target,
             options=(),
             channel_credentials=None,
@@ -260,7 +260,7 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/getDataframeLog',
+            '/sparkapi.SparkApi/getMasterDataframeLog',
             sparkapi__pb2.LogRequest.SerializeToString,
             sparkapi__pb2.LogResponse.FromString,
             options,

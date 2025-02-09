@@ -6,6 +6,7 @@ service SparkApiSession {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
+    rpc rebuildMasterDataframe(RebuildRequest) returns (PysparkTransformResponse) {}
     
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
@@ -71,4 +72,9 @@ message SqlRequest {
     string parametrized_query = 2;
     string query_name = 3;
     string params_json = 4;
+}
+
+message RebuildRequest {
+    string id = 1;
+    string log_json = 2;
 }

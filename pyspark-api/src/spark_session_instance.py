@@ -92,9 +92,9 @@ class SparkApiSession:
             DfUtils.eager_cache_df(self.df_init)
 
     def spark_action_summarize(self):
-        print()
-        session.df_current.explain()
-        print()
+        # print()
+        # session.df_current.explain()
+        # print()
 
         cols = json.dumps(self.df_current.columns)
         num_rows = self.df_current.count()
@@ -192,14 +192,21 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.DatasetFromSessionRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/loadFromSession: {req.id, req.input_id}")
-        log_plan = self._get_session_log(req.input_id)
-
-        print(log_plan)
-
+        log_plan = self._get_master_session_log(req.input_id)
         msg = self._load_df_from_session_log(log_plan)
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
             msg=msg,
+        )
+
+    def rebuildMasterDataframe(
+        self, req: sparkapi_session_pb2.RebuildRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkTransformResponse:
+        session.log_(f"/rebuildMasterDataframe: {req.id, req.log_json}")
+        msg = self._load_df_from_session_log(json.loads(req.log_json))
+        return sparkapi_session_pb2.PysparkTransformResponse(
+            id=session.id,
+            msg="rebuild init",
         )
 
     def _load_df_from_session_log(self, log_plan: list[dict[str:str]]) -> str:
@@ -209,6 +216,9 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 session.spark_action_load_dataset(
                     step.get("df_path"), step.get("df_type"), to_cache=False
                 )
+            elif op == "loadFromSession":
+                log_plan = self._get_master_session_log(step.get("input_id"))
+                _ = self._load_df_from_session_log(log_plan)
             elif op == "sql":
                 _ = session.spark_transform_sql(
                     step.get("parametrized_query"), step.get("params_json")
@@ -217,8 +227,8 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         DfUtils.eager_cache_df(session.df_init)
         return "load completed"
 
-    def _get_session_log(self, session_id: str):
-        res = stub.getDataframeLog(sparkapi_pb2.LogRequest(id=session_id))
+    def _get_master_session_log(self, session_id: str):
+        res = stub.getMasterDataframeLog(sparkapi_pb2.LogRequest(id=session_id))
         return json.loads(res.log_json)
 
     def runSql(

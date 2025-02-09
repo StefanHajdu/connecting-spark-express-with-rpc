@@ -7,7 +7,7 @@ service SparkApi {
     
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc getDataframeLog(LogRequest) returns (LogResponse) {}
+    rpc getMasterDataframeLog(LogRequest) returns (LogResponse) {}
     
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
@@ -83,3 +83,4 @@ message DatasetFromSessionRequest {
 message LogRequest {
     string id = 1;
 }
+

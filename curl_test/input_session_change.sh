@@ -1,69 +1,71 @@
 curl -X POST http://localhost:4444/createSession \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/load \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub_test.csv", "df_type": "csv"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/sql \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000", "parametrized_query": "select * from {df} where tld = '\''com'\''", "query_name": "filter", "params_json": ["df"]}' \
-    -w '\nTotal: %{time_total}s\n'
+    -d '{"id": "0000", "parametrized_query": "select * from {df} where tld = '\''com'\'' OR tld = '\''org'\''", "query_name": "filter", "params_json": ["df"]}' \
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/sql \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000", "parametrized_query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''NameCheap, Inc.'\''", "query_name": "filter", "params_json": ["df"]}' \
-    -w '\nTotal: %{time_total}s\n'
+    -d '{"id": "0000", "parametrized_query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''NameCheap, Inc.'\'' OR registrar = '\''unknown'\''", "query_name": "filter", "params_json": ["df"]}' \
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/createSession \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/loadFromSession \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001", "input_id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/sql \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0001", "parametrized_query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\''", "query_name": "filter", "params_json": ["df"]}' \
-    -w '\nTotal: %{time_total}s\n'
+    -d '{"id": "0001", "parametrized_query": "select * from {df} where registrar = '\''NameCheap, Inc.'\''", "query_name": "filter", "params_json": ["df"]}' \
+    -w '\nTotal: %{time_total}s\n\n'
 
+echo "0001 where registrar = NameCheap, Inc. AND (tld = org OR tld = com)"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/sql \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000", "parametrized_query": "select * from {df} where registrar = '\''NameCheap, Inc.'\''", "query_name": "filter", "params_json": ["df"]}' \
-    -w '\nTotal: %{time_total}s\n'
+    -d '{"id": "0000", "parametrized_query": "select * from {df} where tld = '\''org'\''", "query_name": "filter", "params_json": ["df"]}' \
+    -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'
 
+echo "0001 where registrar = NameCheap, Inc. AND tld = org"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001"}' \
-    -w '\nTotal: %{time_total}s\n'
+    -w '\nTotal: %{time_total}s\n\n'

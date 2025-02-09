@@ -49,6 +49,11 @@ class SparkApiSessionStub(object):
                 request_serializer=sparkapi__session__pb2.SummarizeDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
+        self.rebuildMasterDataframe = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/rebuildMasterDataframe',
+                request_serializer=sparkapi__session__pb2.RebuildRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.PysparkTransformResponse.FromString,
+                _registered_method=True)
         self.loadsDataset = channel.unary_unary(
                 '/sparkapisession.SparkApiSession/loadsDataset',
                 request_serializer=sparkapi__session__pb2.NewDatasetRequest.SerializeToString,
@@ -82,6 +87,12 @@ class SparkApiSessionServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def summarizeDataset(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def rebuildMasterDataframe(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -122,6 +133,11 @@ def add_SparkApiSessionServicer_to_server(servicer, server):
                     servicer.summarizeDataset,
                     request_deserializer=sparkapi__session__pb2.SummarizeDatasetRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkGeneralResponse.SerializeToString,
+            ),
+            'rebuildMasterDataframe': grpc.unary_unary_rpc_method_handler(
+                    servicer.rebuildMasterDataframe,
+                    request_deserializer=sparkapi__session__pb2.RebuildRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.PysparkTransformResponse.SerializeToString,
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
@@ -220,6 +236,33 @@ class SparkApiSession(object):
             '/sparkapisession.SparkApiSession/summarizeDataset',
             sparkapi__session__pb2.SummarizeDatasetRequest.SerializeToString,
             sparkapi__session__pb2.PysparkGeneralResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def rebuildMasterDataframe(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/rebuildMasterDataframe',
+            sparkapi__session__pb2.RebuildRequest.SerializeToString,
+            sparkapi__session__pb2.PysparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,
