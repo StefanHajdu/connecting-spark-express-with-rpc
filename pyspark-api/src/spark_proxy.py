@@ -60,12 +60,15 @@ class SessionLogger:
         for id_to_notify in ids_to_notify:
             self._notify_input_change(id_to_notify)
 
-    def _get_session_dependency(self, master_id):
+    def _get_session_dependency(self, master_session_id):
         """Filter only session that log plan starts with `loadFromSession` and uses this session id as input."""
         ls = []
         for id, log_obj in self.session_logs.items():
             for log in log_obj["logs"]:
-                if log["op"] == "loadFromSession" and log["input_id"] == master_id:
+                if (
+                    log["op"] == "loadFromSession"
+                    and log["input_id"] == master_session_id
+                ):
                     ls.append(id)
                     break
         return ls
