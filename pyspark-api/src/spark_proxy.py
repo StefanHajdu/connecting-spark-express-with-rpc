@@ -73,12 +73,9 @@ class SessionLogger:
                     break
         return ls
 
-    def _notify_input_change(self, id: str):
-        _ = sessionTable.session_table[id]["stub"].rebuildMasterDataframe(
-            sparkapi_session_pb2.RebuildRequest(
-                id=id,
-                log_json=self.get_log(id),
-            )
+    def _notify_input_change(self, id_to_notify: str):
+        _ = sessionTable.session_table[id_to_notify]["stub"].notifyMasterInputChange(
+            sparkapi_session_pb2.MasterInputChangeNotificationRequest(id=id_to_notify)
         )
 
 
@@ -213,6 +210,17 @@ class SparkApiServicer(SparkApiServicer):
             req_log,
         )
 
+    def rebuildSession(
+        self, req: sparkapi_pb2.RebuildRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        print(f"/rebuildSession: {req.id}")
+        res = sessionTable.session_table[req.id]["stub"].rebuildSession(
+            sparkapi_session_pb2.RebuildRequest(
+                id=req.id, log_json=sessionLogger.get_log(req.id)
+            )
+        )
+        return sparkapi_pb2.PysparkTransformResponse(id=res.id, msg=res.msg)
+
     def createSession(
         self, req: sparkapi_pb2.NewSessionRequest, unused_context
     ) -> sparkapi_pb2.NewSessionResponse:
@@ -247,6 +255,17 @@ class SparkApiServicer(SparkApiServicer):
     ) -> sparkapi_pb2.LogResponse:
         return sparkapi_pb2.LogResponse(
             id=req.id, log_json=sessionLogger.get_log(req.id)
+        )
+
+    def getRebuildStatus(
+        self, req: sparkapi_pb2.RebuildStatusRequest, unused_context
+    ) -> sparkapi_pb2.RebuildStatusResponse:
+        print(f"/rebuildStatus: {req.id}")
+        res = sessionTable.session_table[req.id]["stub"].getRebuildStatus(
+            sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
+        )
+        return sparkapi_pb2.RebuildStatusResponse(
+            id=req.id, rebuild_status=res.rebuild_status
         )
 
 

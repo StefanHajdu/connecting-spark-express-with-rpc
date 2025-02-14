@@ -49,10 +49,20 @@ class SparkApiSessionStub(object):
                 request_serializer=sparkapi__session__pb2.SummarizeDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
-        self.rebuildMasterDataframe = channel.unary_unary(
-                '/sparkapisession.SparkApiSession/rebuildMasterDataframe',
+        self.rebuildSession = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/rebuildSession',
                 request_serializer=sparkapi__session__pb2.RebuildRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkTransformResponse.FromString,
+                _registered_method=True)
+        self.notifyMasterInputChange = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/notifyMasterInputChange',
+                request_serializer=sparkapi__session__pb2.MasterInputChangeNotificationRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.MasterInputChangeNotificationResponse.FromString,
+                _registered_method=True)
+        self.getRebuildStatus = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/getRebuildStatus',
+                request_serializer=sparkapi__session__pb2.RebuildStatusRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.RebuildStatusResponse.FromString,
                 _registered_method=True)
         self.loadsDataset = channel.unary_unary(
                 '/sparkapisession.SparkApiSession/loadsDataset',
@@ -92,7 +102,19 @@ class SparkApiSessionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def rebuildMasterDataframe(self, request, context):
+    def rebuildSession(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def notifyMasterInputChange(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getRebuildStatus(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -134,10 +156,20 @@ def add_SparkApiSessionServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__session__pb2.SummarizeDatasetRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkGeneralResponse.SerializeToString,
             ),
-            'rebuildMasterDataframe': grpc.unary_unary_rpc_method_handler(
-                    servicer.rebuildMasterDataframe,
+            'rebuildSession': grpc.unary_unary_rpc_method_handler(
+                    servicer.rebuildSession,
                     request_deserializer=sparkapi__session__pb2.RebuildRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkTransformResponse.SerializeToString,
+            ),
+            'notifyMasterInputChange': grpc.unary_unary_rpc_method_handler(
+                    servicer.notifyMasterInputChange,
+                    request_deserializer=sparkapi__session__pb2.MasterInputChangeNotificationRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.MasterInputChangeNotificationResponse.SerializeToString,
+            ),
+            'getRebuildStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.getRebuildStatus,
+                    request_deserializer=sparkapi__session__pb2.RebuildStatusRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.RebuildStatusResponse.SerializeToString,
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
@@ -247,7 +279,7 @@ class SparkApiSession(object):
             _registered_method=True)
 
     @staticmethod
-    def rebuildMasterDataframe(request,
+    def rebuildSession(request,
             target,
             options=(),
             channel_credentials=None,
@@ -260,9 +292,63 @@ class SparkApiSession(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapisession.SparkApiSession/rebuildMasterDataframe',
+            '/sparkapisession.SparkApiSession/rebuildSession',
             sparkapi__session__pb2.RebuildRequest.SerializeToString,
             sparkapi__session__pb2.PysparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def notifyMasterInputChange(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/notifyMasterInputChange',
+            sparkapi__session__pb2.MasterInputChangeNotificationRequest.SerializeToString,
+            sparkapi__session__pb2.MasterInputChangeNotificationResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def getRebuildStatus(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/getRebuildStatus',
+            sparkapi__session__pb2.RebuildStatusRequest.SerializeToString,
+            sparkapi__session__pb2.RebuildStatusResponse.FromString,
             options,
             channel_credentials,
             insecure,

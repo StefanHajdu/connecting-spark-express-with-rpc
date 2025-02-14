@@ -152,6 +152,17 @@ session = SparkApiSession(os.getpid(), spark)
 
 
 class SparkApiSessionServicer(SparkApiSessionServicer):
+    def __init__(self):
+        self._rebuild_status = False
+
+    @property
+    def rebuild_status(self):
+        return self._rebuild_status
+
+    @rebuild_status.setter
+    def rebuild_status(self, val: bool):
+        self._rebuild_status = val
+
     def createSession(
         self, req: sparkapi_session_pb2.NewSessionRequest, unused_context
     ) -> sparkapi_session_pb2.NewSessionResponse:
@@ -193,23 +204,31 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/loadFromSession: {req.id, req.input_id}")
         log_plan = self._get_master_session_log(req.input_id)
-        msg = self._load_df_from_session_log(log_plan)
+        msg = self._traverse_log(log_plan)
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
             msg=msg,
         )
 
-    def rebuildMasterDataframe(
+    def _get_master_session_log(self, session_id: str):
+        res = stub.getMasterDataframeLog(sparkapi_pb2.LogRequest(id=session_id))
+        return json.loads(res.log_json)
+
+    def rebuildSession(
         self, req: sparkapi_session_pb2.RebuildRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/rebuildMasterDataframe: {req.id, req.log_json}")
-        msg = self._load_df_from_session_log(json.loads(req.log_json))
+        session.log_(f"/rebuildSession: {req.id, req.log_json}")
+        msg = self._traverse_log(json.loads(req.log_json))
+        self.rebuild_status = False
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
-            msg="rebuild init",
+            msg=msg,
         )
 
-    def _load_df_from_session_log(self, log_plan: list[dict[str:str]]) -> str:
+    def _traverse_log(self, log_plan: list[dict[str:str]]) -> str:
+        print("\n----LOG PLAN----")
+        print(log_plan)
+        print("----------------\n")
         for step in log_plan:
             op = step.get("op")
             if op == "load":
@@ -218,18 +237,34 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 )
             elif op == "loadFromSession":
                 log_plan = self._get_master_session_log(step.get("input_id"))
-                _ = self._load_df_from_session_log(log_plan)
+                _ = self._traverse_log(log_plan)
             elif op == "sql":
                 _ = session.spark_transform_sql(
                     step.get("parametrized_query"), step.get("params_json")
                 )
+
         session.df_init = session.df_current
         DfUtils.eager_cache_df(session.df_init)
-        return "load completed"
+        return "log traversal completed"
 
-    def _get_master_session_log(self, session_id: str):
-        res = stub.getMasterDataframeLog(sparkapi_pb2.LogRequest(id=session_id))
-        return json.loads(res.log_json)
+    def notifyMasterInputChange(
+        self,
+        req: sparkapi_session_pb2.MasterInputChangeNotificationRequest,
+        unused_context,
+    ) -> sparkapi_session_pb2.MasterInputChangeNotificationResponse:
+        session.log_(f"/notifyMasterInputChange: {req.id}")
+        self.rebuild_status = True
+        return sparkapi_session_pb2.MasterInputChangeNotificationResponse(
+            id=req.id, verification=True
+        )
+
+    def getRebuildStatus(
+        self, req: sparkapi_session_pb2.RebuildStatusRequest, unused_context
+    ) -> sparkapi_session_pb2.RebuildStatusResponse:
+        session.log_(f"/getRebuildStatus: {req.id}")
+        return sparkapi_session_pb2.RebuildStatusResponse(
+            id=req.id, rebuild_status=self.rebuild_status
+        )
 
     def runSql(
         self, req: sparkapi_session_pb2.SqlRequest, unused_context

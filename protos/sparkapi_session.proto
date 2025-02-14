@@ -6,7 +6,9 @@ service SparkApiSession {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc rebuildMasterDataframe(RebuildRequest) returns (PysparkTransformResponse) {}
+    rpc rebuildSession(RebuildRequest) returns (PysparkTransformResponse) {}
+    rpc notifyMasterInputChange(MasterInputChangeNotificationRequest) returns (MasterInputChangeNotificationResponse) {}
+    rpc getRebuildStatus(RebuildStatusRequest) returns (RebuildStatusResponse) {}
     
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
@@ -39,6 +41,17 @@ message PysparkTransformResponse {
 message DatasetRowResponse {
     string row_json = 1;
 }
+
+message MasterInputChangeNotificationResponse {
+    string id = 1;
+    bool verification = 2;
+}
+
+message RebuildStatusResponse {
+    string id = 1;
+    bool rebuild_status = 2;
+}
+
 
 
 // --- Requests ---
@@ -77,4 +90,12 @@ message SqlRequest {
 message RebuildRequest {
     string id = 1;
     string log_json = 2;
+}
+
+message MasterInputChangeNotificationRequest {
+    string id = 1;
+}
+
+message RebuildStatusRequest {
+    string id = 1;
 }

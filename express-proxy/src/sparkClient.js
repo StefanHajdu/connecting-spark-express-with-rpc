@@ -115,4 +115,40 @@ export class SparkClient {
       }
     );
   }
+
+  _getRebuildStatus(rebuildStatusParams, expressResponse, next) {
+    return this.client.getRebuildStatus(
+      { id: rebuildStatusParams.id },
+      (err, newSessionResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(newSessionResponse);
+        }
+      }
+    );
+  }
+
+  _rebuildSession(rebuildSessionParams, expressResponse, next) {
+    return this.client.rebuildSession(
+      { id: rebuildSessionParams.id },
+      (err, newSessionResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(newSessionResponse);
+        }
+      }
+    );
+  }
 }

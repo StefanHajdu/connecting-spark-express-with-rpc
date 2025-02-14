@@ -81,6 +81,42 @@ curl -X POST http://localhost:4444/sql \
     -d '{"id": "0000", "parametrized_query": "select * from {df} where tld = '\''org'\''", "query_name": "filter", "params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n\n'
 
+# rebuilds
+
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0002"
+curl -X GET http://localhost:4444/rebuildStatus/0002 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "9. rebuild 0001"
+curl -X POST http://localhost:4444/rebuildSession/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0002"
+curl -X GET http://localhost:4444/rebuildStatus/0002 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "10. rebuild 0002"
+curl -X POST http://localhost:4444/rebuildSession/0002 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0002"
+curl -X GET http://localhost:4444/rebuildStatus/0002 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+# final summaries
+
 echo "0000"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
