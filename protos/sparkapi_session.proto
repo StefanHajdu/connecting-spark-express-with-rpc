@@ -13,7 +13,7 @@ service SparkApiSession {
     rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
 
-    rpc runSql(SqlRequest) returns (PysparkTransformResponse) {}
+    rpc addSql(SqlRequest) returns (PysparkTransformSqlResponse) {}
 }
 
 
@@ -26,7 +26,7 @@ message NewSessionResponse {
 }
 
 message PysparkGeneralResponse {
-    string id = 1;
+    string session_id = 1;
     string msg = 2;
     string columns_json = 3;
     string schema_tree = 4;
@@ -34,8 +34,14 @@ message PysparkGeneralResponse {
 }
 
 message PysparkTransformResponse {
-    string id = 1;
+    string session_id = 1;
     string msg = 2;
+}
+
+message PysparkTransformSqlResponse {
+    string session_id = 1;
+    string msg = 2;
+    bytes plan_deque = 3;
 }
 
 message DatasetRowResponse {
@@ -61,7 +67,7 @@ message NewSessionRequest {
 }
 
 message NewDatasetRequest {
-    string id = 1;
+    string session_id = 1;
     string df_path = 2;
     string df_type = 3;
 }
@@ -81,10 +87,13 @@ message DatasetFromSessionRequest {
 }
 
 message SqlRequest {
-    string id = 1;
-    string parametrized_query = 2;
-    string query_name = 3;
-    string params_json = 4;
+    string session_id = 1;
+    string node_id = 2;
+    string previous_node_id = 3;
+    string query_type = 4;
+    string query = 5;
+    string query_params_json = 6;
+    bytes plan_deque = 7;
 }
 
 message RebuildRequest {

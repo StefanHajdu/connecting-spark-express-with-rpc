@@ -74,8 +74,8 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.DatasetFromSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
                 _registered_method=True)
-        self.runSql = channel.unary_unary(
-                '/sparkapi.SparkApi/runSql',
+        self.addSql = channel.unary_unary(
+                '/sparkapi.SparkApi/addSql',
                 request_serializer=sparkapi__pb2.SqlRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
                 _registered_method=True)
@@ -132,7 +132,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def runSql(self, request, context):
+    def addSql(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -181,8 +181,8 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.DatasetFromSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
             ),
-            'runSql': grpc.unary_unary_rpc_method_handler(
-                    servicer.runSql,
+            'addSql': grpc.unary_unary_rpc_method_handler(
+                    servicer.addSql,
                     request_deserializer=sparkapi__pb2.SqlRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
             ),
@@ -414,7 +414,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def runSql(request,
+    def addSql(request,
             target,
             options=(),
             channel_credentials=None,
@@ -427,7 +427,7 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/runSql',
+            '/sparkapi.SparkApi/addSql',
             sparkapi__pb2.SqlRequest.SerializeToString,
             sparkapi__pb2.PysparkTransformResponse.FromString,
             options,

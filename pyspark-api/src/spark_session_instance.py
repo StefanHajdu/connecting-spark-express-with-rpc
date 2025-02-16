@@ -18,6 +18,7 @@ from sparkapi_session_pb2_grpc import (
 from PipelinePlan import SessionPlanner
 
 BASE_SESSION_PORT = 50051
+PLAN_ROOT_ID = "0000-0000-0000"
 
 
 class DfUtils:
@@ -55,10 +56,9 @@ class SqlUtils(DfUtils):
     @classmethod
     def to_named_params(cls, params_json: str):
         params_named = {}
-        param_names = json.loads(params_json)
-        for param_name in param_names:
-            if param_name == "df":
-                params_named[param_name] = session.df_current
+        param_name = params_json
+        if param_name == "df":
+            params_named[param_name] = session.df_current
         return params_named
 
 
@@ -117,7 +117,7 @@ class SparkApiSession:
             schema_str = "err"
             columns = "err"
         return sparkapi_session_pb2.PysparkGeneralResponse(
-            id=self.id,
+            session_id=self.id,
             msg=msg,
             columns_json=columns,
             num_rows=num_rows,
@@ -130,15 +130,14 @@ class SparkApiSession:
         DfUtils.drop_from_cache_df(self.df_current)
         DfUtils.cache_df(self.df_current)
 
-    def spark_transform_sql(self, query: str, params_json: str):
+    def spark_transform_sql(self, query: str, query_params_json: str):
         if session.check_load():
-            session.df_current = SqlUtils.execute_sql(spark, query, params_json)
+            session.df_current = SqlUtils.execute_sql(spark, query, query_params_json)
             msg = "Query accepted"
         else:
             msg = "[Error] no dataset loaded"
-        return sparkapi_session_pb2.PysparkTransformResponse(
-            id=session.id,
-            msg=msg,
+        return sparkapi_session_pb2.PysparkTransformSqlResponse(
+            session_id=session.id, msg=msg, plan_deque=b"hello"
         )
 
 
@@ -198,7 +197,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def loadsDataset(
         self, req: sparkapi_session_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
-        session.log_(f"/load: {req.id, req.df_path, req.df_type}")
+        session.log_(f"/load: {req.session_id, req.df_path, req.df_type}")
         session.spark_action_load_dataset(req.df_path, req.df_type)
         return session.get_general_spark_response(msg="msg: data loaded")
 
@@ -209,7 +208,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         planner = self._get_parent_session_plan(req.input_id)
         msg = self._traverse_plan(planner)
         return sparkapi_session_pb2.PysparkTransformResponse(
-            id=session.id,
+            session_id=session.id,
             msg=msg,
         )
 
@@ -224,14 +223,11 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         msg = self._traverse_log(json.loads(req.log_json))
         self.rebuild_status = False
         return sparkapi_session_pb2.PysparkTransformResponse(
-            id=session.id,
+            session_id=session.id,
             msg=msg,
         )
 
     def _traverse_plan(self, planner: SessionPlanner) -> str:
-        print("\n----LOG PLAN----")
-        print(planner.plan)
-        print("----------------\n")
         for plan_step in planner.plan:
             op = plan_step.get("op")
             if op == "load":
@@ -269,13 +265,49 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             id=req.id, rebuild_status=self.rebuild_status
         )
 
-    def runSql(
+    def addSql(
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(
-            f"/sql: {req.id, req.parametrized_query, req.query_name, req.params_json}"
+        session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
+
+        sp = pickle.loads(req.plan_deque)
+
+        session.df_current = session.df_init
+
+        insert_to_idx = -1
+        for idx, query in enumerate(sp.plan):
+            if query["node_id"] == req.previous_node_id:
+                if query["op"] == "sql":
+                    session.df_current = SqlUtils.execute_sql(
+                        spark, query["query"], query["query_params_json"]
+                    )
+                session.df_current = SqlUtils.execute_sql(
+                    spark, req.query, req.query_params_json
+                )
+                insert_to_idx = idx
+            else:
+                if query["op"] == "sql":
+                    session.df_current = SqlUtils.execute_sql(
+                        spark, query["query"], query["query_params_json"]
+                    )
+
+        sp.plan.insert(
+            insert_to_idx + 1,
+            {
+                "node_id": req.node_id,
+                "previous_node_id": req.previous_node_id,
+                "op": "sql",
+                "query_type": req.query_type,
+                "query": req.query,
+                "query_params_json": req.query_params_json,
+            },
         )
-        return session.spark_transform_sql(req.parametrized_query, req.params_json)
+
+        return sparkapi_session_pb2.PysparkTransformSqlResponse(
+            session_id=session.id,
+            msg="plan traversed and applied",
+            plan_deque=pickle.dumps(sp),
+        )
 
 
 def session_serve(port: int):

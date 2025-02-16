@@ -37,8 +37,8 @@ app.post("/loadFromSession", (req, res, next) => {
   sp._loadFromSession(req.body, res, next);
 });
 
-app.post("/sql", (req, res, next) => {
-  sp._runSql(req.body, res, next);
+app.post("/addSql", (req, res, next) => {
+  sp._addSql(req.body, res, next);
 });
 
 // curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'

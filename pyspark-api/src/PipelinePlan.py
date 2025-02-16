@@ -8,7 +8,7 @@ from SessionTable import SessionTable
 
 
 class SessionPlanner:
-    def __init__(self, root_query: dict[str : dict[str:str]]):
+    def __init__(self, root_query: dict[str:str]):
         self.plan = deque([root_query])
 
 
@@ -32,6 +32,10 @@ class SessionPlannerMap:
         else:
             self.session_planners[session_id] = pickle.loads(planner)
 
+        print("\n---------")
+        print(self.session_planners[session_id].plan)
+        print("---------\n")
+
     def spark_transformation_update(self, func):
         """Adds rest api query to session plan. Plan is defined by session id and return as binary object.
         Init propagation of the change to child sessions.
@@ -39,10 +43,9 @@ class SessionPlannerMap:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            grpc_res, plan_bytes = func(*args, **kwargs)
-            session_id = grpc_res.id
-            self.overwrite_plan(session_id, plan_bytes)
-            self.handle_plan_change(session_id)
+            grpc_res, plan_deque = func(*args, **kwargs)
+            self.overwrite_plan(grpc_res.session_id, plan_deque)
+            self.handle_plan_change(grpc_res.session_id)
             return grpc_res
 
         return wrapper

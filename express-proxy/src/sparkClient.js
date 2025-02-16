@@ -79,9 +79,9 @@ export class SparkClient {
     );
   }
 
-  _runSql(sqlRequestBody, expressResponse, next) {
+  _addSql(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.runSql(
+    return this.client.addSql(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

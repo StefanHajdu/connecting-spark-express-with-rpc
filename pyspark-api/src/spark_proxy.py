@@ -51,7 +51,7 @@ class SparkApiServicer(SparkApiServicer):
             sparkapi_session_pb2.SummarizeDatasetRequest(id=req.id)
         )
         return sparkapi_pb2.PysparkGeneralResponse(
-            id=res.id,
+            session_id=res.session_id,
             msg=res.msg,
             columns_json=res.columns_json,
             num_rows=res.num_rows,
@@ -62,10 +62,10 @@ class SparkApiServicer(SparkApiServicer):
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
-        print(f"/load: {req.id, req.df_path, req.df_type}")
-        res = sessionTable.session_table[req.id]["stub"].loadsDataset(
+        print(f"/load: {req.session_id, req.df_path, req.df_type}")
+        res = sessionTable.session_table[req.session_id]["stub"].loadsDataset(
             sparkapi_session_pb2.NewDatasetRequest(
-                id=req.id,
+                session_id=req.session_id,
                 df_path=req.df_path,
                 df_type=req.df_type,
             )
@@ -73,6 +73,7 @@ class SparkApiServicer(SparkApiServicer):
         plan = SessionPlanner(
             {
                 "node_id": PLAN_ROOT_ID,
+                "previous_node_id": None,
                 "op": "load",
                 "df_path": req.df_path,
                 "df_type": req.df_type,
@@ -80,7 +81,7 @@ class SparkApiServicer(SparkApiServicer):
         )
         return (
             sparkapi_pb2.PysparkGeneralResponse(
-                id=res.id,
+                session_id=res.session_id,
                 msg=res.msg,
                 columns_json=res.columns_json,
                 num_rows=res.num_rows,
@@ -93,54 +94,52 @@ class SparkApiServicer(SparkApiServicer):
     def loadFromSession(
         self, req: sparkapi_pb2.DatasetFromSessionRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/loadFromSession: {req.id, req.input_id}")
-        res = sessionTable.session_table[req.id]["stub"].loadFromSession(
+        print(f"/loadFromSession: {req.session_id, req.input_id}")
+        res = sessionTable.session_table[req.session_id]["stub"].loadFromSession(
             sparkapi_session_pb2.DatasetFromSessionRequest(
-                id=req.id,
+                id=req.session_id,
                 input_id=req.input_id,
             )
         )
 
         plan = SessionPlanner(
-            {"node_id": PLAN_ROOT_ID, "op": "loadFromSession", "input_id": req.input_id}
+            {
+                "node_id": PLAN_ROOT_ID,
+                "previous_node_id": None,
+                "op": "loadFromSession",
+                "input_id": req.input_id,
+            }
         )
         return (
             sparkapi_pb2.PysparkTransformResponse(
-                id=res.id,
+                session_id=res.session_id,
                 msg=res.msg,
             ),
             plan,
         )
 
     @sessionPlannerMap.spark_transformation_update
-    def runSql(
+    def addSql(
         self, req: sparkapi_pb2.SqlRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(
-            f"/sql: {req.id, req.parametrized_query, req.query_name, req.params_json}"
-        )
-        res = sessionTable.session_table[req.id]["stub"].runSql(
+        print(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
+        res = sessionTable.session_table[req.session_id]["stub"].addSql(
             sparkapi_session_pb2.SqlRequest(
-                id=req.id,
-                parametrized_query=req.parametrized_query,
-                query_name=req.query_name,
-                params_json=req.params_json,
+                session_id=req.session_id,
+                node_id=req.node_id,
+                previous_node_id=req.previous_node_id,
+                query_type=req.query_type,
+                query=req.query,
+                query_params_json=req.query_params_json,
+                plan_deque=sessionPlannerMap.get_plan_pickled(req.session_id),
             )
         )
-
-        req_log = {
-            "op": "sql",
-            "parametrized_query": req.parametrized_query,
-            "query_name": req.query_name,
-            "params_json": req.params_json,
-        }
-
         return (
             sparkapi_pb2.PysparkTransformResponse(
-                id=res.id,
+                session_id=res.session_id,
                 msg=res.msg,
             ),
-            req_log,
+            res.plan_deque,
         )
 
     def rebuildSession(
@@ -152,7 +151,7 @@ class SparkApiServicer(SparkApiServicer):
                 id=req.id, log_json=sessionPlannerMap.get_plan(req.id)
             )
         )
-        return sparkapi_pb2.PysparkTransformResponse(id=res.id, msg=res.msg)
+        return sparkapi_pb2.PysparkTransformResponse(session_id=res.id, msg=res.msg)
 
     def createSession(
         self, req: sparkapi_pb2.NewSessionRequest, unused_context
