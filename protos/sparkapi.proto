@@ -7,7 +7,7 @@ service SparkApi {
     
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
-    rpc getMasterDataframeLog(LogRequest) returns (LogResponse) {}
+    rpc getParentSessionPlan(PlanRequest) returns (PlanResponse) {}
     rpc getRebuildStatus(RebuildStatusRequest) returns (RebuildStatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (PysparkTransformResponse) {}
 
@@ -43,9 +43,9 @@ message DatasetRowResponse {
     string row_json = 1;
 }
 
-message LogResponse {
+message PlanResponse {
     string id = 1;
-    string log_json = 2;
+    bytes plan_deque = 2;
 }
 
 message RebuildStatusResponse {
@@ -87,7 +87,7 @@ message DatasetFromSessionRequest {
     string input_id = 2;
 }
 
-message LogRequest {
+message PlanRequest {
     string id = 1;
 }
 

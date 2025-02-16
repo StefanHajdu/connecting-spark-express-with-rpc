@@ -49,10 +49,10 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
                 _registered_method=True)
-        self.getMasterDataframeLog = channel.unary_unary(
-                '/sparkapi.SparkApi/getMasterDataframeLog',
-                request_serializer=sparkapi__pb2.LogRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.LogResponse.FromString,
+        self.getParentSessionPlan = channel.unary_unary(
+                '/sparkapi.SparkApi/getParentSessionPlan',
+                request_serializer=sparkapi__pb2.PlanRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.PlanResponse.FromString,
                 _registered_method=True)
         self.getRebuildStatus = channel.unary_unary(
                 '/sparkapi.SparkApi/getRebuildStatus',
@@ -102,7 +102,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def getMasterDataframeLog(self, request, context):
+    def getParentSessionPlan(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -156,10 +156,10 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.SummarizeDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
             ),
-            'getMasterDataframeLog': grpc.unary_unary_rpc_method_handler(
-                    servicer.getMasterDataframeLog,
-                    request_deserializer=sparkapi__pb2.LogRequest.FromString,
-                    response_serializer=sparkapi__pb2.LogResponse.SerializeToString,
+            'getParentSessionPlan': grpc.unary_unary_rpc_method_handler(
+                    servicer.getParentSessionPlan,
+                    request_deserializer=sparkapi__pb2.PlanRequest.FromString,
+                    response_serializer=sparkapi__pb2.PlanResponse.SerializeToString,
             ),
             'getRebuildStatus': grpc.unary_unary_rpc_method_handler(
                     servicer.getRebuildStatus,
@@ -279,7 +279,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def getMasterDataframeLog(request,
+    def getParentSessionPlan(request,
             target,
             options=(),
             channel_credentials=None,
@@ -292,9 +292,9 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/getMasterDataframeLog',
-            sparkapi__pb2.LogRequest.SerializeToString,
-            sparkapi__pb2.LogResponse.FromString,
+            '/sparkapi.SparkApi/getParentSessionPlan',
+            sparkapi__pb2.PlanRequest.SerializeToString,
+            sparkapi__pb2.PlanResponse.FromString,
             options,
             channel_credentials,
             insecure,

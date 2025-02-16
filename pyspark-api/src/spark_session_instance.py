@@ -1,6 +1,7 @@
 import grpc
 import os
 import json
+import pickle
 
 import sparkapi_session_pb2
 import sparkapi_pb2_grpc
@@ -13,6 +14,8 @@ from sparkapi_session_pb2_grpc import (
     SparkApiSessionServicer,
     add_SparkApiSessionServicer_to_server,
 )
+
+from PipelinePlan import SessionPlanner
 
 BASE_SESSION_PORT = 50051
 
@@ -203,16 +206,16 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.DatasetFromSessionRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/loadFromSession: {req.id, req.input_id}")
-        log_plan = self._get_master_session_log(req.input_id)
-        msg = self._traverse_log(log_plan)
+        planner = self._get_parent_session_plan(req.input_id)
+        msg = self._traverse_plan(planner)
         return sparkapi_session_pb2.PysparkTransformResponse(
             id=session.id,
             msg=msg,
         )
 
-    def _get_master_session_log(self, session_id: str):
-        res = stub.getMasterDataframeLog(sparkapi_pb2.LogRequest(id=session_id))
-        return json.loads(res.log_json)
+    def _get_parent_session_plan(self, session_id: str):
+        res = stub.getParentSessionPlan(sparkapi_pb2.PlanRequest(id=session_id))
+        return pickle.loads(res.plan_deque)
 
     def rebuildSession(
         self, req: sparkapi_session_pb2.RebuildRequest, unused_context
@@ -225,22 +228,22 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             msg=msg,
         )
 
-    def _traverse_log(self, log_plan: list[dict[str:str]]) -> str:
+    def _traverse_plan(self, planner: SessionPlanner) -> str:
         print("\n----LOG PLAN----")
-        print(log_plan)
+        print(planner.plan)
         print("----------------\n")
-        for step in log_plan:
-            op = step.get("op")
+        for plan_step in planner.plan:
+            op = plan_step.get("op")
             if op == "load":
                 session.spark_action_load_dataset(
-                    step.get("df_path"), step.get("df_type"), to_cache=False
+                    plan_step.get("df_path"), plan_step.get("df_type"), to_cache=False
                 )
             elif op == "loadFromSession":
-                log_plan = self._get_master_session_log(step.get("input_id"))
-                _ = self._traverse_log(log_plan)
+                planner = self._get_parent_session_plan(plan_step.get("input_id"))
+                _ = self._traverse_plan(planner)
             elif op == "sql":
                 _ = session.spark_transform_sql(
-                    step.get("parametrized_query"), step.get("params_json")
+                    plan_step.get("parametrized_query"), plan_step.get("params_json")
                 )
 
         session.df_init = session.df_current

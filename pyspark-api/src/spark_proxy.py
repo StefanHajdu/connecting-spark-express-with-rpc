@@ -1,14 +1,10 @@
 import grpc
 import multiprocessing as mp
 import time
-import json
-import hashlib
 
 import sparkapi_pb2
 import sparkapi_session_pb2
-import sparkapi_session_pb2_grpc
 
-from functools import wraps
 from concurrent import futures
 from typing import Iterable
 from sparkapi_pb2_grpc import (
@@ -17,87 +13,15 @@ from sparkapi_pb2_grpc import (
 )
 
 from spark_session_instance import session_serve
-
-
-class DuplicateSessionException(Exception):
-    def __init__(self, message="Duplicate sessions"):
-        super().__init__(message)
-
-
-class SessionLogger:
-    def __init__(self):
-        self.session_logs = {}
-
-    def init_log(self, id: str):
-        self.session_logs.update({id: {"logs": [], "state_hash": None}})
-
-    def get_log(self, id: str):
-        return json.dumps(self.session_logs.get(id, {}).get("logs", {}))
-
-    def _hash_log_state(self, id: str):
-        self.session_logs[id]["state_hash"] = hashlib.sha256(
-            str(self.session_logs[id]["logs"]).encode("utf-8")
-        ).hexdigest()
-
-    def log_request(self, func):
-        """Adds rest api query to session log. Log is defined by session id.
-        Init propagation of the change to child sessions.
-        """
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            grpc_response_obj, request_log = func(*args, **kwargs)
-            session_id = grpc_response_obj.id
-            self.session_logs[session_id]["logs"].append(request_log)
-            self.handle_log_change(session_id)
-            return grpc_response_obj
-
-        return wrapper
-
-    def handle_log_change(self, id):
-        """Get session ids that use current session as input. And send new query log."""
-        ids_to_notify = self._get_session_dependency(id)
-        for id_to_notify in ids_to_notify:
-            self._notify_input_change(id_to_notify)
-
-    def _get_session_dependency(self, master_session_id):
-        """Filter only session that log plan starts with `loadFromSession` and uses this session id as input."""
-        ls = []
-        for id, log_obj in self.session_logs.items():
-            for log in log_obj["logs"]:
-                if (
-                    log["op"] == "loadFromSession"
-                    and log["input_id"] == master_session_id
-                ):
-                    ls.append(id)
-                    break
-        return ls
-
-    def _notify_input_change(self, id_to_notify: str):
-        _ = sessionTable.session_table[id_to_notify]["stub"].notifyMasterInputChange(
-            sparkapi_session_pb2.MasterInputChangeNotificationRequest(id=id_to_notify)
-        )
-
-
-class SessionTable:
-    def __init__(self):
-        self.session_table = {}
-
-    def add(self, id, port):
-        if id in self.session_table:
-            raise DuplicateSessionException()
-        else:
-            channel = grpc.insecure_channel(f"localhost:{port}")
-            stub = sparkapi_session_pb2_grpc.SparkApiSessionStub(channel)
-            self.session_table.update(
-                {id: {"port": port, "channel": channel, "stub": stub}}
-            )
+from PipelinePlan import SessionPlanner, SessionPlannerMap
+from SessionTable import SessionTable
 
 
 BASE_SESSION_PORT = 50051
+PLAN_ROOT_ID = "0000-0000-0000"
 
 sessionTable = SessionTable()
-sessionLogger = SessionLogger()
+sessionPlannerMap = SessionPlannerMap(sessionTable)
 mp_ctx = mp.get_context("spawn")
 
 
@@ -134,7 +58,7 @@ class SparkApiServicer(SparkApiServicer):
             schema_tree=res.schema_tree,
         )
 
-    @sessionLogger.log_request
+    @sessionPlannerMap.spark_transformation_update
     def loadsDataset(
         self, req: sparkapi_pb2.NewDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
@@ -146,7 +70,14 @@ class SparkApiServicer(SparkApiServicer):
                 df_type=req.df_type,
             )
         )
-        req_log = {"op": "load", "df_path": req.df_path, "df_type": req.df_type}
+        plan = SessionPlanner(
+            {
+                "node_id": PLAN_ROOT_ID,
+                "op": "load",
+                "df_path": req.df_path,
+                "df_type": req.df_type,
+            }
+        )
         return (
             sparkapi_pb2.PysparkGeneralResponse(
                 id=res.id,
@@ -155,10 +86,10 @@ class SparkApiServicer(SparkApiServicer):
                 num_rows=res.num_rows,
                 schema_tree=res.schema_tree,
             ),
-            req_log,
+            plan,
         )
 
-    @sessionLogger.log_request
+    @sessionPlannerMap.spark_transformation_update
     def loadFromSession(
         self, req: sparkapi_pb2.DatasetFromSessionRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
@@ -170,16 +101,18 @@ class SparkApiServicer(SparkApiServicer):
             )
         )
 
-        req_log = {"op": "loadFromSession", "input_id": req.input_id}
+        plan = SessionPlanner(
+            {"node_id": PLAN_ROOT_ID, "op": "loadFromSession", "input_id": req.input_id}
+        )
         return (
             sparkapi_pb2.PysparkTransformResponse(
                 id=res.id,
                 msg=res.msg,
             ),
-            req_log,
+            plan,
         )
 
-    @sessionLogger.log_request
+    @sessionPlannerMap.spark_transformation_update
     def runSql(
         self, req: sparkapi_pb2.SqlRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
@@ -216,7 +149,7 @@ class SparkApiServicer(SparkApiServicer):
         print(f"/rebuildSession: {req.id}")
         res = sessionTable.session_table[req.id]["stub"].rebuildSession(
             sparkapi_session_pb2.RebuildRequest(
-                id=req.id, log_json=sessionLogger.get_log(req.id)
+                id=req.id, log_json=sessionPlannerMap.get_plan(req.id)
             )
         )
         return sparkapi_pb2.PysparkTransformResponse(id=res.id, msg=res.msg)
@@ -229,7 +162,7 @@ class SparkApiServicer(SparkApiServicer):
         # try to add new session
         session_port = get_new_port(sessionTable)
         sessionTable.add(req.id, session_port)
-        sessionLogger.init_log(req.id)
+        sessionPlannerMap.add_session(req.id)
 
         # spawn new session server process
         session_server = mp_ctx.Process(
@@ -250,11 +183,11 @@ class SparkApiServicer(SparkApiServicer):
             msg=res.msg,
         )
 
-    def getMasterDataframeLog(
-        self, req: sparkapi_pb2.LogRequest, unused_context
-    ) -> sparkapi_pb2.LogResponse:
-        return sparkapi_pb2.LogResponse(
-            id=req.id, log_json=sessionLogger.get_log(req.id)
+    def getParentSessionPlan(
+        self, req: sparkapi_pb2.PlanRequest, unused_context
+    ) -> sparkapi_pb2.PlanResponse:
+        return sparkapi_pb2.PlanResponse(
+            id=req.id, plan_deque=sessionPlannerMap.get_plan_pickled(req.id)
         )
 
     def getRebuildStatus(

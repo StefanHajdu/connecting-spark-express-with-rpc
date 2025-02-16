@@ -1,0 +1,74 @@
+import sparkapi_session_pb2
+import pickle
+
+from collections import deque
+from functools import wraps
+
+from SessionTable import SessionTable
+
+
+class SessionPlanner:
+    def __init__(self, root_query: dict[str : dict[str:str]]):
+        self.plan = deque([root_query])
+
+
+class SessionPlannerMap:
+    def __init__(self, table: SessionTable):
+        self.session_planners = {}
+        self.session_table = table
+
+    def add_session(self, session_id: str):
+        self.session_planners.update({session_id: None})
+
+    def get_plan(self, session_id: str) -> SessionPlanner:
+        return self.session_planners.get(session_id)
+
+    def get_plan_pickled(self, session_id: str) -> bytes:
+        return pickle.dumps(self.session_planners.get(session_id))
+
+    def overwrite_plan(self, session_id: str, planner: SessionPlanner | bytes):
+        if isinstance(planner, SessionPlanner):
+            self.session_planners[session_id] = planner
+        else:
+            self.session_planners[session_id] = pickle.loads(planner)
+
+    def spark_transformation_update(self, func):
+        """Adds rest api query to session plan. Plan is defined by session id and return as binary object.
+        Init propagation of the change to child sessions.
+        """
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            grpc_res, plan_bytes = func(*args, **kwargs)
+            session_id = grpc_res.id
+            self.overwrite_plan(session_id, plan_bytes)
+            self.handle_plan_change(session_id)
+            return grpc_res
+
+        return wrapper
+
+    def handle_plan_change(self, session_id: str):
+        """Get session ids that use current session as input. And send new query log."""
+        ids_to_notify = self._get_session_dependency(session_id)
+        for id_to_notify in ids_to_notify:
+            self._notify_child_session_input_change(id_to_notify)
+
+    def _get_session_dependency(self, session_id: str):
+        """Filter only session that log plan starts with `loadFromSession` and uses this session id as input."""
+        ls = []
+        for id, planner in self.session_planners.items():
+            plan_init_point = planner.plan[0]
+            if (
+                plan_init_point["op"] == "loadFromSession"
+                and plan_init_point["input_id"] == session_id
+            ):
+                ls.append(id)
+        return ls
+
+    def _notify_child_session_input_change(
+        self,
+        id_to_notify: str,
+    ):
+        _ = self.session_table.get_stub().notifyMasterInputChange(
+            sparkapi_session_pb2.MasterInputChangeNotificationRequest(id=id_to_notify)
+        )
