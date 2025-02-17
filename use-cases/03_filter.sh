@@ -13,23 +13,32 @@ curl -X POST http://localhost:4444/addSql \
     -d '{"session_id": "0000", "node_id": "n0001", "previous_node_id": "0000-0000-0000", "query": "select * from {df} where tld = '\''com'\''", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n'
 
-curl -X POST http://localhost:4444/summarize \
-    -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
+# curl -X POST http://localhost:4444/summarize \
+#     -H 'Content-Type: application/json' \
+#     -d '{"id": "0000"}' \
+#     -w '\nTotal: %{time_total}s\n'
 
 curl -X POST http://localhost:4444/addSql \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0001", "previous_node_id": "0000-0000-0000", "query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''NameCheap, Inc.'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0002", "previous_node_id": "n0001", "query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''NameCheap, Inc.'\'' OR registrar = '\''unknown'\''", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n'
+
+# curl -X POST http://localhost:4444/summarize \
+#     -H 'Content-Type: application/json' \
+#     -d '{"id": "0000"}' \
+#     -w '\nTotal: %{time_total}s\n'
+
+curl -X POST http://localhost:4444/addSql \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "n0002", "query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -w '\nTotal: %{time_total}s\n'
+
+# curl -X POST http://localhost:4444/addSql \
+#     -H 'Content-Type: application/json' \
+#     -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "n0001", "query": "select * from {df} where tld = '\''com'\'' OR tld = '\''org'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+#     -w '\nTotal: %{time_total}s\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
-    -w '\nTotal: %{time_total}s\n'
-
-curl -X POST http://localhost:4444/preview \
-    -H 'Content-Type: application/json' \
-    -d '{"id": "0000", "limit": 12}' \
-    -N \
     -w '\nTotal: %{time_total}s\n'

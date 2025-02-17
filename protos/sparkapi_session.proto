@@ -41,7 +41,7 @@ message PysparkTransformResponse {
 message PysparkTransformSqlResponse {
     string session_id = 1;
     string msg = 2;
-    bytes plan_deque = 3;
+    bytes planner = 3;
 }
 
 message DatasetRowResponse {
@@ -93,7 +93,7 @@ message SqlRequest {
     string query_type = 4;
     string query = 5;
     string query_params_json = 6;
-    bytes plan_deque = 7;
+    bytes planner = 7;
 }
 
 message RebuildRequest {

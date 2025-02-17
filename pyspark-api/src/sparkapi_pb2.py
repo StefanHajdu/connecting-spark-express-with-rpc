@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"v\n\x16PysparkGeneralResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\";\n\x18PysparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"&\n\x12\x44\x61tasetRowResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\".\n\x0cPlanResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x12\n\nplan_deque\x18\x02 \x01(\x0c\";\n\x15RebuildStatusResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0erebuild_status\x18\x02 \x01(\x08\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"I\n\x11NewDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"2\n\x15PreviewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"%\n\x17SummarizeDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x89\x01\n\nSqlRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x18\n\x10previous_node_id\x18\x03 \x01(\t\x12\x12\n\nquery_type\x18\x04 \x01(\t\x12\r\n\x05query\x18\x05 \x01(\t\x12\x19\n\x11query_params_json\x18\x06 \x01(\t\"A\n\x19\x44\x61tasetFromSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x10\n\x08input_id\x18\x02 \x01(\t\"\x19\n\x0bPlanRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x0eRebuildRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\"\n\x14RebuildStatusRequest\x12\n\n\x02id\x18\x01 \x01(\t2\xef\x05\n\x08SparkApi\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x12S\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1c.sparkapi.DatasetRowResponse\"\x00\x30\x01\x12Y\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12G\n\x14getParentSessionPlan\x12\x15.sparkapi.PlanRequest\x1a\x16.sparkapi.PlanResponse\"\x00\x12U\n\x10getRebuildStatus\x12\x1e.sparkapi.RebuildStatusRequest\x1a\x1f.sparkapi.RebuildStatusResponse\"\x00\x12P\n\x0erebuildSession\x12\x18.sparkapi.RebuildRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12O\n\x0cloadsDataset\x12\x1b.sparkapi.NewDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12\\\n\x0floadFromSession\x12#.sparkapi.DatasetFromSessionRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12\x44\n\x06\x61\x64\x64Sql\x12\x14.sparkapi.SqlRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"v\n\x16PysparkGeneralResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\";\n\x18PysparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"&\n\x12\x44\x61tasetRowResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\"+\n\x0cPlanResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07planner\x18\x02 \x01(\x0c\";\n\x15RebuildStatusResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x16\n\x0erebuild_status\x18\x02 \x01(\x08\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"I\n\x11NewDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"2\n\x15PreviewDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\"%\n\x17SummarizeDatasetRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x89\x01\n\nSqlRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x18\n\x10previous_node_id\x18\x03 \x01(\t\x12\x12\n\nquery_type\x18\x04 \x01(\t\x12\r\n\x05query\x18\x05 \x01(\t\x12\x19\n\x11query_params_json\x18\x06 \x01(\t\"A\n\x19\x44\x61tasetFromSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x10\n\x08input_id\x18\x02 \x01(\t\"\x19\n\x0bPlanRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x1c\n\x0eRebuildRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\"\n\x14RebuildStatusRequest\x12\n\n\x02id\x18\x01 \x01(\t2\xef\x05\n\x08SparkApi\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x12S\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1c.sparkapi.DatasetRowResponse\"\x00\x30\x01\x12Y\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12G\n\x14getParentSessionPlan\x12\x15.sparkapi.PlanRequest\x1a\x16.sparkapi.PlanResponse\"\x00\x12U\n\x10getRebuildStatus\x12\x1e.sparkapi.RebuildStatusRequest\x1a\x1f.sparkapi.RebuildStatusResponse\"\x00\x12P\n\x0erebuildSession\x12\x18.sparkapi.RebuildRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12O\n\x0cloadsDataset\x12\x1b.sparkapi.NewDatasetRequest\x1a .sparkapi.PysparkGeneralResponse\"\x00\x12\\\n\x0floadFromSession\x12#.sparkapi.DatasetFromSessionRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x12\x44\n\x06\x61\x64\x64Sql\x12\x14.sparkapi.SqlRequest\x1a\".sparkapi.PysparkTransformResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,27 +40,27 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DATASETROWRESPONSE']._serialized_start=284
   _globals['_DATASETROWRESPONSE']._serialized_end=322
   _globals['_PLANRESPONSE']._serialized_start=324
-  _globals['_PLANRESPONSE']._serialized_end=370
-  _globals['_REBUILDSTATUSRESPONSE']._serialized_start=372
-  _globals['_REBUILDSTATUSRESPONSE']._serialized_end=431
-  _globals['_NEWSESSIONREQUEST']._serialized_start=433
-  _globals['_NEWSESSIONREQUEST']._serialized_end=464
-  _globals['_NEWDATASETREQUEST']._serialized_start=466
-  _globals['_NEWDATASETREQUEST']._serialized_end=539
-  _globals['_PREVIEWDATASETREQUEST']._serialized_start=541
-  _globals['_PREVIEWDATASETREQUEST']._serialized_end=591
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=593
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=630
-  _globals['_SQLREQUEST']._serialized_start=633
-  _globals['_SQLREQUEST']._serialized_end=770
-  _globals['_DATASETFROMSESSIONREQUEST']._serialized_start=772
-  _globals['_DATASETFROMSESSIONREQUEST']._serialized_end=837
-  _globals['_PLANREQUEST']._serialized_start=839
-  _globals['_PLANREQUEST']._serialized_end=864
-  _globals['_REBUILDREQUEST']._serialized_start=866
-  _globals['_REBUILDREQUEST']._serialized_end=894
-  _globals['_REBUILDSTATUSREQUEST']._serialized_start=896
-  _globals['_REBUILDSTATUSREQUEST']._serialized_end=930
-  _globals['_SPARKAPI']._serialized_start=933
-  _globals['_SPARKAPI']._serialized_end=1684
+  _globals['_PLANRESPONSE']._serialized_end=367
+  _globals['_REBUILDSTATUSRESPONSE']._serialized_start=369
+  _globals['_REBUILDSTATUSRESPONSE']._serialized_end=428
+  _globals['_NEWSESSIONREQUEST']._serialized_start=430
+  _globals['_NEWSESSIONREQUEST']._serialized_end=461
+  _globals['_NEWDATASETREQUEST']._serialized_start=463
+  _globals['_NEWDATASETREQUEST']._serialized_end=536
+  _globals['_PREVIEWDATASETREQUEST']._serialized_start=538
+  _globals['_PREVIEWDATASETREQUEST']._serialized_end=588
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=590
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=627
+  _globals['_SQLREQUEST']._serialized_start=630
+  _globals['_SQLREQUEST']._serialized_end=767
+  _globals['_DATASETFROMSESSIONREQUEST']._serialized_start=769
+  _globals['_DATASETFROMSESSIONREQUEST']._serialized_end=834
+  _globals['_PLANREQUEST']._serialized_start=836
+  _globals['_PLANREQUEST']._serialized_end=861
+  _globals['_REBUILDREQUEST']._serialized_start=863
+  _globals['_REBUILDREQUEST']._serialized_end=891
+  _globals['_REBUILDSTATUSREQUEST']._serialized_start=893
+  _globals['_REBUILDSTATUSREQUEST']._serialized_end=927
+  _globals['_SPARKAPI']._serialized_start=930
+  _globals['_SPARKAPI']._serialized_end=1681
 # @@protoc_insertion_point(module_scope)

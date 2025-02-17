@@ -45,7 +45,7 @@ message DatasetRowResponse {
 
 message PlanResponse {
     string id = 1;
-    bytes plan_deque = 2;
+    bytes planner = 2;
 }
 
 message RebuildStatusResponse {

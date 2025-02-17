@@ -70,15 +70,7 @@ class SparkApiServicer(SparkApiServicer):
                 df_type=req.df_type,
             )
         )
-        plan = SessionPlanner(
-            {
-                "node_id": PLAN_ROOT_ID,
-                "previous_node_id": None,
-                "op": "load",
-                "df_path": req.df_path,
-                "df_type": req.df_type,
-            }
-        )
+
         return (
             sparkapi_pb2.PysparkGeneralResponse(
                 session_id=res.session_id,
@@ -87,7 +79,15 @@ class SparkApiServicer(SparkApiServicer):
                 num_rows=res.num_rows,
                 schema_tree=res.schema_tree,
             ),
-            plan,
+            SessionPlanner(
+                {
+                    "node_id": PLAN_ROOT_ID,
+                    "previous_node_id": None,
+                    "op": "load",
+                    "df_path": req.df_path,
+                    "df_type": req.df_type,
+                }
+            ),
         )
 
     @sessionPlannerMap.spark_transformation_update
@@ -102,20 +102,19 @@ class SparkApiServicer(SparkApiServicer):
             )
         )
 
-        plan = SessionPlanner(
-            {
-                "node_id": PLAN_ROOT_ID,
-                "previous_node_id": None,
-                "op": "loadFromSession",
-                "input_id": req.input_id,
-            }
-        )
         return (
             sparkapi_pb2.PysparkTransformResponse(
                 session_id=res.session_id,
                 msg=res.msg,
             ),
-            plan,
+            SessionPlanner(
+                {
+                    "node_id": PLAN_ROOT_ID,
+                    "previous_node_id": None,
+                    "op": "loadFromSession",
+                    "input_id": req.input_id,
+                }
+            ),
         )
 
     @sessionPlannerMap.spark_transformation_update
@@ -131,15 +130,16 @@ class SparkApiServicer(SparkApiServicer):
                 query_type=req.query_type,
                 query=req.query,
                 query_params_json=req.query_params_json,
-                plan_deque=sessionPlannerMap.get_plan_pickled(req.session_id),
+                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
             )
         )
+
         return (
             sparkapi_pb2.PysparkTransformResponse(
                 session_id=res.session_id,
                 msg=res.msg,
             ),
-            res.plan_deque,
+            res.planner,
         )
 
     def rebuildSession(
@@ -186,7 +186,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.PlanRequest, unused_context
     ) -> sparkapi_pb2.PlanResponse:
         return sparkapi_pb2.PlanResponse(
-            id=req.id, plan_deque=sessionPlannerMap.get_plan_pickled(req.id)
+            id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id)
         )
 
     def getRebuildStatus(

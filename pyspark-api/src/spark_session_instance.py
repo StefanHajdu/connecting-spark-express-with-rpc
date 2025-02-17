@@ -10,6 +10,7 @@ import sparkapi_pb2
 from pyspark.sql import SparkSession, DataFrame
 from concurrent import futures
 from typing import Iterable
+from copy import deepcopy
 from sparkapi_session_pb2_grpc import (
     SparkApiSessionServicer,
     add_SparkApiSessionServicer_to_server,
@@ -48,6 +49,7 @@ class SqlUtils(DfUtils):
         cls, spark: SparkSession, query: str, params_json: str
     ) -> DataFrame:
         kwargs = cls.to_named_params(params_json)
+        print(params_json, kwargs)
         return spark.sql(
             query,
             **kwargs,
@@ -82,22 +84,20 @@ class SparkApiSession:
     def log_(self, msg):
         print(f"    [child_session-{self.id}] " + msg)
 
-    def get_session_info(self):
-        return f"session: {self.spark_session},\ndf: {self.df_current.count()}"
-
     # spark actions:
 
     def spark_action_load_dataset(self, path, df_type, to_cache: bool = True):
-        self.df_init = self.df_current = DfUtils.read_spark_df(
-            self.spark, path, df_type
-        )
+        self.df_current = DfUtils.read_spark_df(self.spark, path, df_type)
+        # self.df_current = self.df_init.alias("df_current")
+
         if to_cache:
-            DfUtils.eager_cache_df(self.df_init)
+            #     DfUtils.eager_cache_df(self.df_init)
+            DfUtils.eager_cache_df(self.df_current)
 
     def spark_action_summarize(self):
-        # print()
+        # print("\n---EXPLAIN")
         # session.df_current.explain()
-        # print()
+        # print("---EXPLAIN\n")
 
         cols = json.dumps(self.df_current.columns)
         num_rows = self.df_current.count()
@@ -131,14 +131,7 @@ class SparkApiSession:
         DfUtils.cache_df(self.df_current)
 
     def spark_transform_sql(self, query: str, query_params_json: str):
-        if session.check_load():
-            session.df_current = SqlUtils.execute_sql(spark, query, query_params_json)
-            msg = "Query accepted"
-        else:
-            msg = "[Error] no dataset loaded"
-        return sparkapi_session_pb2.PysparkTransformSqlResponse(
-            session_id=session.id, msg=msg, plan_deque=b"hello"
-        )
+        session.df_current = SqlUtils.execute_sql(spark, query, query_params_json)
 
 
 channel = grpc.insecure_channel(f"localhost:{BASE_SESSION_PORT}")
@@ -206,44 +199,42 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/loadFromSession: {req.id, req.input_id}")
         planner = self._get_parent_session_plan(req.input_id)
-        msg = self._traverse_plan(planner)
+        self._apply_plan_on_session(planner, sql_only=False)
         return sparkapi_session_pb2.PysparkTransformResponse(
             session_id=session.id,
-            msg=msg,
+            msg="plan traversed and loaded to session input",
         )
 
     def _get_parent_session_plan(self, session_id: str):
         res = stub.getParentSessionPlan(sparkapi_pb2.PlanRequest(id=session_id))
-        return pickle.loads(res.plan_deque)
+        return pickle.loads(res.planner)
 
     def rebuildSession(
         self, req: sparkapi_session_pb2.RebuildRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/rebuildSession: {req.id, req.log_json}")
-        msg = self._traverse_log(json.loads(req.log_json))
+        msg = self._apply_plan_on_session(json.loads(req.log_json))
         self.rebuild_status = False
         return sparkapi_session_pb2.PysparkTransformResponse(
             session_id=session.id,
             msg=msg,
         )
 
-    def _traverse_plan(self, planner: SessionPlanner) -> str:
+    def _apply_plan_on_session(self, planner: SessionPlanner, sql_only: bool):
         for plan_step in planner.plan:
             op = plan_step.get("op")
-            if op == "load":
+            if op == "load" and not sql_only:
                 session.spark_action_load_dataset(
                     plan_step.get("df_path"), plan_step.get("df_type"), to_cache=False
                 )
-            elif op == "loadFromSession":
+            elif op == "loadFromSession" and not sql_only:
                 planner = self._get_parent_session_plan(plan_step.get("input_id"))
-                _ = self._traverse_plan(planner)
+                self._apply_plan_on_session(planner)
             elif op == "sql":
-                _ = session.spark_transform_sql(
-                    plan_step.get("parametrized_query"), plan_step.get("params_json")
+                session.spark_transform_sql(
+                    plan_step.get("query"), plan_step.get("query_params_json")
                 )
 
-        session.df_init = session.df_current
-        DfUtils.eager_cache_df(session.df_init)
         return "log traversal completed"
 
     def notifyMasterInputChange(
@@ -269,30 +260,8 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
-
-        sp = pickle.loads(req.plan_deque)
-
-        session.df_current = session.df_init
-
-        insert_to_idx = -1
-        for idx, query in enumerate(sp.plan):
-            if query["node_id"] == req.previous_node_id:
-                if query["op"] == "sql":
-                    session.df_current = SqlUtils.execute_sql(
-                        spark, query["query"], query["query_params_json"]
-                    )
-                session.df_current = SqlUtils.execute_sql(
-                    spark, req.query, req.query_params_json
-                )
-                insert_to_idx = idx
-            else:
-                if query["op"] == "sql":
-                    session.df_current = SqlUtils.execute_sql(
-                        spark, query["query"], query["query_params_json"]
-                    )
-
-        sp.plan.insert(
-            insert_to_idx + 1,
+        session_planner = pickle.loads(req.planner)
+        session_planner.add_sql_to_plan(
             {
                 "node_id": req.node_id,
                 "previous_node_id": req.previous_node_id,
@@ -300,13 +269,16 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 "query_type": req.query_type,
                 "query": req.query,
                 "query_params_json": req.query_params_json,
-            },
+            }
         )
-
+        print(f"\n----{req.session_id} PLAN TO APPLY")
+        print(session_planner.plan)
+        print(f"----{req.session_id} PLAN TO APPLY\n")
+        self._apply_plan_on_session(session_planner, sql_only=True)
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,
-            msg="plan traversed and applied",
-            plan_deque=pickle.dumps(sp),
+            msg="sql plan traversed and applied",
+            planner=pickle.dumps(session_planner),
         )
 
 

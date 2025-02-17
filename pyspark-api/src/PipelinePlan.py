@@ -3,13 +3,42 @@ import pickle
 
 from collections import deque
 from functools import wraps
+from typing import TypedDict
 
 from SessionTable import SessionTable
 
 
+class SqlNode(TypedDict):
+    node_id: str
+    previous_node_id: str
+    op: str
+    query_type: str
+    query: str
+    query_params_json: str
+
+
 class SessionPlanner:
-    def __init__(self, root_query: dict[str:str]):
-        self.plan = deque([root_query])
+    def __init__(self, root_node: dict[str:str]):
+        self.plan = deque([root_node])
+
+    def add_sql_to_plan(self, node: SqlNode):
+        print("--------------")
+        print(node)
+        print(self.plan)
+
+        original_len = len(self.plan)
+        insert_to_idx = self._find_position(node)
+        print(insert_to_idx)
+        print("--------------")
+        self.plan.insert(insert_to_idx, node)
+        if not insert_to_idx >= original_len:
+            self.plan[insert_to_idx + 1]["previous_node_id"] = node["node_id"]
+
+    def _find_position(self, new_node: SqlNode):
+        for idx, node in enumerate(self.plan):
+            if node["node_id"] == new_node["previous_node_id"]:
+                return idx + 1
+        return -1
 
 
 class SessionPlannerMap:
@@ -20,10 +49,7 @@ class SessionPlannerMap:
     def add_session(self, session_id: str):
         self.session_planners.update({session_id: None})
 
-    def get_plan(self, session_id: str) -> SessionPlanner:
-        return self.session_planners.get(session_id)
-
-    def get_plan_pickled(self, session_id: str) -> bytes:
+    def get_planner_pickled(self, session_id: str) -> bytes:
         return pickle.dumps(self.session_planners.get(session_id))
 
     def overwrite_plan(self, session_id: str, planner: SessionPlanner | bytes):
@@ -32,10 +58,6 @@ class SessionPlannerMap:
         else:
             self.session_planners[session_id] = pickle.loads(planner)
 
-        print("\n---------")
-        print(self.session_planners[session_id].plan)
-        print("---------\n")
-
     def spark_transformation_update(self, func):
         """Adds rest api query to session plan. Plan is defined by session id and return as binary object.
         Init propagation of the change to child sessions.
@@ -43,8 +65,8 @@ class SessionPlannerMap:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            grpc_res, plan_deque = func(*args, **kwargs)
-            self.overwrite_plan(grpc_res.session_id, plan_deque)
+            grpc_res, planner = func(*args, **kwargs)
+            self.overwrite_plan(grpc_res.session_id, planner)
             self.handle_plan_change(grpc_res.session_id)
             return grpc_res
 
@@ -72,6 +94,6 @@ class SessionPlannerMap:
         self,
         id_to_notify: str,
     ):
-        _ = self.session_table.get_stub().notifyMasterInputChange(
+        _ = self.session_table.get_stub(id_to_notify).notifyMasterInputChange(
             sparkapi_session_pb2.MasterInputChangeNotificationRequest(id=id_to_notify)
         )
