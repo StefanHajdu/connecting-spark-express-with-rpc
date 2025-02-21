@@ -87,15 +87,15 @@ class SparkApiSession:
         self.df_current = DfUtils.read_spark_df(self.spark, path, df_type)
 
         if to_cache:
-            DfUtils.eager_cache_df(self.df_current)
+            self.df_current.cache()
 
     def spark_action_summarize(self):
-        # print("\n---EXPLAIN")
-        # session.df_current.explain()
-        # print("---EXPLAIN\n")
+        print("\n---EXPLAIN")
+        session.df_current.explain()
+        print("---EXPLAIN\n")
 
         cols = json.dumps(self.df_current.columns)
-        num_rows = self.df_current.count()
+        num_rows = self.df_current.cache().count()
         schema_str = self.df_current._jdf.schema().treeString()
         return cols, num_rows, schema_str
 
@@ -120,10 +120,6 @@ class SparkApiSession:
         )
 
     # spark transforms:
-
-    def cache_just_current(self):
-        DfUtils.drop_from_cache_df(self.df_current)
-        DfUtils.cache_df(self.df_current)
 
     def spark_transform_sql(self, query: str, query_params_json: str):
         session.df_current = SqlUtils.execute_sql(spark, query, query_params_json)
@@ -209,6 +205,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/rebuildSession: {req.session_id}")
         session_planner = pickle.loads(req.planner)
+        session.df_current.unpersist()
         self._apply_plan_on_session(session_planner, sql_only=False)
         self.rebuild_status = False
         return sparkapi_session_pb2.PysparkTransformResponse(
@@ -267,7 +264,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         )
         print(f"\n----{req.session_id} PLAN TO APPLY")
         print(session_planner.plan)
-        print(f"----{req.session_id} PLAN TO APPLY\n")
+        print(f"----{req.session_id} PLAN TO APPLY\n\n")
         self._apply_plan_on_session(session_planner, sql_only=True)
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,

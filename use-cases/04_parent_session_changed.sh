@@ -91,6 +91,11 @@ echo "get rebuild status for 0001"
 curl -X GET http://localhost:4444/rebuildStatus/0001 \
     -w '\nTotal: %{time_total}s\n\n'
 
+
+echo "rebuild 0001"
+curl -X POST http://localhost:4444/rebuildSession/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
 echo "8. summarize filter session 0001 for registrar == NameCheap, Inc. AND tld == org | SHOULD BE LESS THAN 7.1"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \

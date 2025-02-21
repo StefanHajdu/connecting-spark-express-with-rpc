@@ -22,14 +22,8 @@ class SessionPlanner:
         self.plan = deque([root_node])
 
     def add_sql_to_plan(self, node: SqlNode):
-        print("--------------")
-        print(node)
-        print(self.plan)
-
         original_len = len(self.plan)
         insert_to_idx = self._find_position(node)
-        print(insert_to_idx)
-        print("--------------")
         self.plan.insert(insert_to_idx, node)
         if not insert_to_idx >= original_len:
             self.plan[insert_to_idx + 1]["previous_node_id"] = node["node_id"]
