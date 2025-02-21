@@ -145,13 +145,16 @@ class SparkApiServicer(SparkApiServicer):
     def rebuildSession(
         self, req: sparkapi_pb2.RebuildRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/rebuildSession: {req.id}")
-        res = sessionTable.session_table[req.id]["stub"].rebuildSession(
+        print(f"/rebuildSession: {req.session_id}")
+        res = sessionTable.session_table[req.session_id]["stub"].rebuildSession(
             sparkapi_session_pb2.RebuildRequest(
-                id=req.id, log_json=sessionPlannerMap.get_plan(req.id)
+                session_id=req.session_id,
+                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
             )
         )
-        return sparkapi_pb2.PysparkTransformResponse(session_id=res.id, msg=res.msg)
+        return sparkapi_pb2.PysparkTransformResponse(
+            session_id=res.session_id, msg=res.msg
+        )
 
     def createSession(
         self, req: sparkapi_pb2.NewSessionRequest, unused_context

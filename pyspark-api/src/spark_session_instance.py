@@ -10,7 +10,6 @@ import sparkapi_pb2
 from pyspark.sql import SparkSession, DataFrame
 from concurrent import futures
 from typing import Iterable
-from copy import deepcopy
 from sparkapi_session_pb2_grpc import (
     SparkApiSessionServicer,
     add_SparkApiSessionServicer_to_server,
@@ -49,7 +48,6 @@ class SqlUtils(DfUtils):
         cls, spark: SparkSession, query: str, params_json: str
     ) -> DataFrame:
         kwargs = cls.to_named_params(params_json)
-        print(params_json, kwargs)
         return spark.sql(
             query,
             **kwargs,
@@ -68,7 +66,6 @@ class SparkApiSession:
     def __init__(self, pid, spark):
         self.pid = pid
         self.spark = spark
-        self.df_init = None
         self.df_current = None
 
     # setters:
@@ -88,10 +85,8 @@ class SparkApiSession:
 
     def spark_action_load_dataset(self, path, df_type, to_cache: bool = True):
         self.df_current = DfUtils.read_spark_df(self.spark, path, df_type)
-        # self.df_current = self.df_init.alias("df_current")
 
         if to_cache:
-            #     DfUtils.eager_cache_df(self.df_init)
             DfUtils.eager_cache_df(self.df_current)
 
     def spark_action_summarize(self):
@@ -212,12 +207,13 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def rebuildSession(
         self, req: sparkapi_session_pb2.RebuildRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/rebuildSession: {req.id, req.log_json}")
-        msg = self._apply_plan_on_session(json.loads(req.log_json))
+        session.log_(f"/rebuildSession: {req.session_id}")
+        session_planner = pickle.loads(req.planner)
+        self._apply_plan_on_session(session_planner, sql_only=False)
         self.rebuild_status = False
         return sparkapi_session_pb2.PysparkTransformResponse(
             session_id=session.id,
-            msg=msg,
+            msg="plan traversed and session is rebuilt",
         )
 
     def _apply_plan_on_session(self, planner: SessionPlanner, sql_only: bool):
@@ -229,13 +225,11 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 )
             elif op == "loadFromSession" and not sql_only:
                 planner = self._get_parent_session_plan(plan_step.get("input_id"))
-                self._apply_plan_on_session(planner)
+                self._apply_plan_on_session(planner, sql_only=False)
             elif op == "sql":
                 session.spark_transform_sql(
                     plan_step.get("query"), plan_step.get("query_params_json")
                 )
-
-        return "log traversal completed"
 
     def notifyMasterInputChange(
         self,

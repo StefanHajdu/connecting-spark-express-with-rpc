@@ -69,10 +69,26 @@ curl -X POST http://localhost:4444/addSql \
     -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "n0002", "query": "select * from {df} where tld = '\''org'\''", "query_name": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n\n'
 
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
 echo "7.1 filter session 0000 for tld == .org | SHOULD BE LESS THAN 3.1"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "rebuild 0001"
+curl -X POST http://localhost:4444/rebuildSession/0001 \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "get rebuild status for 0001"
+curl -X GET http://localhost:4444/rebuildStatus/0001 \
     -w '\nTotal: %{time_total}s\n\n'
 
 echo "8. summarize filter session 0001 for registrar == NameCheap, Inc. AND tld == org | SHOULD BE LESS THAN 7.1"

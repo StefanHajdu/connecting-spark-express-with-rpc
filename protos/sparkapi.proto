@@ -94,7 +94,7 @@ message PlanRequest {
 }
 
 message RebuildRequest {
-    string id = 1;
+    string session_id = 1;
 }
 
 message RebuildStatusRequest {

@@ -97,8 +97,8 @@ message SqlRequest {
 }
 
 message RebuildRequest {
-    string id = 1;
-    string log_json = 2;
+    string session_id = 1;
+    bytes planner = 2;
 }
 
 message MasterInputChangeNotificationRequest {
