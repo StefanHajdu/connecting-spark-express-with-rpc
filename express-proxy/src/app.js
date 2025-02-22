@@ -55,7 +55,7 @@ app.get("/rebuildStatus/:id", (req, res, next) => {
   sp._getRebuildStatus(req.params, res, next);
 });
 
-app.post("/rebuildSession/:id", (req, res, next) => {
+app.post("/rebuildSession/:session_id", (req, res, next) => {
   sp._rebuildSession(req.params, res, next);
 });
 

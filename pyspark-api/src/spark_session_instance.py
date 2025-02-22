@@ -90,9 +90,9 @@ class SparkApiSession:
             self.df_current.cache()
 
     def spark_action_summarize(self):
-        print("\n---EXPLAIN")
-        session.df_current.explain()
-        print("---EXPLAIN\n")
+        # print("\n---EXPLAIN")
+        # session.df_current.explain()
+        # print("---EXPLAIN\n")
 
         cols = json.dumps(self.df_current.columns)
         num_rows = self.df_current.cache().count()
@@ -262,9 +262,9 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 "query_params_json": req.query_params_json,
             }
         )
-        print(f"\n----{req.session_id} PLAN TO APPLY")
-        print(session_planner.plan)
-        print(f"----{req.session_id} PLAN TO APPLY\n\n")
+        # print(f"\n----{req.session_id} PLAN TO APPLY")
+        # print(session_planner.plan)
+        # print(f"----{req.session_id} PLAN TO APPLY\n\n")
         self._apply_plan_on_session(session_planner, sql_only=True)
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,

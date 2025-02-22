@@ -136,7 +136,7 @@ export class SparkClient {
 
   _rebuildSession(rebuildSessionParams, expressResponse, next) {
     return this.client.rebuildSession(
-      { id: rebuildSessionParams.id },
+      { session_id: rebuildSessionParams.session_id },
       (err, newSessionResponse) => {
         if (err) {
           return next(

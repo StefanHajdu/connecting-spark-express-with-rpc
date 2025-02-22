@@ -13,6 +13,7 @@ curl -X POST http://localhost:4444/addSql \
     -d '{"session_id": "0000", "node_id": "n0001", "previous_node_id": "0000-0000-0000", "query": "select * from {df} where tld = '\''com'\''", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n'
 
+echo "1"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0000"}' \
@@ -28,7 +29,10 @@ curl -X POST http://localhost:4444/loadFromSession \
     -d '{"session_id": "0001", "input_id": "0000"}' \
     -w '\nTotal: %{time_total}s\n'
 
+echo "2"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"id": "0001"}' \
     -w '\nTotal: %{time_total}s\n'
+
+echo "1 == 2"
