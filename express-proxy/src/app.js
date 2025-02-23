@@ -8,7 +8,6 @@ app.use(express.json());
 
 let sp = new SparkClient();
 
-// curl -X POST http://localhost:4444/preview -H 'Content-Type: application/json' -d '{"id": "0000", "limit": 12}' -N -w '\nTotal: %{time_total}s\n'
 app.post("/preview", (req, res) => {
   let rowStream = sp._previewDataset(req.body);
 
@@ -27,12 +26,10 @@ app.post("/preview", (req, res) => {
   });
 });
 
-// curl -X POST http://localhost:4444/load -H 'Content-Type: application/json' -d '{"id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub2.csv", "df_type": "csv"}' -w '\nTotal: %{time_total}s\n'
 app.post("/load", (req, res, next) => {
   sp._loadDataset(req.body, res, next);
 });
 
-// curl -X POST http://localhost:4444/loadFromSession -H 'Content-Type: application/json' -d '{"id": "0000", "input_id": "0000"}' -w '\nTotal: %{time_total}s\n'
 app.post("/loadFromSession", (req, res, next) => {
   sp._loadFromSession(req.body, res, next);
 });
@@ -41,12 +38,10 @@ app.post("/addSql", (req, res, next) => {
   sp._addSql(req.body, res, next);
 });
 
-// curl -X POST http://localhost:4444/summarize -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
 app.post("/summarize", (req, res, next) => {
   sp._summarizeDataset(req.body, res, next);
 });
 
-// curl -X POST http://localhost:4444/createSession -H 'Content-Type: application/json' -d '{"id": "0000"}' -w '\nTotal: %{time_total}s\n'
 app.post("/createSession", (req, res, next) => {
   sp._createSession(req.body, res, next);
 });

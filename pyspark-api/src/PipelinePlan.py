@@ -34,6 +34,12 @@ class SessionPlanner:
                 return idx + 1
         return -1
 
+    def pretty_print(self, session_id):
+        print(f"\n----PLAN TO APPLY for session: {session_id}----")
+        for idx, step in enumerate(self.plan):
+            print(f"    {idx}. {step}")
+        print(f"----PLAN TO APPLY for session: {session_id}----\n\n")
+
 
 class SessionPlannerMap:
     def __init__(self, table: SessionTable):

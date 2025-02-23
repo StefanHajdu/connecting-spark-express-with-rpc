@@ -15,20 +15,22 @@ curl -X POST http://localhost:4444/addSql \
 
 curl -X POST http://localhost:4444/addSql \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0002", "previous_node_id": "n0001", "query": "select * from {df} where tld = '\''com'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0002", "previous_node_id": "n0001", "query": "select registrar from {df}", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
+echo "sql before cache"
 curl -X POST http://localhost:4444/addSql \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "0000-0000-0000", "query": "select * from {df} where registrar = '\''eNom, LLC'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "0000-0000-0000", "query": "select * from {df} where tld = '\''org'\''", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n\n'
 
+echo "summarize same node, after adding node before"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'

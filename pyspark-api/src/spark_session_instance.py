@@ -21,28 +21,7 @@ BASE_SESSION_PORT = 50051
 PLAN_ROOT_ID = "0000-0000-0000"
 
 
-class DfUtils:
-    @classmethod
-    def eager_cache_df(cls, df):
-        df.cache().count()
-
-    @classmethod
-    def cache_df(cls, df):
-        df.cache()
-
-    @classmethod
-    def drop_from_cache_df(cls, df):
-        df.unpersist()
-
-    @classmethod
-    def read_spark_df(cls, spark, path: str, dataset_type: str):
-        if dataset_type == "csv":
-            return spark.read.option("delimiter", ";").option("header", True).csv(path)
-        elif dataset_type == "json":
-            return spark.read.json(path)
-
-
-class SqlUtils(DfUtils):
+class SqlUtils:
     @classmethod
     def execute_sql(
         cls, spark: SparkSession, query: str, params_json: str
@@ -83,22 +62,11 @@ class SparkApiSession:
 
     # spark actions:
 
-    def spark_action_load_dataset(self, path, df_type, to_cache: bool = True):
-        self.df_current = DfUtils.read_spark_df(self.spark, path, df_type)
+    def spark_action_load_dataset(self, path, df_type, to_cache: bool = False):
+        self.df_current = self.spark_transform_load_by_path(self.spark, path, df_type)
 
         if to_cache:
             self.df_current.cache()
-
-    def spark_action_summarize(self):
-        print("\n---EXPLAIN")
-        session.df_current.explain()
-        print("---EXPLAIN\n")
-
-        cols = json.dumps(self.df_current.columns)
-        # num_rows = self.df_current.cache().count()
-        num_rows = self.df_current.count()
-        schema_str = self.df_current._jdf.schema().treeString()
-        return cols, num_rows, schema_str
 
     def spark_action_to_json(self, limit):
         return self.df_current.limit(limit).toPandas().to_json(orient="records")
@@ -120,7 +88,23 @@ class SparkApiSession:
             schema_tree=schema_str,
         )
 
+    def spark_action_summarize(self):
+        # print("\n---EXPLAIN")
+        # session.df_current.explain()
+        # print("---EXPLAIN\n")
+
+        cols = json.dumps(self.df_current.columns)
+        num_rows = self.df_current.count()
+        schema_str = self.df_current._jdf.schema().treeString()
+        return cols, num_rows, schema_str
+
     # spark transforms:
+
+    def spark_transform_load_by_path(self, spark, path: str, dataset_type: str):
+        if dataset_type == "csv":
+            return spark.read.option("delimiter", ";").option("header", True).csv(path)
+        elif dataset_type == "json":
+            return spark.read.json(path)
 
     def spark_transform_sql(self, query: str, query_params_json: str):
         session.df_current = SqlUtils.execute_sql(spark, query, query_params_json)
@@ -176,8 +160,27 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def summarizeDataset(
         self, req: sparkapi_session_pb2.SummarizeDatasetRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkGeneralResponse:
-        session.log_(f"/summarize: {req.id}")
+        session.log_(f"/summarize: {req.session_id, req.node_id}")
+        self._run_plan(req.session_id, req.planner, last_node_id=req.node_id)
         return session.get_general_spark_response(msg="data available")
+
+    def rebuildSession(
+        self, req: sparkapi_session_pb2.RebuildRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkTransformResponse:
+        session.log_(f"/rebuildSession: {req.session_id}")
+        self._run_plan(req.session_id, req.planner)
+        return sparkapi_session_pb2.PysparkTransformResponse(
+            session_id=session.id,
+            msg="plan re-applied, to see changes run action /summarize",
+        )
+
+    def _run_plan(self, session_id, planner: bytes, last_node_id=None):
+        session_planner: SessionPlanner = pickle.loads(planner)
+        session_planner.pretty_print(session_id)
+        self._apply_plan_on_session(
+            session_planner, sql_only=False, last_node_id=last_node_id
+        )
+        self.rebuild_status = False
 
     def loadsDataset(
         self, req: sparkapi_session_pb2.NewDatasetRequest, unused_context
@@ -200,19 +203,6 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def _get_parent_session_plan(self, session_id: str):
         res = stub.getParentSessionPlan(sparkapi_pb2.PlanRequest(id=session_id))
         return pickle.loads(res.planner)
-
-    def rebuildSession(
-        self, req: sparkapi_session_pb2.RebuildRequest, unused_context
-    ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/rebuildSession: {req.session_id}")
-        session_planner = pickle.loads(req.planner)
-        session.df_current.unpersist()
-        self._apply_plan_on_session(session_planner, sql_only=False)
-        self.rebuild_status = False
-        return sparkapi_session_pb2.PysparkTransformResponse(
-            session_id=session.id,
-            msg="plan traversed and session is rebuilt",
-        )
 
     def notifyMasterInputChange(
         self,
@@ -248,30 +238,37 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 "query_params_json": req.query_params_json,
             }
         )
-        print(f"\n----{req.session_id} PLAN TO APPLY")
-        print(session_planner.plan)
-        print(f"----{req.session_id} PLAN TO APPLY\n\n")
-        self._apply_plan_on_session(session_planner, sql_only=True)
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,
-            msg="sql plan traversed and applied",
+            msg="sql added",
             planner=pickle.dumps(session_planner),
         )
 
-    def _apply_plan_on_session(self, planner: SessionPlanner, sql_only: bool):
-        for plan_step in planner.plan:
-            op = plan_step.get("op")
+    def _apply_plan_on_session(
+        self, planner: SessionPlanner, sql_only: bool, last_node_id: str = None
+    ):
+        for current_node in planner.plan:
+            op = current_node.get("op")
+
+            # excution switch
             if op == "load" and not sql_only:
                 session.spark_action_load_dataset(
-                    plan_step.get("df_path"), plan_step.get("df_type"), to_cache=False
+                    current_node.get("df_path"),
+                    current_node.get("df_type"),
+                    to_cache=False,
                 )
             elif op == "loadFromSession" and not sql_only:
-                planner = self._get_parent_session_plan(plan_step.get("input_id"))
+                planner = self._get_parent_session_plan(current_node.get("input_id"))
                 self._apply_plan_on_session(planner, sql_only=False)
             elif op == "sql":
                 session.spark_transform_sql(
-                    plan_step.get("query"), plan_step.get("query_params_json")
+                    current_node.get("query"),
+                    current_node.get("query_params_json"),
                 )
+
+            # stop condition
+            if current_node.get("node_id") == last_node_id:
+                break
 
 
 def session_serve(port: int):

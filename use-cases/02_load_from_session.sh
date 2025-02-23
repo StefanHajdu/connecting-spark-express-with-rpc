@@ -16,7 +16,7 @@ curl -X POST http://localhost:4444/addSql \
 echo "1"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0001"}' \
     -w '\nTotal: %{time_total}s\n'
 
 curl -X POST http://localhost:4444/createSession \
@@ -32,7 +32,7 @@ curl -X POST http://localhost:4444/loadFromSession \
 echo "2"
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0001"}' \
+    -d '{"session_id": "0001", "node_id": "0000-0000-0000"}' \
     -w '\nTotal: %{time_total}s\n'
 
 echo "1 == 2"

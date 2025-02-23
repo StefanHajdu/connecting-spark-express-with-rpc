@@ -72,7 +72,8 @@ message PreviewDatasetRequest {
 }
 
 message SummarizeDatasetRequest {
-    string id = 1;
+    string session_id = 1;
+    string node_id = 2;
 }
 
 message SqlRequest {

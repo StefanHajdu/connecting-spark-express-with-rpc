@@ -59,7 +59,6 @@ message RebuildStatusResponse {
 }
 
 
-
 // --- Requests ---
 
 message NewSessionRequest {
@@ -78,7 +77,9 @@ message PreviewDatasetRequest {
 }
 
 message SummarizeDatasetRequest {
-    string id = 1;
+    string session_id = 1;
+    string node_id = 2;
+    bytes planner = 3;
 }
 
 message DatasetFromSessionRequest {

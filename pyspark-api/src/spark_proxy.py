@@ -46,9 +46,13 @@ class SparkApiServicer(SparkApiServicer):
     def summarizeDataset(
         self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context
     ) -> sparkapi_pb2.PysparkGeneralResponse:
-        print(f"/summarize: {req.id}")
-        res = sessionTable.session_table[req.id]["stub"].summarizeDataset(
-            sparkapi_session_pb2.SummarizeDatasetRequest(id=req.id)
+        print(f"/summarize: {req.session_id}")
+        res = sessionTable.session_table[req.session_id]["stub"].summarizeDataset(
+            sparkapi_session_pb2.SummarizeDatasetRequest(
+                session_id=req.session_id,
+                node_id=req.node_id,
+                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
+            )
         )
         return sparkapi_pb2.PysparkGeneralResponse(
             session_id=res.session_id,

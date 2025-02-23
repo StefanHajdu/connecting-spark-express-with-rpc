@@ -15,7 +15,7 @@ curl -X POST http://localhost:4444/addSql \
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0001"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/addSql \
@@ -25,7 +25,7 @@ curl -X POST http://localhost:4444/addSql \
 
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/addSql \
@@ -33,12 +33,7 @@ curl -X POST http://localhost:4444/addSql \
     -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "n0002", "query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\''", "query_type": "filter", "query_params_json": ["df"]}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-# curl -X POST http://localhost:4444/addSql \
-#     -H 'Content-Type: application/json' \
-#     -d '{"session_id": "0000", "node_id": "n0003", "previous_node_id": "n0001", "query": "select * from {df} where tld = '\''com'\'' OR tld = '\''org'\''", "query_type": "filter", "query_params_json": ["df"]}' \
-#     -w '\nTotal: %{time_total}s\n\n'
-
 curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000"}' \
+    -d '{"session_id": "0000", "node_id": "n0003"}' \
     -w '\nTotal: %{time_total}s\n\n'
