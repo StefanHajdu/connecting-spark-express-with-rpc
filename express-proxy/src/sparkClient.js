@@ -98,6 +98,25 @@ export class SparkClient {
     );
   }
 
+  _editSql(sqlRequestBody, expressResponse, next) {
+    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
+    return this.client.editSql(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
   _createSession(newSessionRequestBody, expressResponse, next) {
     return this.client.createSession(
       newSessionRequestBody,

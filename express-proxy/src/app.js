@@ -38,6 +38,10 @@ app.post("/addSql", (req, res, next) => {
   sp._addSql(req.body, res, next);
 });
 
+app.post("/editSql", (req, res, next) => {
+  sp._editSql(req.body, res, next);
+});
+
 app.post("/summarize", (req, res, next) => {
   sp._summarizeDataset(req.body, res, next);
 });

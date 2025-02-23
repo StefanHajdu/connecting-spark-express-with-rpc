@@ -8,6 +8,11 @@ from typing import TypedDict
 from SessionTable import SessionTable
 
 
+class InvalidEditException(Exception):
+    def __init__(self, message="Invalid sql id provided"):
+        super().__init__(message)
+
+
 class SqlNode(TypedDict):
     node_id: str
     previous_node_id: str
@@ -23,15 +28,29 @@ class SessionPlanner:
 
     def add_sql_to_plan(self, node: SqlNode):
         original_len = len(self.plan)
-        insert_to_idx = self._find_position(node)
+        insert_to_idx = self._find_position_to_insert(node)
         self.plan.insert(insert_to_idx, node)
         if not insert_to_idx >= original_len:
             self.plan[insert_to_idx + 1]["previous_node_id"] = node["node_id"]
 
-    def _find_position(self, new_node: SqlNode):
+    def _find_position_to_insert(self, new_node: SqlNode):
         for idx, node in enumerate(self.plan):
             if node["node_id"] == new_node["previous_node_id"]:
                 return idx + 1
+        return -1
+
+    def edit_sql_in_plan(self, node: SqlNode):
+        id_to_edit = self._find_node_by_id(node["node_id"])
+        if id_to_edit < 0:
+            raise InvalidEditException()
+        self.plan[id_to_edit]["query_type"] = node["query_type"]
+        self.plan[id_to_edit]["query"] = node["query"]
+        self.plan[id_to_edit]["query_params_json"] = node["query_params_json"]
+
+    def _find_node_by_id(self, node_id: str):
+        for idx, node in enumerate(self.plan):
+            if node["node_id"] == node_id:
+                return idx
         return -1
 
     def pretty_print(self, session_id):

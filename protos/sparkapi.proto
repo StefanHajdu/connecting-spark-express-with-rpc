@@ -15,6 +15,7 @@ service SparkApi {
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
     
     rpc addSql(SqlRequest) returns (PysparkTransformResponse) {}
+    rpc editSql(SqlRequest) returns (PysparkTransformResponse) {}
 }
 
 

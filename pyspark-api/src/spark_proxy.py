@@ -146,6 +146,30 @@ class SparkApiServicer(SparkApiServicer):
             res.planner,
         )
 
+    @sessionPlannerMap.spark_transformation_update
+    def editSql(
+        self, req: sparkapi_pb2.SqlRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        print(f"/editSql: {req.session_id, req.query, req.previous_node_id:}")
+        res = sessionTable.session_table[req.session_id]["stub"].editSql(
+            sparkapi_session_pb2.SqlRequest(
+                session_id=req.session_id,
+                node_id=req.node_id,
+                query_type=req.query_type,
+                query=req.query,
+                query_params_json=req.query_params_json,
+                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
+            )
+        )
+
+        return (
+            sparkapi_pb2.PysparkTransformResponse(
+                session_id=res.session_id,
+                msg=res.msg,
+            ),
+            res.planner,
+        )
+
     def rebuildSession(
         self, req: sparkapi_pb2.RebuildRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:

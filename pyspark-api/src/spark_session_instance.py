@@ -227,7 +227,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
         session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
-        session_planner = pickle.loads(req.planner)
+        session_planner: SessionPlanner = pickle.loads(req.planner)
         session_planner.add_sql_to_plan(
             {
                 "node_id": req.node_id,
@@ -241,6 +241,25 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,
             msg="sql added",
+            planner=pickle.dumps(session_planner),
+        )
+
+    def editSql(
+        self, req: sparkapi_session_pb2.SqlRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkTransformResponse:
+        session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
+        session_planner: SessionPlanner = pickle.loads(req.planner)
+        session_planner.edit_sql_in_plan(
+            {
+                "node_id": req.node_id,
+                "query_type": req.query_type,
+                "query": req.query,
+                "query_params_json": req.query_params_json,
+            }
+        )
+        return sparkapi_session_pb2.PysparkTransformSqlResponse(
+            session_id=session.id,
+            msg=f"sql: {req.node_id} edited",
             planner=pickle.dumps(session_planner),
         )
 
