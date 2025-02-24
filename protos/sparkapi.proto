@@ -16,6 +16,7 @@ service SparkApi {
     
     rpc addSql(SqlRequest) returns (PysparkTransformResponse) {}
     rpc editSql(SqlRequest) returns (PysparkTransformResponse) {}
+    rpc removeSql(SqlRemovalRequest) returns (PysparkTransformResponse) {}
 }
 
 
@@ -84,6 +85,12 @@ message SqlRequest {
     string query_type = 4;
     string query = 5;
     string query_params_json = 6;
+}
+
+message SqlRemovalRequest {
+    string session_id = 1;
+    string node_id = 2;
+    bool temp = 3;
 }
 
 message DatasetFromSessionRequest {

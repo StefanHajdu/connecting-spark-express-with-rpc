@@ -233,6 +233,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 "node_id": req.node_id,
                 "previous_node_id": req.previous_node_id,
                 "op": "sql",
+                "include_sql": True,
                 "query_type": req.query_type,
                 "query": req.query,
                 "query_params_json": req.query_params_json,
@@ -240,14 +241,14 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         )
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,
-            msg="sql added",
+            msg=f"sql: {req.node_id} added",
             planner=pickle.dumps(session_planner),
         )
 
     def editSql(
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
+        session.log_(f"/editSql: {req.session_id, req.query, req.previous_node_id}")
         session_planner: SessionPlanner = pickle.loads(req.planner)
         session_planner.edit_sql_in_plan(
             {
@@ -260,6 +261,18 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
         return sparkapi_session_pb2.PysparkTransformSqlResponse(
             session_id=session.id,
             msg=f"sql: {req.node_id} edited",
+            planner=pickle.dumps(session_planner),
+        )
+
+    def removeSql(
+        self, req: sparkapi_session_pb2.SqlRemovalRequest, unused_context
+    ) -> sparkapi_session_pb2.PysparkTransformResponse:
+        session.log_(f"/removeSql: {req.session_id, req.node_id, req.temp}")
+        session_planner: SessionPlanner = pickle.loads(req.planner)
+        session_planner.remove_sql_from_plan(req.node_id, req.temp)
+        return sparkapi_session_pb2.PysparkTransformSqlResponse(
+            session_id=session.id,
+            msg=f"sql: {req.node_id} removed, temp: {req.temp}",
             planner=pickle.dumps(session_planner),
         )
 
@@ -279,7 +292,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             elif op == "loadFromSession" and not sql_only:
                 planner = self._get_parent_session_plan(current_node.get("input_id"))
                 self._apply_plan_on_session(planner, sql_only=False)
-            elif op == "sql":
+            elif op == "sql" and current_node["include_sql"]:
                 session.spark_transform_sql(
                     current_node.get("query"),
                     current_node.get("query_params_json"),

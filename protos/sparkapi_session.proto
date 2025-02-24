@@ -15,6 +15,7 @@ service SparkApiSession {
 
     rpc addSql(SqlRequest) returns (PysparkTransformSqlResponse) {}
     rpc editSql(SqlRequest) returns (PysparkTransformSqlResponse) {}
+    rpc removeSql(SqlRemovalRequest) returns (PysparkTransformSqlResponse) {}
 }
 
 
@@ -96,6 +97,13 @@ message SqlRequest {
     string query = 5;
     string query_params_json = 6;
     bytes planner = 7;
+}
+
+message SqlRemovalRequest {
+    string session_id = 1;
+    string node_id = 2;
+    bool temp = 3;
+    bytes planner = 4;
 }
 
 message RebuildRequest {
