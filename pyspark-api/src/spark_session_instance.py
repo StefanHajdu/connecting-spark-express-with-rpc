@@ -226,7 +226,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def addSql(
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
     ) -> sparkapi_session_pb2.PysparkTransformResponse:
-        session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
+        session.log_(f"/addSql: {req.session_id, req.query, req.previous_node_id}")
         session_planner: SessionPlanner = pickle.loads(req.planner)
         session_planner.add_sql_to_plan(
             {
@@ -256,6 +256,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
                 "query_type": req.query_type,
                 "query": req.query,
                 "query_params_json": req.query_params_json,
+                "include_sql": req.include_sql,
             }
         )
         return sparkapi_session_pb2.PysparkTransformSqlResponse(

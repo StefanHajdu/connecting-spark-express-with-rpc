@@ -84,7 +84,8 @@ message SqlRequest {
     string previous_node_id = 3;
     string query_type = 4;
     string query = 5;
-    string query_params_json = 6;
+    bool include_sql = 6;
+    string query_params_json = 7;
 }
 
 message SqlRemovalRequest {

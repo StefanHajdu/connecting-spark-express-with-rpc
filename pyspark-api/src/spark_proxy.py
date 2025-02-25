@@ -158,6 +158,7 @@ class SparkApiServicer(SparkApiServicer):
                 query_type=req.query_type,
                 query=req.query,
                 query_params_json=req.query_params_json,
+                include_sql=req.include_sql,
                 planner=sessionPlannerMap.get_planner_pickled(req.session_id),
             )
         )

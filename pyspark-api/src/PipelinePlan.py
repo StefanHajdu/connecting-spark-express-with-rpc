@@ -53,6 +53,15 @@ class SessionPlanner:
         self.plan[id_to_edit]["query"] = node["query"]
         self.plan[id_to_edit]["query_params_json"] = node["query_params_json"]
 
+        if (
+            node["include_sql"] == True
+            and self.plan[id_to_edit]["include_sql"] == False
+            and id_to_edit < len(self.plan) - 1
+        ):
+            self.plan[id_to_edit + 1]["previous_node_id"] = node["node_id"]
+
+        self.plan[id_to_edit]["include_sql"] = node["include_sql"]
+
     def remove_sql_from_plan(self, node_id: str, temp: bool):
         to_del = self._find_node_by_id(node_id)
         if to_del < 0:
