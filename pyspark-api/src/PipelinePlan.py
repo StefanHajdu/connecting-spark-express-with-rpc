@@ -59,18 +59,21 @@ class SessionPlanner:
             raise InvalidEditException()
         elif to_del == 0:
             raise LoadNodeRemovalException()
-
-        self.plan[to_del + 1]["previous_node_id"] = self.plan[to_del - 1]["node_id"]
-        if temp:
-            self.plan[to_del]["include_sql"] = False
-        else:
-            del self.plan[to_del]
+        elif not to_del == len(self.plan) - 1:
+            self.plan[to_del + 1]["previous_node_id"] = self.plan[to_del - 1]["node_id"]
+        self._delete_node(to_del, temp)
 
     def _find_node_by_id(self, node_id: str):
         for idx, node in enumerate(self.plan):
             if node["node_id"] == node_id:
                 return idx
         return -1
+
+    def _delete_node(self, idx: int, temp: bool):
+        if temp:
+            self.plan[idx]["include_sql"] = False
+        else:
+            del self.plan[idx]
 
     def pretty_print(self, session_id):
         print(f"\n***PLAN TO APPLY for session: {session_id}***")

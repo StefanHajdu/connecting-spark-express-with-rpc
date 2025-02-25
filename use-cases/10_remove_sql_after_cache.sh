@@ -37,4 +37,15 @@ curl -X POST http://localhost:4444/summarize \
     -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-echo "* 0000 < 0001"
+curl -X POST http://localhost:4444/removeSql \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0002", "temp": false}' \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "0002 | 0000-0000-0000 summarize"
+curl -X POST http://localhost:4444/summarize \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0002"}' \
+    -w '\nTotal: %{time_total}s\n\n'
+
+echo "* 0000 < 0001 < 0002"
