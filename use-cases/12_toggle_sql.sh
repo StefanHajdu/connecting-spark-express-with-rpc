@@ -56,4 +56,4 @@ curl -X POST http://localhost:4444/summarize \
     -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-echo "* 0000 == 0002"
+echo "0000 == 0002"
