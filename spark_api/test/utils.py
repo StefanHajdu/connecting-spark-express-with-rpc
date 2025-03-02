@@ -53,6 +53,13 @@ def add_sql(**kwargs) -> str:
     return kwargs["node_id"]
 
 
+def edit_sql(**kwargs) -> str:
+    res = requests.post("http://localhost:4444/editSql", json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs["node_id"]
+
+
 def summarize(session_id: str, node_id: str) -> dict:
     json_data = {
         "session_id": session_id,
