@@ -15,10 +15,8 @@ from sparkapi_pb2_grpc import (
 from spark_session_instance import session_serve
 from PipelinePlan import SessionPlanner, SessionPlannerMap
 from SessionTable import SessionTable
+from constants import BASE_SESSION_PORT, PLAN_NODE_ROOT_ID
 
-
-BASE_SESSION_PORT = 50051
-PLAN_ROOT_ID = "0000-0000-0000"
 
 sessionTable = SessionTable()
 sessionPlannerMap = SessionPlannerMap(sessionTable)
@@ -83,7 +81,7 @@ class SparkApiServicer(SparkApiServicer):
             ),
             SessionPlanner(
                 {
-                    "node_id": PLAN_ROOT_ID,
+                    "node_id": PLAN_NODE_ROOT_ID,
                     "previous_node_id": None,
                     "op": "load",
                     "df_path": req.df_path,
@@ -111,7 +109,7 @@ class SparkApiServicer(SparkApiServicer):
             ),
             SessionPlanner(
                 {
-                    "node_id": PLAN_ROOT_ID,
+                    "node_id": PLAN_NODE_ROOT_ID,
                     "previous_node_id": None,
                     "op": "loadFromSession",
                     "input_id": req.input_id,
@@ -185,7 +183,9 @@ class SparkApiServicer(SparkApiServicer):
             res.planner,
         )
 
-    def rebuildSession(self, req: sparkapi_pb2.RebuildRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+    def rebuildSession(
+        self, req: sparkapi_pb2.RebuildRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/rebuildSession: {req.session_id}")
         res = sessionTable.session_table[req.session_id]["stub"].rebuildSession(
             sparkapi_session_pb2.RebuildRequest(

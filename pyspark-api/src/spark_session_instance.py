@@ -16,9 +16,7 @@ from sparkapi_session_pb2_grpc import (
 )
 
 from PipelinePlan import SessionPlanner
-
-BASE_SESSION_PORT = 50051
-PLAN_ROOT_ID = "0000-0000-0000"
+from constants import BASE_SESSION_PORT
 
 
 class SqlUtils:

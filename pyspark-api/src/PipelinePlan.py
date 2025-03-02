@@ -6,16 +6,7 @@ from functools import wraps
 from typing import TypedDict
 
 from SessionTable import SessionTable
-
-
-class InvalidEditException(Exception):
-    def __init__(self, message="Invalid sql id provided"):
-        super().__init__(message)
-
-
-class LoadNodeRemovalException(Exception):
-    def __init__(self, message="Cannot remove load node from plan"):
-        super().__init__(message)
+from session_exceptions import InvalidEditException, LoadNodeRemovalException
 
 
 class SqlNode(TypedDict):
