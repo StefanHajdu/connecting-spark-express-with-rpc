@@ -54,8 +54,8 @@ class SessionPlanner:
         self.plan[id_to_edit]["query_params_json"] = node["query_params_json"]
 
         if (
-            node["include_sql"] == True
-            and self.plan[id_to_edit]["include_sql"] == False
+            node["include_sql"]
+            and not self.plan[id_to_edit]["include_sql"]
             and id_to_edit < len(self.plan) - 1
         ):
             self.plan[id_to_edit + 1]["previous_node_id"] = node["node_id"]
