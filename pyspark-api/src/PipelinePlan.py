@@ -13,10 +13,16 @@ class InvalidEditException(Exception):
         super().__init__(message)
 
 
+class LoadNodeRemovalException(Exception):
+    def __init__(self, message="Cannot remove load node from plan"):
+        super().__init__(message)
+
+
 class SqlNode(TypedDict):
     node_id: str
     previous_node_id: str
     op: str
+    include_sql: bool
     query_type: str
     query: str
     query_params_json: str
@@ -47,17 +53,42 @@ class SessionPlanner:
         self.plan[id_to_edit]["query"] = node["query"]
         self.plan[id_to_edit]["query_params_json"] = node["query_params_json"]
 
+        if (
+            node["include_sql"]
+            and not self.plan[id_to_edit]["include_sql"]
+            and id_to_edit < len(self.plan) - 1
+        ):
+            self.plan[id_to_edit + 1]["previous_node_id"] = node["node_id"]
+
+        self.plan[id_to_edit]["include_sql"] = node["include_sql"]
+
+    def remove_sql_from_plan(self, node_id: str, temp: bool):
+        to_del = self._find_node_by_id(node_id)
+        if to_del < 0:
+            raise InvalidEditException()
+        elif to_del == 0:
+            raise LoadNodeRemovalException()
+        elif not to_del == len(self.plan) - 1:
+            self.plan[to_del + 1]["previous_node_id"] = self.plan[to_del - 1]["node_id"]
+        self._delete_node(to_del, temp)
+
     def _find_node_by_id(self, node_id: str):
         for idx, node in enumerate(self.plan):
             if node["node_id"] == node_id:
                 return idx
         return -1
 
+    def _delete_node(self, idx: int, temp: bool):
+        if temp:
+            self.plan[idx]["include_sql"] = False
+        else:
+            del self.plan[idx]
+
     def pretty_print(self, session_id):
-        print(f"\n----PLAN TO APPLY for session: {session_id}----")
+        print(f"\n***PLAN TO APPLY for session: {session_id}***")
         for idx, step in enumerate(self.plan):
             print(f"    {idx}. {step}")
-        print(f"----PLAN TO APPLY for session: {session_id}----\n\n")
+        print(f"***PLAN TO APPLY for session: {session_id}***\n\n")
 
 
 class SessionPlannerMap:

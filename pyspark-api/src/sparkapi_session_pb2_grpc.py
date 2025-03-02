@@ -84,6 +84,11 @@ class SparkApiSessionStub(object):
                 request_serializer=sparkapi__session__pb2.SqlRequest.SerializeToString,
                 response_deserializer=sparkapi__session__pb2.PysparkTransformSqlResponse.FromString,
                 _registered_method=True)
+        self.removeSql = channel.unary_unary(
+                '/sparkapisession.SparkApiSession/removeSql',
+                request_serializer=sparkapi__session__pb2.SqlRemovalRequest.SerializeToString,
+                response_deserializer=sparkapi__session__pb2.PysparkTransformSqlResponse.FromString,
+                _registered_method=True)
 
 
 class SparkApiSessionServicer(object):
@@ -149,6 +154,12 @@ class SparkApiSessionServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def removeSql(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SparkApiSessionServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -200,6 +211,11 @@ def add_SparkApiSessionServicer_to_server(servicer, server):
             'editSql': grpc.unary_unary_rpc_method_handler(
                     servicer.editSql,
                     request_deserializer=sparkapi__session__pb2.SqlRequest.FromString,
+                    response_serializer=sparkapi__session__pb2.PysparkTransformSqlResponse.SerializeToString,
+            ),
+            'removeSql': grpc.unary_unary_rpc_method_handler(
+                    servicer.removeSql,
+                    request_deserializer=sparkapi__session__pb2.SqlRemovalRequest.FromString,
                     response_serializer=sparkapi__session__pb2.PysparkTransformSqlResponse.SerializeToString,
             ),
     }
@@ -472,6 +488,33 @@ class SparkApiSession(object):
             target,
             '/sparkapisession.SparkApiSession/editSql',
             sparkapi__session__pb2.SqlRequest.SerializeToString,
+            sparkapi__session__pb2.PysparkTransformSqlResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def removeSql(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapisession.SparkApiSession/removeSql',
+            sparkapi__session__pb2.SqlRemovalRequest.SerializeToString,
             sparkapi__session__pb2.PysparkTransformSqlResponse.FromString,
             options,
             channel_credentials,
