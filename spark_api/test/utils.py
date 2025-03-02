@@ -60,6 +60,12 @@ def edit_sql(**kwargs) -> str:
     return kwargs["node_id"]
 
 
+def remove_sql(**kwargs):
+    res = requests.post("http://localhost:4444/removeSql", json=kwargs)
+
+    assert res.status_code == 200
+
+
 def summarize(session_id: str, node_id: str) -> dict:
     json_data = {
         "session_id": session_id,
