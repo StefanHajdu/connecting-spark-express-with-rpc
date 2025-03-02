@@ -5,5 +5,10 @@
     "javascript": false,
     "shellscript": false,
     "toml": false
-  }
+  },
+  "python.testing.pytestArgs": [
+    "spark_api"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }
