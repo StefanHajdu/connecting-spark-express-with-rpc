@@ -69,7 +69,8 @@ def test_03_filter():
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_3)
-    assert df_session_0["num_rows"] > df_session_1["num_rows"] > df_session_2["num_rows"]
+    assert df_session_0["num_rows"] > df_session_1["num_rows"]
+    assert df_session_1["num_rows"] > df_session_2["num_rows"]
 
 
 def test_04_1_parent_session_changed():
@@ -453,7 +454,7 @@ def test_08_remove_sql_after_summarize():
             "temp": False,
         }
     )
-    df_session_1 = u.summarize(session_id=session_0, node_id=s.root_node_id)
+    df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_1["num_rows"] == s.total_rows
 
 
@@ -499,7 +500,7 @@ def test_08_remove_sql_before_summarize():
             "temp": False,
         }
     )
-    df_session_3 = u.summarize(session_id=session_0, node_id=s.root_node_id)
+    df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_3["num_rows"] == s.total_rows
 
 
