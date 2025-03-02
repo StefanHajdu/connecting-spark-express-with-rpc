@@ -3,6 +3,7 @@
     "python": false,
     "proto3": false,
     "javascript": false,
-    "shellscript": false
+    "shellscript": false,
+    "toml": false
   }
 }

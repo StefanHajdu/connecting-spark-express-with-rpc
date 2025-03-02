@@ -23,9 +23,7 @@ PLAN_ROOT_ID = "0000-0000-0000"
 
 class SqlUtils:
     @classmethod
-    def execute_sql(
-        cls, spark: SparkSession, query: str, params_json: str
-    ) -> DataFrame:
+    def execute_sql(cls, spark: SparkSession, query: str, params_json: str) -> DataFrame:
         kwargs = cls.to_named_params(params_json)
         return spark.sql(
             query,
@@ -152,9 +150,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
 
         json_str_rows = session.spark_action_to_json(req.limit)
         for row in json.loads(json_str_rows):
-            row_json_obj = sparkapi_session_pb2.DatasetRowResponse(
-                row_json=json.dumps(row)
-            )
+            row_json_obj = sparkapi_session_pb2.DatasetRowResponse(row_json=json.dumps(row))
             yield row_json_obj
 
     def summarizeDataset(
@@ -177,9 +173,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     def _run_plan(self, session_id, planner: bytes, last_node_id=None):
         session_planner: SessionPlanner = pickle.loads(planner)
         session_planner.pretty_print(session_id)
-        self._apply_plan_on_session(
-            session_planner, sql_only=False, last_node_id=last_node_id
-        )
+        self._apply_plan_on_session(session_planner, sql_only=False, last_node_id=last_node_id)
         self.rebuild_status = False
 
     def loadsDataset(
@@ -211,17 +205,13 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
     ) -> sparkapi_session_pb2.MasterInputChangeNotificationResponse:
         session.log_(f"/notifyMasterInputChange: {req.id}")
         self.rebuild_status = True
-        return sparkapi_session_pb2.MasterInputChangeNotificationResponse(
-            id=req.id, verification=True
-        )
+        return sparkapi_session_pb2.MasterInputChangeNotificationResponse(id=req.id, verification=True)
 
     def getRebuildStatus(
         self, req: sparkapi_session_pb2.RebuildStatusRequest, unused_context
     ) -> sparkapi_session_pb2.RebuildStatusResponse:
         session.log_(f"/getRebuildStatus: {req.id}")
-        return sparkapi_session_pb2.RebuildStatusResponse(
-            id=req.id, rebuild_status=self.rebuild_status
-        )
+        return sparkapi_session_pb2.RebuildStatusResponse(id=req.id, rebuild_status=self.rebuild_status)
 
     def addSql(
         self, req: sparkapi_session_pb2.SqlRequest, unused_context
@@ -277,9 +267,7 @@ class SparkApiSessionServicer(SparkApiSessionServicer):
             planner=pickle.dumps(session_planner),
         )
 
-    def _apply_plan_on_session(
-        self, planner: SessionPlanner, sql_only: bool, last_node_id: str = None
-    ):
+    def _apply_plan_on_session(self, planner: SessionPlanner, sql_only: bool, last_node_id: str = None):
         for current_node in planner.plan:
             op = current_node.get("op")
 

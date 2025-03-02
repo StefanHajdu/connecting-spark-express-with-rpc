@@ -18,9 +18,7 @@ class SessionTable:
         else:
             channel = grpc.insecure_channel(f"localhost:{port}")
             stub = sparkapi_session_pb2_grpc.SparkApiSessionStub(channel)
-            self.session_table.update(
-                {id: {"port": port, "channel": channel, "stub": stub}}
-            )
+            self.session_table.update({id: {"port": port, "channel": channel, "stub": stub}})
 
     def get_stub(self, session_id: str):
         return self.session_table[session_id]["stub"]
