@@ -7,7 +7,8 @@
     "toml": false
   },
   "python.testing.pytestArgs": [
-    "spark_api"
+    "spark_api",
+    "-s"
   ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true
