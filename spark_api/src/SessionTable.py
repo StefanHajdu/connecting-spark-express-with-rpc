@@ -2,7 +2,7 @@ import grpc
 
 import sparkapi_session_pb2_grpc
 
-from session_exceptions import DuplicateSessionException
+from custom_exceptions import DuplicateSessionException
 
 
 class SessionTable:
@@ -19,3 +19,18 @@ class SessionTable:
 
     def get_stub(self, session_id: str):
         return self.session_table[session_id]["stub"]
+
+
+class ClientSessionTable:
+    def __init__(self):
+        self.session_table = {}
+
+    def add(self, id, session):
+        print(f"/createSession: {id}")
+        if id in self.session_table:
+            raise DuplicateSessionException()
+        else:
+            self.session_table.update({id: session})
+
+    def get_session(self, session_id: str):
+        return self.session_table[session_id]

@@ -8,7 +8,7 @@ def test_01_load_and_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     _ = u.load(session_id=session_0, src_path=s.path, src_type=s.type)
     df_meta = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_meta["num_rows"] == s.total_rows
+    assert df_meta["count"] == s.total_rows
 
 
 def test_02_load_from_session():

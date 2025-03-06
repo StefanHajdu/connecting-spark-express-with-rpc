@@ -1,6 +1,6 @@
 import requests
 
-from spark_api.src.session_exceptions import DuplicateSessionException
+from spark_api.src.custom_exceptions import DuplicateSessionException
 
 duplicateSessionException = DuplicateSessionException()
 

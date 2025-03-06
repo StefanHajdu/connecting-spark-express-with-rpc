@@ -1,42 +1,54 @@
 import sparkapi_session_pb2
 import pickle
+import json
 
 from collections import deque
 from functools import wraps
 from typing import TypedDict
 
 from SessionTable import SessionTable
-from session_exceptions import InvalidEditException, LoadNodeRemovalException
+from custom_exceptions import InvalidEditException, LoadNodeRemovalException
+from custom_types import SparkNode
 
 
-class SqlNode(TypedDict):
-    node_id: str
-    previous_node_id: str
-    op: str
-    include_sql: bool
-    query_type: str
-    query: str
-    query_params_json: str
+class DataframeSummary(TypedDict):
+    columns: str
+    count: int
+    schema: str
+
+
+def log_plan_execution(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        print(f"\n***PLAN TO APPLY for session: {self.session_id}***")
+        for idx, step in enumerate(self.plan):
+            print(f"    {idx}. {step}")
+        print(f"***PLAN TO APPLY for session: {self.session_id}***\n\n")
+
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class SessionPlanner:
-    def __init__(self, root_node: dict[str:str]):
+    def __init__(self, session_id: str, root_node: SparkNode):
+        self.session_id = session_id
         self.plan = deque([root_node])
 
-    def add_sql_to_plan(self, node: SqlNode):
+    def add_sql_to_plan(self, node: SparkNode):
         original_len = len(self.plan)
         insert_to_idx = self._find_position_to_insert(node)
         self.plan.insert(insert_to_idx, node)
         if not insert_to_idx >= original_len:
             self.plan[insert_to_idx + 1]["previous_node_id"] = node["node_id"]
 
-    def _find_position_to_insert(self, new_node: SqlNode):
+    def _find_position_to_insert(self, new_node: SparkNode):
         for idx, node in enumerate(self.plan):
             if node["node_id"] == new_node["previous_node_id"]:
                 return idx + 1
         return -1
 
-    def edit_sql_in_plan(self, node: SqlNode):
+    def edit_sql_in_plan(self, node: SparkNode):
         id_to_edit = self._find_node_by_id(node["node_id"])
         if id_to_edit < 0:
             raise InvalidEditException()
@@ -59,6 +71,22 @@ class SessionPlanner:
             self.plan[to_del + 1]["previous_node_id"] = self.plan[to_del - 1]["node_id"]
         self._delete_node(to_del, temp)
 
+    @log_plan_execution
+    def summarize_node(self, node_id: str) -> DataframeSummary:
+        node = self._get_node_by_id(node_id)
+        df = node["df"]
+        return {"columns": json.dumps(df.columns), "count": df.count(), "schema": df._jdf.schema().treeString()}
+
+    @log_plan_execution
+    def preview_node(self, node_id: str, limit: int) -> list[str]:
+        node = self._get_node_by_id(node_id)
+        df = node["df"]
+        return json.loads(df.limit(limit).toPandas().to_json(orient="records"))
+
+    def _get_node_by_id(self, node_id: str):
+        idx = self._find_node_by_id(node_id)
+        return self.plan[idx]
+
     def _find_node_by_id(self, node_id: str):
         for idx, node in enumerate(self.plan):
             if node["node_id"] == node_id:
@@ -70,12 +98,6 @@ class SessionPlanner:
             self.plan[idx]["include_sql"] = False
         else:
             del self.plan[idx]
-
-    def pretty_print(self, session_id):
-        print(f"\n***PLAN TO APPLY for session: {session_id}***")
-        for idx, step in enumerate(self.plan):
-            print(f"    {idx}. {step}")
-        print(f"***PLAN TO APPLY for session: {session_id}***\n\n")
 
 
 class SessionPlannerMap:
@@ -102,8 +124,7 @@ class SessionPlannerMap:
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            grpc_res, planner = func(*args, **kwargs)
-            self.overwrite_plan(grpc_res.session_id, planner)
+            grpc_res = func(*args, **kwargs)
             self.handle_plan_change(grpc_res.session_id)
             return grpc_res
 

@@ -5,13 +5,13 @@ package sparkapi;
 service SparkApi {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     
-    rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetRowResponse) {}
-    rpc summarizeDataset(SummarizeDatasetRequest) returns (PysparkGeneralResponse) {}
+    rpc previewDataset(PreviewDatasetRequest) returns (stream RowStreamResponse) {}
+    rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getParentSessionPlan(PlanRequest) returns (PlanResponse) {}
     rpc getRebuildStatus(RebuildStatusRequest) returns (RebuildStatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (PysparkTransformResponse) {}
 
-    rpc loadsDataset(NewDatasetRequest) returns (PysparkGeneralResponse) {}
+    rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
     rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
     
     rpc addSql(SqlRequest) returns (PysparkTransformResponse) {}
@@ -36,12 +36,26 @@ message PysparkGeneralResponse {
     int32 num_rows = 5;
 }
 
+message SparkActionlResponse {
+    string session_id = 1;
+    string msg = 2;
+    string columns = 3;
+    string schema = 4;
+    int32 count = 5;
+}
+
 message PysparkTransformResponse {
     string session_id = 1;
     string msg = 2;
 }
 
-message DatasetRowResponse {
+message SparkTransformResponse {
+    string session_id = 1;
+    string msg = 2;
+    string schema = 3;
+}
+
+message RowStreamResponse {
     string row_json = 1;
 }
 
@@ -62,15 +76,16 @@ message NewSessionRequest {
     string id = 1;
 }
 
-message NewDatasetRequest {
+message LoadDatasetRequest {
     string session_id = 1;
     string df_path = 2;
     string df_type = 3;
 }
 
 message PreviewDatasetRequest {
-    string id = 1;
-    int32 limit = 2;
+    string session_id = 1;
+    string node_id = 2;
+    int32 limit = 3;
 }
 
 message SummarizeDatasetRequest {

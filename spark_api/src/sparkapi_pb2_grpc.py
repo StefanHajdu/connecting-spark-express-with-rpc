@@ -5,7 +5,7 @@ import warnings
 
 import sparkapi_pb2 as sparkapi__pb2
 
-GRPC_GENERATED_VERSION = '1.68.1'
+GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -42,12 +42,12 @@ class SparkApiStub(object):
         self.previewDataset = channel.unary_stream(
                 '/sparkapi.SparkApi/previewDataset',
                 request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.DatasetRowResponse.FromString,
+                response_deserializer=sparkapi__pb2.RowStreamResponse.FromString,
                 _registered_method=True)
         self.summarizeDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/summarizeDataset',
                 request_serializer=sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
+                response_deserializer=sparkapi__pb2.SparkActionlResponse.FromString,
                 _registered_method=True)
         self.getParentSessionPlan = channel.unary_unary(
                 '/sparkapi.SparkApi/getParentSessionPlan',
@@ -66,8 +66,8 @@ class SparkApiStub(object):
                 _registered_method=True)
         self.loadsDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/loadsDataset',
-                request_serializer=sparkapi__pb2.NewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkGeneralResponse.FromString,
+                request_serializer=sparkapi__pb2.LoadDatasetRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.loadFromSession = channel.unary_unary(
                 '/sparkapi.SparkApi/loadFromSession',
@@ -171,12 +171,12 @@ def add_SparkApiServicer_to_server(servicer, server):
             'previewDataset': grpc.unary_stream_rpc_method_handler(
                     servicer.previewDataset,
                     request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.DatasetRowResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.RowStreamResponse.SerializeToString,
             ),
             'summarizeDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.summarizeDataset,
                     request_deserializer=sparkapi__pb2.SummarizeDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.SparkActionlResponse.SerializeToString,
             ),
             'getParentSessionPlan': grpc.unary_unary_rpc_method_handler(
                     servicer.getParentSessionPlan,
@@ -195,8 +195,8 @@ def add_SparkApiServicer_to_server(servicer, server):
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
-                    request_deserializer=sparkapi__pb2.NewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkGeneralResponse.SerializeToString,
+                    request_deserializer=sparkapi__pb2.LoadDatasetRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'loadFromSession': grpc.unary_unary_rpc_method_handler(
                     servicer.loadFromSession,
@@ -272,7 +272,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/previewDataset',
             sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-            sparkapi__pb2.DatasetRowResponse.FromString,
+            sparkapi__pb2.RowStreamResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -299,7 +299,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/summarizeDataset',
             sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
-            sparkapi__pb2.PysparkGeneralResponse.FromString,
+            sparkapi__pb2.SparkActionlResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -406,8 +406,8 @@ class SparkApi(object):
             request,
             target,
             '/sparkapi.SparkApi/loadsDataset',
-            sparkapi__pb2.NewDatasetRequest.SerializeToString,
-            sparkapi__pb2.PysparkGeneralResponse.FromString,
+            sparkapi__pb2.LoadDatasetRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -1,6 +1,6 @@
 import grpc
-import multiprocessing as mp
-import time
+
+from pyspark.sql import SparkSession
 
 import sparkapi_pb2
 import sparkapi_session_pb2
@@ -12,15 +12,15 @@ from sparkapi_pb2_grpc import (
     add_SparkApiServicer_to_server,
 )
 
-from spark_session import session_serve
+from ClientSession import ClientSession
+from SessionTable import SessionTable, ClientSessionTable
 from PipelinePlan import SessionPlanner, SessionPlannerMap
-from SessionTable import SessionTable
 from constants import BASE_SESSION_PORT, PLAN_NODE_ROOT_ID
 
 
 sessionTable = SessionTable()
+clientSessionTable = ClientSessionTable()
 sessionPlannerMap = SessionPlannerMap(sessionTable)
-mp_ctx = mp.get_context("spawn")
 
 
 def get_new_port(s: SessionTable) -> int:
@@ -28,68 +28,6 @@ def get_new_port(s: SessionTable) -> int:
 
 
 class SparkApiServicer(SparkApiServicer):
-    def previewDataset(
-        self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
-    ) -> Iterable[sparkapi_pb2.DatasetRowResponse]:
-        print(f"/preview: {req.id}")
-        res = sessionTable.session_table[req.id]["stub"].previewDataset(
-            sparkapi_session_pb2.PreviewDatasetRequest(
-                id=req.id,
-                limit=req.limit,
-            )
-        )
-        for datasetRowResponse in res:
-            yield datasetRowResponse
-
-    def summarizeDataset(
-        self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context
-    ) -> sparkapi_pb2.PysparkGeneralResponse:
-        print(f"/summarize: {req.session_id}")
-        res = sessionTable.session_table[req.session_id]["stub"].summarizeDataset(
-            sparkapi_session_pb2.SummarizeDatasetRequest(
-                session_id=req.session_id,
-                node_id=req.node_id,
-                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-            )
-        )
-        return sparkapi_pb2.PysparkGeneralResponse(
-            session_id=res.session_id,
-            msg=res.msg,
-            columns_json=res.columns_json,
-            num_rows=res.num_rows,
-            schema_tree=res.schema_tree,
-        )
-
-    @sessionPlannerMap.spark_transformation_update
-    def loadsDataset(self, req: sparkapi_pb2.NewDatasetRequest, unused_context) -> sparkapi_pb2.PysparkGeneralResponse:
-        print(f"/load: {req.session_id, req.df_path, req.df_type}")
-        res = sessionTable.session_table[req.session_id]["stub"].loadsDataset(
-            sparkapi_session_pb2.NewDatasetRequest(
-                session_id=req.session_id,
-                df_path=req.df_path,
-                df_type=req.df_type,
-            )
-        )
-
-        return (
-            sparkapi_pb2.PysparkGeneralResponse(
-                session_id=res.session_id,
-                msg=res.msg,
-                columns_json=res.columns_json,
-                num_rows=res.num_rows,
-                schema_tree=res.schema_tree,
-            ),
-            SessionPlanner(
-                {
-                    "node_id": PLAN_NODE_ROOT_ID,
-                    "previous_node_id": None,
-                    "op": "load",
-                    "df_path": req.df_path,
-                    "df_type": req.df_type,
-                }
-            ),
-        )
-
     @sessionPlannerMap.spark_transformation_update
     def loadFromSession(
         self, req: sparkapi_pb2.DatasetFromSessionRequest, unused_context
@@ -195,30 +133,51 @@ class SparkApiServicer(SparkApiServicer):
         )
         return sparkapi_pb2.PysparkTransformResponse(session_id=res.session_id, msg=res.msg)
 
+    # refactor -->
+
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
-        print(f"/createSession: {req.id}")
+        clientSessionTable.add(req.id, ClientSession(req.id))
 
-        # try to add new session
-        session_port = get_new_port(sessionTable)
-        sessionTable.add(req.id, session_port)
-        sessionPlannerMap.add_session(req.id)
-
-        # spawn new session server process
-        session_server = mp_ctx.Process(target=session_serve, args=[session_port], daemon=True)
-        session_server.start()
-
-        # confirm connection
-        time.sleep(2)
-        res = sessionTable.session_table[req.id]["stub"].createSession(
-            sparkapi_session_pb2.NewSessionRequest(id=req.id)
-        )
-
-        # send response with child answer
         return sparkapi_pb2.NewSessionResponse(
-            id=res.id,
-            session_server_pid=res.session_server_pid,
-            msg=res.msg,
+            id=req.id,
+            msg=f"Session {req.id} created.",
         )
+
+    def loadsDataset(
+        self, req: sparkapi_pb2.LoadDatasetRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
+        print(f"/load: {req.session_id, req.df_path, req.df_type}")
+
+        session = clientSessionTable.get_session(req.session_id)
+        plan = SessionPlanner(req.session_id, session.load_dataset(spark, req.df_path, req.df_type))
+        session.set_plan(plan)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.", schema="schema TO BE PROVIDED"
+        )
+
+    def summarizeDataset(
+        self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context
+    ) -> sparkapi_pb2.SparkActionlResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        summary = session.summarize(req.node_id)
+
+        return sparkapi_pb2.SparkActionlResponse(
+            session_id=req.session_id,
+            msg=f"Node {req.node_id} summarized",
+            columns=summary["columns"],
+            count=summary["count"],
+            schema=summary["schema"],
+        )
+
+    def previewDataset(
+        self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
+    ) -> Iterable[sparkapi_pb2.RowStreamResponse]:
+        session = clientSessionTable.get_session(req.session_id)
+        row_stream = session.preview(req.node_id, req.limit)
+
+        for row in row_stream:
+            yield sparkapi_pb2.RowStreamResponse(row_json=row)
 
     def getParentSessionPlan(self, req: sparkapi_pb2.PlanRequest, unused_context) -> sparkapi_pb2.PlanResponse:
         return sparkapi_pb2.PlanResponse(id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id))
@@ -231,6 +190,14 @@ class SparkApiServicer(SparkApiServicer):
             sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
         )
         return sparkapi_pb2.RebuildStatusResponse(id=req.id, rebuild_status=res.rebuild_status)
+
+
+spark = (
+    SparkSession.builder.appName("SparkSession")
+    .master("local[*]")
+    .config("spark.driver.memory", "30720m")
+    .getOrCreate()
+)
 
 
 def serve():

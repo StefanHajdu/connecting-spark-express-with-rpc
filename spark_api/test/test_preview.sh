@@ -10,5 +10,5 @@ curl -X POST http://localhost:4444/load \
 
 curl -X POST http://localhost:4444/preview \
     -H 'Content-Type: application/json' \
-    -d '{"id": "0000", "limit": 100}' \
+    -d '{"session_id": "0000", "node_id": "0000-0000-0000", "limit": 100}' \
     -w '\nTotal: %{time_total}s\n'
