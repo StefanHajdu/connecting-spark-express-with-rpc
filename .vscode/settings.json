@@ -3,6 +3,13 @@
     "python": false,
     "proto3": false,
     "javascript": false,
-    "shellscript": false
-  }
+    "shellscript": false,
+    "toml": false
+  },
+  "python.testing.pytestArgs": [
+    "spark_api",
+    "-s"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

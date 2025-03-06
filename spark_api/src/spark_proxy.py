@@ -12,13 +12,11 @@ from sparkapi_pb2_grpc import (
     add_SparkApiServicer_to_server,
 )
 
-from spark_session_instance import session_serve
+from spark_session import session_serve
 from PipelinePlan import SessionPlanner, SessionPlannerMap
 from SessionTable import SessionTable
+from constants import BASE_SESSION_PORT, PLAN_NODE_ROOT_ID
 
-
-BASE_SESSION_PORT = 50051
-PLAN_ROOT_ID = "0000-0000-0000"
 
 sessionTable = SessionTable()
 sessionPlannerMap = SessionPlannerMap(sessionTable)
@@ -63,9 +61,7 @@ class SparkApiServicer(SparkApiServicer):
         )
 
     @sessionPlannerMap.spark_transformation_update
-    def loadsDataset(
-        self, req: sparkapi_pb2.NewDatasetRequest, unused_context
-    ) -> sparkapi_pb2.PysparkGeneralResponse:
+    def loadsDataset(self, req: sparkapi_pb2.NewDatasetRequest, unused_context) -> sparkapi_pb2.PysparkGeneralResponse:
         print(f"/load: {req.session_id, req.df_path, req.df_type}")
         res = sessionTable.session_table[req.session_id]["stub"].loadsDataset(
             sparkapi_session_pb2.NewDatasetRequest(
@@ -85,7 +81,7 @@ class SparkApiServicer(SparkApiServicer):
             ),
             SessionPlanner(
                 {
-                    "node_id": PLAN_ROOT_ID,
+                    "node_id": PLAN_NODE_ROOT_ID,
                     "previous_node_id": None,
                     "op": "load",
                     "df_path": req.df_path,
@@ -113,7 +109,7 @@ class SparkApiServicer(SparkApiServicer):
             ),
             SessionPlanner(
                 {
-                    "node_id": PLAN_ROOT_ID,
+                    "node_id": PLAN_NODE_ROOT_ID,
                     "previous_node_id": None,
                     "op": "loadFromSession",
                     "input_id": req.input_id,
@@ -122,9 +118,7 @@ class SparkApiServicer(SparkApiServicer):
         )
 
     @sessionPlannerMap.spark_transformation_update
-    def addSql(
-        self, req: sparkapi_pb2.SqlRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
+    def addSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
         res = sessionTable.session_table[req.session_id]["stub"].addSql(
             sparkapi_session_pb2.SqlRequest(
@@ -147,9 +141,7 @@ class SparkApiServicer(SparkApiServicer):
         )
 
     @sessionPlannerMap.spark_transformation_update
-    def editSql(
-        self, req: sparkapi_pb2.SqlRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
+    def editSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/editSql: {req.session_id, req.query, req.previous_node_id}")
         res = sessionTable.session_table[req.session_id]["stub"].editSql(
             sparkapi_session_pb2.SqlRequest(
@@ -172,9 +164,7 @@ class SparkApiServicer(SparkApiServicer):
         )
 
     @sessionPlannerMap.spark_transformation_update
-    def removeSql(
-        self, req: sparkapi_pb2.SqlRemovalRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
+    def removeSql(self, req: sparkapi_pb2.SqlRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/removeSql: {req.session_id, req.node_id, req.temp}")
         res = sessionTable.session_table[req.session_id]["stub"].removeSql(
             sparkapi_session_pb2.SqlRemovalRequest(
@@ -203,13 +193,9 @@ class SparkApiServicer(SparkApiServicer):
                 planner=sessionPlannerMap.get_planner_pickled(req.session_id),
             )
         )
-        return sparkapi_pb2.PysparkTransformResponse(
-            session_id=res.session_id, msg=res.msg
-        )
+        return sparkapi_pb2.PysparkTransformResponse(session_id=res.session_id, msg=res.msg)
 
-    def createSession(
-        self, req: sparkapi_pb2.NewSessionRequest, unused_context
-    ) -> sparkapi_pb2.NewSessionResponse:
+    def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
         print(f"/createSession: {req.id}")
 
         # try to add new session
@@ -218,9 +204,7 @@ class SparkApiServicer(SparkApiServicer):
         sessionPlannerMap.add_session(req.id)
 
         # spawn new session server process
-        session_server = mp_ctx.Process(
-            target=session_serve, args=[session_port], daemon=True
-        )
+        session_server = mp_ctx.Process(target=session_serve, args=[session_port], daemon=True)
         session_server.start()
 
         # confirm connection
@@ -236,12 +220,8 @@ class SparkApiServicer(SparkApiServicer):
             msg=res.msg,
         )
 
-    def getParentSessionPlan(
-        self, req: sparkapi_pb2.PlanRequest, unused_context
-    ) -> sparkapi_pb2.PlanResponse:
-        return sparkapi_pb2.PlanResponse(
-            id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id)
-        )
+    def getParentSessionPlan(self, req: sparkapi_pb2.PlanRequest, unused_context) -> sparkapi_pb2.PlanResponse:
+        return sparkapi_pb2.PlanResponse(id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id))
 
     def getRebuildStatus(
         self, req: sparkapi_pb2.RebuildStatusRequest, unused_context
@@ -250,9 +230,7 @@ class SparkApiServicer(SparkApiServicer):
         res = sessionTable.session_table[req.id]["stub"].getRebuildStatus(
             sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
         )
-        return sparkapi_pb2.RebuildStatusResponse(
-            id=req.id, rebuild_status=res.rebuild_status
-        )
+        return sparkapi_pb2.RebuildStatusResponse(id=req.id, rebuild_status=res.rebuild_status)
 
 
 def serve():

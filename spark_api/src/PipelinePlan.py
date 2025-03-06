@@ -6,16 +6,7 @@ from functools import wraps
 from typing import TypedDict
 
 from SessionTable import SessionTable
-
-
-class InvalidEditException(Exception):
-    def __init__(self, message="Invalid sql id provided"):
-        super().__init__(message)
-
-
-class LoadNodeRemovalException(Exception):
-    def __init__(self, message="Cannot remove load node from plan"):
-        super().__init__(message)
+from session_exceptions import InvalidEditException, LoadNodeRemovalException
 
 
 class SqlNode(TypedDict):
@@ -53,11 +44,7 @@ class SessionPlanner:
         self.plan[id_to_edit]["query"] = node["query"]
         self.plan[id_to_edit]["query_params_json"] = node["query_params_json"]
 
-        if (
-            node["include_sql"]
-            and not self.plan[id_to_edit]["include_sql"]
-            and id_to_edit < len(self.plan) - 1
-        ):
+        if node["include_sql"] and not self.plan[id_to_edit]["include_sql"] and id_to_edit < len(self.plan) - 1:
             self.plan[id_to_edit + 1]["previous_node_id"] = node["node_id"]
 
         self.plan[id_to_edit]["include_sql"] = node["include_sql"]
@@ -133,10 +120,7 @@ class SessionPlannerMap:
         ls = []
         for id, planner in self.session_planners.items():
             plan_init_point = planner.plan[0]
-            if (
-                plan_init_point["op"] == "loadFromSession"
-                and plan_init_point["input_id"] == session_id
-            ):
+            if plan_init_point["op"] == "loadFromSession" and plan_init_point["input_id"] == session_id:
                 ls.append(id)
         return ls
 
