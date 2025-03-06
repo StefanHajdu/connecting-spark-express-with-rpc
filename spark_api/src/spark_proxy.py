@@ -12,7 +12,7 @@ from sparkapi_pb2_grpc import (
     add_SparkApiServicer_to_server,
 )
 
-from spark_session_instance import session_serve
+from spark_session import session_serve
 from PipelinePlan import SessionPlanner, SessionPlannerMap
 from SessionTable import SessionTable
 from constants import BASE_SESSION_PORT, PLAN_NODE_ROOT_ID
