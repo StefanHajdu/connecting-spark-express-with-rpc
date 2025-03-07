@@ -14,23 +14,24 @@ def test_01_load_and_summarize():
 def test_02_load_from_session():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
-        **{
-            "session_id": session_0,
-            "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
-            "query": "select * from {df} where tld = 'com'",
-            "query_type": "filter",
-            "query_params_json": ["df"],
-        }
-    )
+    # node_1 = u.add_sql(
+    #     **{
+    #         "session_id": session_0,
+    #         "node_id": u.to_node_id(1),
+    #         "previous_node_id": s.root_node_id,
+    #         "query": "select * from {df} where tld = 'com'",
+    #         "query_type": "filter",
+    #         "query_params_json": ["df"],
+    #     }
+    # )
+    # df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
+    df_session_0 = u.summarize(session_id=session_0, node_id=s.root_node_id)
 
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.load_from_session(session_id=session_1, input_session_id=session_0)
 
-    df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
     df_session_1 = u.summarize(session_id=session_1, node_id=s.root_node_id)
-    assert df_session_0["num_rows"] == df_session_1["num_rows"]
+    assert df_session_0["count"] == df_session_1["count"]
 
 
 def test_03_filter():

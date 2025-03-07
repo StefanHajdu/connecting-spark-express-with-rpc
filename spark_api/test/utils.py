@@ -39,7 +39,7 @@ def load(session_id: str, src_path: str, src_type: str) -> None:
 def load_from_session(session_id: str, input_session_id: str) -> None:
     json_data = {
         "session_id": session_id,
-        "input_id": input_session_id,
+        "input_session_id": input_session_id,
     }
     res = requests.post("http://localhost:4444/loadFromSession", json=json_data)
 

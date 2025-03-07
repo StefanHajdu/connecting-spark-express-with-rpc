@@ -71,8 +71,8 @@ class SparkApiStub(object):
                 _registered_method=True)
         self.loadFromSession = channel.unary_unary(
                 '/sparkapi.SparkApi/loadFromSession',
-                request_serializer=sparkapi__pb2.DatasetFromSessionRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+                request_serializer=sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.addSql = channel.unary_unary(
                 '/sparkapi.SparkApi/addSql',
@@ -200,8 +200,8 @@ def add_SparkApiServicer_to_server(servicer, server):
             ),
             'loadFromSession': grpc.unary_unary_rpc_method_handler(
                     servicer.loadFromSession,
-                    request_deserializer=sparkapi__pb2.DatasetFromSessionRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
+                    request_deserializer=sparkapi__pb2.LoadFromSessionRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'addSql': grpc.unary_unary_rpc_method_handler(
                     servicer.addSql,
@@ -433,8 +433,8 @@ class SparkApi(object):
             request,
             target,
             '/sparkapi.SparkApi/loadFromSession',
-            sparkapi__pb2.DatasetFromSessionRequest.SerializeToString,
-            sparkapi__pb2.PysparkTransformResponse.FromString,
+            sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

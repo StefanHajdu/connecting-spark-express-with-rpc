@@ -37,6 +37,21 @@ class ClientSession:
         node.df = df
         return node
 
+    def load_from_session(self, input_session_plan):
+        self._log(f"/loadFromSession: {input_session_plan.session_id}")
+        node = LoadFromSessionNode(
+            session_id=self.id,
+            node_id=PLAN_NODE_ROOT_ID,
+            prev_node_id=None,
+            operation=f"{__name__}",
+            included=True,
+            query="custom.load_last_df_from_input_session",
+            input_session_node_id=input_session_plan.session_id,
+        )
+        df = node.run_transform(input_session_plan)
+        node.df = df
+        return node
+
     @log_plan_execution
     def summarize(self, node_id: str):
         self._log(f"/summarize: {node_id}")
@@ -165,10 +180,36 @@ class LoadNode(SparkNode):
         self._data_type = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | include_node: {self.included} | query: {self.query} | path: {self.path} | data_type {self.data_type}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | path: {self.path} | data_type {self.data_type}"
 
     def run_transform(self, spark: SparkSession):
         if self.data_type == "csv":
             return spark.read.option("delimiter", ";").option("header", True).csv(self.path)
         elif self.data_type == "json":
             return spark.read.json(self.path)
+
+
+class LoadFromSessionNode(SparkNode):
+    def __init__(self, session_id, node_id, prev_node_id, operation, included, query, input_session_node_id):
+        self._session_id = session_id
+        self._node_id = node_id
+        self._prev_node_id = prev_node_id
+        self._operation = operation
+        self._included = included
+        self._query = query
+        self._input_session_node_id = input_session_node_id
+
+    @property
+    def input_session_node_id(self):
+        return self._input_session_node_id
+
+    @input_session_node_id.setter
+    def input_session_node_id(self, val: str):
+        self._input_session_node_id = val
+
+    def __str__(self):
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | input_session_node_id: {self._input_session_node_id}"
+
+    def run_transform(self, parent_session_plan):
+        last_node = parent_session_plan.get_last_spark_node()
+        return last_node.df

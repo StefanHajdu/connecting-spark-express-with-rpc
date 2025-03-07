@@ -1,5 +1,4 @@
 import sparkapi_session_pb2
-import pickle
 
 from collections import deque
 from typing import TypedDict
@@ -7,6 +6,7 @@ from functools import wraps
 
 from SessionTable import SessionTable
 from custom_exceptions import InvalidEditException, LoadNodeRemovalException
+from ClientSession import SparkNode
 
 
 class DataframeSummary(TypedDict):
@@ -16,9 +16,19 @@ class DataframeSummary(TypedDict):
 
 
 class SessionPlanner:
-    def __init__(self, session_id: str, root_node):
+    def __init__(self, session_id: str, root_node: SparkNode):
         self.session_id = session_id
         self.nodes = deque([root_node])
+
+    def get_node_by_id(self, node_id: str) -> SparkNode:
+        idx = self._find_node_by_id(node_id)
+        return self.nodes[idx]
+
+    def get_last_spark_node(self) -> SparkNode:
+        idx = -1
+        while not isinstance(self.nodes[idx], SparkNode):
+            idx -= 1
+        return self.nodes[idx]
 
     def add_sql_to_nodes(self, node):
         original_len = len(self.nodes)
@@ -56,10 +66,6 @@ class SessionPlanner:
             self.nodes[to_del + 1]["previous_node_id"] = self.nodes[to_del - 1]["node_id"]
         self._delete_node(to_del, temp)
 
-    def get_node_by_id(self, node_id: str):
-        idx = self._find_node_by_id(node_id)
-        return self.nodes[idx]
-
     def _find_node_by_id(self, node_id: str):
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
@@ -81,14 +87,11 @@ class SessionPlannerMap:
     def add_session(self, session_id: str):
         self.session_planners.update({session_id: None})
 
-    def get_planner_pickled(self, session_id: str) -> bytes:
-        return pickle.dumps(self.session_planners.get(session_id))
+    def get_session_plan(self, session_id: str):
+        return self.session_planners[session_id]
 
-    def overwrite_plan(self, session_id: str, planner: SessionPlanner | bytes):
-        if isinstance(planner, SessionPlanner):
-            self.session_planners[session_id] = planner
-        else:
-            self.session_planners[session_id] = pickle.loads(planner)
+    def update_session_plan(self, session_id: str, plan: SessionPlanner):
+        self.session_planners[session_id] = plan
 
     def spark_transformation_update(self, func):
         """Adds rest api query to session plan. Plan is defined by session id and return as binary object.

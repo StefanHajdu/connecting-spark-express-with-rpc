@@ -12,7 +12,7 @@ service SparkApi {
     rpc rebuildSession(RebuildRequest) returns (PysparkTransformResponse) {}
 
     rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
-    rpc loadFromSession(DatasetFromSessionRequest) returns (PysparkTransformResponse) {}
+    rpc loadFromSession(LoadFromSessionRequest) returns (SparkTransformResponse) {}
     
     rpc addSql(SqlRequest) returns (PysparkTransformResponse) {}
     rpc editSql(SqlRequest) returns (PysparkTransformResponse) {}
@@ -109,9 +109,9 @@ message SqlRemovalRequest {
     bool temp = 3;
 }
 
-message DatasetFromSessionRequest {
+message LoadFromSessionRequest {
     string session_id = 1;
-    string input_id = 2;
+    string input_session_id = 2;
 }
 
 message PlanRequest {

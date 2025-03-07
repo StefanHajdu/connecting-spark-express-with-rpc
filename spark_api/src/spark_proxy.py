@@ -29,33 +29,6 @@ def get_new_port(s: SessionTable) -> int:
 
 class SparkApiServicer(SparkApiServicer):
     @sessionPlannerMap.spark_transformation_update
-    def loadFromSession(
-        self, req: sparkapi_pb2.DatasetFromSessionRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/loadFromSession: {req.session_id, req.input_id}")
-        res = sessionTable.session_table[req.session_id]["stub"].loadFromSession(
-            sparkapi_session_pb2.DatasetFromSessionRequest(
-                id=req.session_id,
-                input_id=req.input_id,
-            )
-        )
-
-        return (
-            sparkapi_pb2.PysparkTransformResponse(
-                session_id=res.session_id,
-                msg=res.msg,
-            ),
-            SessionPlanner(
-                {
-                    "node_id": PLAN_NODE_ROOT_ID,
-                    "previous_node_id": None,
-                    "op": "loadFromSession",
-                    "input_id": req.input_id,
-                }
-            ),
-        )
-
-    @sessionPlannerMap.spark_transformation_update
     def addSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
         res = sessionTable.session_table[req.session_id]["stub"].addSql(
@@ -137,6 +110,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
         clientSessionTable.add(req.id, ClientSession(req.id))
+        sessionPlannerMap.add_session(req.id)
 
         return sparkapi_pb2.NewSessionResponse(
             id=req.id,
@@ -147,10 +121,29 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.LoadDatasetRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.plan = SessionPlanner(req.session_id, session.load_dataset(spark, req.df_path, req.df_type))
+        root_plan_node = session.load_dataset(spark, req.df_path, req.df_type)
+        session.plan = SessionPlanner(req.session_id, root_plan_node)
+        sessionPlannerMap.update_session_plan(session.id, session.plan)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.", schema="schema TO BE PROVIDED"
+        )
+
+    def loadFromSession(
+        self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
+        print(f"/loadFromSession: {req.session_id, req.input_session_id}")
+
+        session = clientSessionTable.get_session(req.session_id)
+        input_session_plan = sessionPlannerMap.get_session_plan(req.input_session_id)
+        root_plan_node = session.load_from_session(input_session_plan)
+        session.plan = SessionPlanner(req.session_id, root_plan_node)
+        sessionPlannerMap.update_session_plan(session.id, session.plan)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Dataframe from input session {req.input_session_id} reused input.",
+            schema="schema TO BE PROVIDED",
         )
 
     def summarizeDataset(
