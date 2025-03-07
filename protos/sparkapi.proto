@@ -14,7 +14,7 @@ service SparkApi {
     rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
     rpc loadFromSession(LoadFromSessionRequest) returns (SparkTransformResponse) {}
     
-    rpc addSql(SqlRequest) returns (PysparkTransformResponse) {}
+    rpc addSql(SqlRequest) returns (SparkTransformResponse) {}
     rpc editSql(SqlRequest) returns (PysparkTransformResponse) {}
     rpc removeSql(SqlRemovalRequest) returns (PysparkTransformResponse) {}
 }
@@ -96,10 +96,10 @@ message SummarizeDatasetRequest {
 message SqlRequest {
     string session_id = 1;
     string node_id = 2;
-    string previous_node_id = 3;
+    string prev_node_id = 3;
     string query_type = 4;
     string query = 5;
-    bool include_sql = 6;
+    bool included = 6;
     string query_params_json = 7;
 }
 

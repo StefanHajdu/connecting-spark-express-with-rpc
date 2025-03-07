@@ -77,7 +77,7 @@ class SparkApiStub(object):
         self.addSql = channel.unary_unary(
                 '/sparkapi.SparkApi/addSql',
                 request_serializer=sparkapi__pb2.SqlRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.editSql = channel.unary_unary(
                 '/sparkapi.SparkApi/editSql',
@@ -206,7 +206,7 @@ def add_SparkApiServicer_to_server(servicer, server):
             'addSql': grpc.unary_unary_rpc_method_handler(
                     servicer.addSql,
                     request_deserializer=sparkapi__pb2.SqlRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'editSql': grpc.unary_unary_rpc_method_handler(
                     servicer.editSql,
@@ -461,7 +461,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/addSql',
             sparkapi__pb2.SqlRequest.SerializeToString,
-            sparkapi__pb2.PysparkTransformResponse.FromString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -15,7 +15,7 @@ from sparkapi_pb2_grpc import (
 from ClientSession import ClientSession
 from SessionTable import SessionTable, ClientSessionTable
 from PipelinePlan import SessionPlanner, SessionPlannerMap
-from constants import BASE_SESSION_PORT, PLAN_NODE_ROOT_ID
+from constants import BASE_SESSION_PORT
 
 
 sessionTable = SessionTable()
@@ -28,29 +28,6 @@ def get_new_port(s: SessionTable) -> int:
 
 
 class SparkApiServicer(SparkApiServicer):
-    @sessionPlannerMap.spark_transformation_update
-    def addSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/addSql: {req.session_id, req.query, req.previous_node_id:}")
-        res = sessionTable.session_table[req.session_id]["stub"].addSql(
-            sparkapi_session_pb2.SqlRequest(
-                session_id=req.session_id,
-                node_id=req.node_id,
-                previous_node_id=req.previous_node_id,
-                query_type=req.query_type,
-                query=req.query,
-                query_params_json=req.query_params_json,
-                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-            )
-        )
-
-        return (
-            sparkapi_pb2.PysparkTransformResponse(
-                session_id=res.session_id,
-                msg=res.msg,
-            ),
-            res.planner,
-        )
-
     @sessionPlannerMap.spark_transformation_update
     def editSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/editSql: {req.session_id, req.query, req.previous_node_id}")
@@ -132,8 +109,6 @@ class SparkApiServicer(SparkApiServicer):
     def loadFromSession(
         self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
-        print(f"/loadFromSession: {req.session_id, req.input_session_id}")
-
         session = clientSessionTable.get_session(req.session_id)
         input_session_plan = sessionPlannerMap.get_session_plan(req.input_session_id)
         root_plan_node = session.load_from_session(input_session_plan)
@@ -143,6 +118,24 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Dataframe from input session {req.input_session_id} reused input.",
+            schema="schema TO BE PROVIDED",
+        )
+
+    def addSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        new_sql_node = session.create_sql_node(
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            included=True,
+            query=req.query,
+            query_type=req.query_type,
+            query_params_json=req.query_params_json,
+        )
+        session.plan.add_sql(spark, new_sql_node)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Sql transform: {req.query} applied",
             schema="schema TO BE PROVIDED",
         )
 

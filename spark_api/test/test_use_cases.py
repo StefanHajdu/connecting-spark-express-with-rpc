@@ -14,18 +14,17 @@ def test_01_load_and_summarize():
 def test_02_load_from_session():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    # node_1 = u.add_sql(
-    #     **{
-    #         "session_id": session_0,
-    #         "node_id": u.to_node_id(1),
-    #         "previous_node_id": s.root_node_id,
-    #         "query": "select * from {df} where tld = 'com'",
-    #         "query_type": "filter",
-    #         "query_params_json": ["df"],
-    #     }
-    # )
-    # df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
-    df_session_0 = u.summarize(session_id=session_0, node_id=s.root_node_id)
+    node_1 = u.add_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(1),
+            "prev_node_id": s.root_node_id,
+            "query": "select * from {df} where tld = 'com'",
+            "query_type": "filter",
+            "query_params_json": ["df"],
+        }
+    )
+    df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
 
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.load_from_session(session_id=session_1, input_session_id=session_0)
@@ -41,7 +40,7 @@ def test_03_filter():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where tld = 'com'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -52,7 +51,7 @@ def test_03_filter():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(2),
-            "previous_node_id": node_1,
+            "prev_node_id": node_1,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -63,15 +62,15 @@ def test_03_filter():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(3),
-            "previous_node_id": node_2,
+            "prev_node_id": node_2,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC'",
             "query_type": "filter",
             "query_params_json": ["df"],
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_3)
-    assert df_session_0["num_rows"] > df_session_1["num_rows"]
-    assert df_session_1["num_rows"] > df_session_2["num_rows"]
+    assert df_session_0["count"] > df_session_1["count"]
+    assert df_session_1["count"] > df_session_2["count"]
 
 
 def test_04_1_parent_session_changed():
@@ -219,14 +218,14 @@ def test_04_2_parent_session_changed_multi_level():
     assert df_session_22["num_rows"] < df_session_21["num_rows"]
 
 
-def test_05_add_sql_after_summarize():
+def test_05_append_sql():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
     node_1 = u.add_sql(
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where tld = 'com' OR tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -236,7 +235,7 @@ def test_05_add_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(2),
-            "previous_node_id": node_1,
+            "prev_node_id": node_1,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -248,14 +247,14 @@ def test_05_add_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(3),
-            "previous_node_id": node_2,
+            "prev_node_id": node_2,
             "query": "select * from {df} where tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_3)
-    assert df_session_2["num_rows"] < df_session_1["num_rows"]
+    assert df_session_2["count"] < df_session_1["count"]
 
 
 def test_05_add_sql_before_summarize():

@@ -1,5 +1,6 @@
 import sparkapi_session_pb2
 
+from pyspark.sql import SparkSession
 from collections import deque
 from typing import TypedDict
 from functools import wraps
@@ -24,22 +25,30 @@ class SessionPlanner:
         idx = self._find_node_by_id(node_id)
         return self.nodes[idx]
 
+    def get_node_position(self, node_id: str):
+        for idx, node in enumerate(self.nodes):
+            if node.node_id == node_id:
+                return idx
+        return -1
+
     def get_last_spark_node(self) -> SparkNode:
         idx = -1
         while not isinstance(self.nodes[idx], SparkNode):
             idx -= 1
         return self.nodes[idx]
 
-    def add_sql_to_nodes(self, node):
-        original_len = len(self.nodes)
-        insert_to_idx = self._find_position_to_insert(node)
-        self.nodes.insert(insert_to_idx, node)
-        if not insert_to_idx >= original_len:
-            self.nodes[insert_to_idx + 1]["previous_node_id"] = node["node_id"]
+    def add_sql(self, spark: SparkSession, new_sql_node: SparkNode):
+        prev_position = self.get_node_position(new_sql_node.prev_node_id)
+        prev_node = self.nodes[prev_position]
+        new_sql_node.df = new_sql_node.run_transform(spark, prev_node.df)
+        # append
+        self.nodes.insert(prev_position + 1, new_sql_node)
 
-    def _find_position_to_insert(self, new_node):
+        # what if not appending... TODO
+
+    def _find_position_to_insert(self, new_node: SparkNode):
         for idx, node in enumerate(self.nodes):
-            if node["node_id"] == new_node["previous_node_id"]:
+            if node.node_id == new_node.prev_node_id:
                 return idx + 1
         return -1
 

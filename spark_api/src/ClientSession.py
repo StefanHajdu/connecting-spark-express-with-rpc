@@ -52,6 +52,19 @@ class ClientSession:
         node.df = df
         return node
 
+    def create_sql_node(self, node_id, prev_node_id, query_type, included, query, query_params_json):
+        node = SqlNode(
+            session_id=self.id,
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+            operation="sql",
+            included=included,
+            query=query,
+            query_type=query_type,
+            query_params_json=query_params_json,
+        )
+        return node
+
     @log_plan_execution
     def summarize(self, node_id: str):
         self._log(f"/summarize: {node_id}")
@@ -208,8 +221,50 @@ class LoadFromSessionNode(SparkNode):
         self._input_session_node_id = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | input_session_node_id: {self._input_session_node_id}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | input_session_node_id: {self.input_session_node_id}"
 
     def run_transform(self, parent_session_plan):
         last_node = parent_session_plan.get_last_spark_node()
         return last_node.df
+
+
+class SqlNode(SparkNode):
+    def __init__(self, session_id, node_id, prev_node_id, operation, included, query, query_type, query_params_json):
+        self._session_id = session_id
+        self._node_id = node_id
+        self._prev_node_id = prev_node_id
+        self._query_type = query_type
+        self._operation = operation
+        self._included = included
+        self._query = query
+        self._query_params_json = query_params_json
+
+    @property
+    def query_type(self):
+        return self._query_type
+
+    @query_type.setter
+    def query_type(self, val: str):
+        self._query_type = val
+
+    @property
+    def query_params_json(self):
+        return self._query_params_json
+
+    @query_params_json.setter
+    def query_params_json(self, val: str):
+        self._query_params_json = val
+
+    def __str__(self):
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | query_paras: {self.query_params_json} | query_type: {self.query_type}"
+
+    def run_transform(self, spark: SparkSession, df: DataFrame):
+        kwargs = self._get_parsed_params()
+        return spark.sql(
+            self.query,
+            df=df,
+            **kwargs,
+        )
+
+    def _get_parsed_params(self):
+        return {}
