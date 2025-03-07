@@ -146,11 +146,8 @@ class SparkApiServicer(SparkApiServicer):
     def loadsDataset(
         self, req: sparkapi_pb2.LoadDatasetRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
-        print(f"/load: {req.session_id, req.df_path, req.df_type}")
-
         session = clientSessionTable.get_session(req.session_id)
-        plan = SessionPlanner(req.session_id, session.load_dataset(spark, req.df_path, req.df_type))
-        session.set_plan(plan)
+        session.plan = SessionPlanner(req.session_id, session.load_dataset(spark, req.df_path, req.df_type))
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.", schema="schema TO BE PROVIDED"
