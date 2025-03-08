@@ -74,19 +74,19 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.addSql = channel.unary_unary(
-                '/sparkapi.SparkApi/addSql',
-                request_serializer=sparkapi__pb2.SqlRequest.SerializeToString,
+        self.addNode = channel.unary_unary(
+                '/sparkapi.SparkApi/addNode',
+                request_serializer=sparkapi__pb2.NodeAddRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.editSql = channel.unary_unary(
-                '/sparkapi.SparkApi/editSql',
-                request_serializer=sparkapi__pb2.SqlRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+        self.editNode = channel.unary_unary(
+                '/sparkapi.SparkApi/editNode',
+                request_serializer=sparkapi__pb2.NodeEditRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.removeSql = channel.unary_unary(
-                '/sparkapi.SparkApi/removeSql',
-                request_serializer=sparkapi__pb2.SqlRemovalRequest.SerializeToString,
+        self.removeNode = channel.unary_unary(
+                '/sparkapi.SparkApi/removeNode',
+                request_serializer=sparkapi__pb2.NodeRemovalRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
                 _registered_method=True)
 
@@ -142,19 +142,19 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def addSql(self, request, context):
+    def addNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def editSql(self, request, context):
+    def editNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def removeSql(self, request, context):
+    def removeNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -203,19 +203,19 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.LoadFromSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'addSql': grpc.unary_unary_rpc_method_handler(
-                    servicer.addSql,
-                    request_deserializer=sparkapi__pb2.SqlRequest.FromString,
+            'addNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.addNode,
+                    request_deserializer=sparkapi__pb2.NodeAddRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'editSql': grpc.unary_unary_rpc_method_handler(
-                    servicer.editSql,
-                    request_deserializer=sparkapi__pb2.SqlRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
+            'editNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.editNode,
+                    request_deserializer=sparkapi__pb2.NodeEditRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'removeSql': grpc.unary_unary_rpc_method_handler(
-                    servicer.removeSql,
-                    request_deserializer=sparkapi__pb2.SqlRemovalRequest.FromString,
+            'removeNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.removeNode,
+                    request_deserializer=sparkapi__pb2.NodeRemovalRequest.FromString,
                     response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
             ),
     }
@@ -446,7 +446,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def addSql(request,
+    def addNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -459,8 +459,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/addSql',
-            sparkapi__pb2.SqlRequest.SerializeToString,
+            '/sparkapi.SparkApi/addNode',
+            sparkapi__pb2.NodeAddRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
@@ -473,7 +473,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def editSql(request,
+    def editNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -486,9 +486,9 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/editSql',
-            sparkapi__pb2.SqlRequest.SerializeToString,
-            sparkapi__pb2.PysparkTransformResponse.FromString,
+            '/sparkapi.SparkApi/editNode',
+            sparkapi__pb2.NodeEditRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -500,7 +500,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def removeSql(request,
+    def removeNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -513,8 +513,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/removeSql',
-            sparkapi__pb2.SqlRemovalRequest.SerializeToString,
+            '/sparkapi.SparkApi/removeNode',
+            sparkapi__pb2.NodeRemovalRequest.SerializeToString,
             sparkapi__pb2.PysparkTransformResponse.FromString,
             options,
             channel_credentials,

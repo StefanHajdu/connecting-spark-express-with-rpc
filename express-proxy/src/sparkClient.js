@@ -81,7 +81,7 @@ export class SparkClient {
 
   _addSql(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.addSql(
+    return this.client.addNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -100,7 +100,7 @@ export class SparkClient {
 
   _editSql(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.editSql(
+    return this.client.editNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -119,7 +119,7 @@ export class SparkClient {
 
   _removeSql(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.removeSql(
+    return this.client.removeNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

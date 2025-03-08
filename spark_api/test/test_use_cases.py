@@ -345,7 +345,7 @@ def test_07_edit_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where tld = 'com' OR tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -355,7 +355,7 @@ def test_07_edit_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(2),
-            "previous_node_id": node_1,
+            "prev_node_id": node_1,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -370,11 +370,10 @@ def test_07_edit_sql_after_summarize():
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC'",
             "query_type": "filter",
             "query_params_json": ["df"],
-            "include_sql": True,
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
-    assert df_session_1["num_rows"] > df_session_2["num_rows"]
+    assert df_session_1["count"] > df_session_2["count"]
 
 
 def test_07_edit_sql_before_summarize():
@@ -384,7 +383,7 @@ def test_07_edit_sql_before_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where tld = 'com' OR tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -394,7 +393,7 @@ def test_07_edit_sql_before_summarize():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(2),
-            "previous_node_id": node_1,
+            "prev_node_id": node_1,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -409,11 +408,10 @@ def test_07_edit_sql_before_summarize():
             "query": "select * from {df} where tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
-            "include_sql": True,
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
-    assert df_session_1["num_rows"] > df_session_2["num_rows"]
+    assert df_session_1["count"] > df_session_2["count"]
 
 
 def test_08_remove_sql_after_summarize():

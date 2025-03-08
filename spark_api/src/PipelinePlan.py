@@ -37,23 +37,34 @@ class SessionPlanner:
             idx -= 1
         return self.nodes[idx]
 
-    def add_sql(self, spark: SparkSession, new_sql_node: SparkNode):
-        # get prev node
+    def add_node(self, spark: SparkSession, new_sql_node: SparkNode):
+        # get prev node index
         prev_position = self.get_node_position(new_sql_node.prev_node_id)
         prev_node = self.nodes[prev_position]
 
         # get then insert new df
-        print(prev_position, len(self.nodes), prev_node)
         new_sql_node.df = new_sql_node.run_transform(spark=spark, df=prev_node.df)
 
         if prev_position == -1:
             # append
             self.nodes.append(new_sql_node)
         else:
-            print("RERUN FROM ADDED")
             # rerun from appended
             self.nodes.insert(prev_position + 1, new_sql_node)
             for node_id in range(prev_position + 2, len(self.nodes)):
+                node = self.nodes[node_id]
+                node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
+
+    def edit_node(self, spark: SparkSession, edited_node: SparkNode):
+        # get node index
+        node_position = self.get_node_position(edited_node.node_id)
+
+        edited_node.df = edited_node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
+        self.nodes[node_position] = edited_node
+
+        if not node_position == -1:
+            # rerun from edited
+            for node_id in range(node_position + 1, len(self.nodes)):
                 node = self.nodes[node_id]
                 node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
 

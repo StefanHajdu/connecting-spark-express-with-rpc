@@ -29,30 +29,9 @@ def get_new_port(s: SessionTable) -> int:
 
 class SparkApiServicer(SparkApiServicer):
     @sessionPlannerMap.spark_transformation_update
-    def editSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/editSql: {req.session_id, req.query, req.previous_node_id}")
-        res = sessionTable.session_table[req.session_id]["stub"].editSql(
-            sparkapi_session_pb2.SqlRequest(
-                session_id=req.session_id,
-                node_id=req.node_id,
-                query_type=req.query_type,
-                query=req.query,
-                query_params_json=req.query_params_json,
-                include_sql=req.include_sql,
-                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-            )
-        )
-
-        return (
-            sparkapi_pb2.PysparkTransformResponse(
-                session_id=res.session_id,
-                msg=res.msg,
-            ),
-            res.planner,
-        )
-
-    @sessionPlannerMap.spark_transformation_update
-    def removeSql(self, req: sparkapi_pb2.SqlRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+    def removeNode(
+        self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
         print(f"/removeSql: {req.session_id, req.node_id, req.temp}")
         res = sessionTable.session_table[req.session_id]["stub"].removeSql(
             sparkapi_session_pb2.SqlRemovalRequest(
@@ -121,7 +100,7 @@ class SparkApiServicer(SparkApiServicer):
             schema="schema TO BE PROVIDED",
         )
 
-    def addSql(self, req: sparkapi_pb2.SqlRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         new_sql_node = session.create_sql_node(
             node_id=req.node_id,
@@ -131,11 +110,24 @@ class SparkApiServicer(SparkApiServicer):
             query_type=req.query_type,
             query_params_json=req.query_params_json,
         )
-        session.plan.add_sql(spark, new_sql_node)
+        session.plan.add_node(spark, new_sql_node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Sql transform: {req.query} applied",
+            msg=f"Node: {req.node_id} added and transform: {req.query} applied",
+            schema="schema TO BE PROVIDED",
+        )
+
+    def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        edited_node = session.edit_sql_node(
+            req.node_id, req.query_type, req.query, req.query_params_json, included=True
+        )
+        session.plan.edit_node(spark, edited_node)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Node: {req.node_id} edited and transform: {req.query} applied",
             schema="schema TO BE PROVIDED",
         )
 

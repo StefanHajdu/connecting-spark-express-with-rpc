@@ -53,7 +53,7 @@ class ClientSession:
         return node
 
     def create_sql_node(self, node_id, prev_node_id, query_type, included, query, query_params_json):
-        self._log(f"/addSql: {node_id, prev_node_id, query}")
+        self._log(f"/addNode: {node_id, prev_node_id, query}")
         node = SqlNode(
             session_id=self.id,
             node_id=node_id,
@@ -63,6 +63,17 @@ class ClientSession:
             query=query,
             query_type=query_type,
             query_params_json=query_params_json,
+        )
+        return node
+
+    def edit_sql_node(self, node_id, query_type, query, query_params_json, included):
+        self._log(f"/editNode: {node_id, query}")
+        node = self.plan.get_node_by_id(node_id)
+        node.edit(
+            query_type=query_type,
+            query=query,
+            query_params_json=query_params_json,
+            included=included,
         )
         return node
 
@@ -276,3 +287,9 @@ class SqlNode(SparkNode):
 
     def _get_parsed_params(self):
         return {}
+
+    def edit(self, query_type, query, query_params_json, included):
+        self.query_type = query_type
+        self.query = query
+        self.query_params_json = query_params_json
+        self.included = included
