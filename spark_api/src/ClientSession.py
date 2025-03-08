@@ -1,6 +1,6 @@
 import json
 
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import DataFrame
 from constants import PLAN_NODE_ROOT_ID
 from custom_types import SparkNode as SN
 from typing import Iterable
@@ -33,7 +33,7 @@ class ClientSession:
             path=path,
             data_type=data_type,
         )
-        df = node.run_transform(spark)
+        df = node.run_transform(spark=spark)
         node.df = df
         return node
 
@@ -48,11 +48,12 @@ class ClientSession:
             query="custom.load_last_df_from_input_session",
             input_session_node_id=input_session_plan.session_id,
         )
-        df = node.run_transform(input_session_plan)
+        df = node.run_transform(input_session_plan=input_session_plan)
         node.df = df
         return node
 
     def create_sql_node(self, node_id, prev_node_id, query_type, included, query, query_params_json):
+        self._log(f"/addSql: {node_id, prev_node_id, query}")
         node = SqlNode(
             session_id=self.id,
             node_id=node_id,
@@ -80,7 +81,7 @@ class ClientSession:
             yield json.dumps(row)
 
     def _log(self, msg):
-        print(f"    *** session - {self.id} *** " + msg)
+        print(f"*** session - {self.id} *** " + msg)
 
 
 class SparkNode(ABC):
@@ -195,7 +196,9 @@ class LoadNode(SparkNode):
     def __str__(self):
         return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | path: {self.path} | data_type {self.data_type}"
 
-    def run_transform(self, spark: SparkSession):
+    def run_transform(self, **kwargs):
+        spark = kwargs.get("spark")
+
         if self.data_type == "csv":
             return spark.read.option("delimiter", ";").option("header", True).csv(self.path)
         elif self.data_type == "json":
@@ -223,8 +226,10 @@ class LoadFromSessionNode(SparkNode):
     def __str__(self):
         return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | input_session_node_id: {self.input_session_node_id}"
 
-    def run_transform(self, parent_session_plan):
-        last_node = parent_session_plan.get_last_spark_node()
+    def run_transform(self, **kwargs):
+        input_session_plan = kwargs.get("input_session_plan")
+
+        last_node = input_session_plan.get_last_spark_node()
         return last_node.df
 
 
@@ -256,14 +261,17 @@ class SqlNode(SparkNode):
         self._query_params_json = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | query_paras: {self.query_params_json} | query_type: {self.query_type}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}"
 
-    def run_transform(self, spark: SparkSession, df: DataFrame):
-        kwargs = self._get_parsed_params()
+    def run_transform(self, **kwargs):
+        spark = kwargs.get("spark")
+        df = kwargs.get("df")
+
+        query_kwargs = self._get_parsed_params()
         return spark.sql(
             self.query,
             df=df,
-            **kwargs,
+            **query_kwargs,
         )
 
     def _get_parsed_params(self):

@@ -28,8 +28,8 @@ class SessionPlanner:
     def get_node_position(self, node_id: str):
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
-                return idx
-        return -1
+                break
+        return -1 if idx == len(self.nodes) - 1 else idx
 
     def get_last_spark_node(self) -> SparkNode:
         idx = -1
@@ -38,13 +38,24 @@ class SessionPlanner:
         return self.nodes[idx]
 
     def add_sql(self, spark: SparkSession, new_sql_node: SparkNode):
+        # get prev node
         prev_position = self.get_node_position(new_sql_node.prev_node_id)
         prev_node = self.nodes[prev_position]
-        new_sql_node.df = new_sql_node.run_transform(spark, prev_node.df)
-        # append
-        self.nodes.insert(prev_position + 1, new_sql_node)
 
-        # what if not appending... TODO
+        # get then insert new df
+        print(prev_position, len(self.nodes), prev_node)
+        new_sql_node.df = new_sql_node.run_transform(spark=spark, df=prev_node.df)
+
+        if prev_position == -1:
+            # append
+            self.nodes.append(new_sql_node)
+        else:
+            print("RERUN FROM ADDED")
+            # rerun from appended
+            self.nodes.insert(prev_position + 1, new_sql_node)
+            for node_id in range(prev_position + 2, len(self.nodes)):
+                node = self.nodes[node_id]
+                node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
 
     def _find_position_to_insert(self, new_node: SparkNode):
         for idx, node in enumerate(self.nodes):
