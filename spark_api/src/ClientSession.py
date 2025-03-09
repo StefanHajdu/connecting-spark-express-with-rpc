@@ -7,6 +7,7 @@ from typing import Iterable
 from abc import ABC, abstractmethod
 
 from utils import log_plan_execution
+from custom_exceptions import SummarizePauseNodeException
 
 
 class ClientSession:
@@ -157,6 +158,8 @@ class SparkNode(ABC):
         self._query = val
 
     def summarize(self):
+        if not self.included:
+            raise SummarizePauseNodeException()
         return {
             "columns": json.dumps(self.df.columns),
             "count": self.df.count(),

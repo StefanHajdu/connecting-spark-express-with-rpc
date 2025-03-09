@@ -71,7 +71,7 @@ class SessionPlanner:
         if del_position == 0:
             raise LoadNodeRemovalException()
         elif del_position == -1:
-            _ = self.nodes.pop()
+            self._delete_node(del_position, pause_node_flag)
         else:
             self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
             self._delete_node(del_position, pause_node_flag)
