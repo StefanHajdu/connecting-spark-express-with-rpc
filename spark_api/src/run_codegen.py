@@ -8,16 +8,6 @@ protoc.main(
         "-I../protos",
         "--python_out=./src",
         "--grpc_python_out=./src",
-        "../protos/sparkapi_session.proto",
-    )
-)
-
-protoc.main(
-    (
-        "",
-        "-I../protos",
-        "--python_out=./src",
-        "--grpc_python_out=./src",
         "../protos/sparkapi.proto",
     )
 )

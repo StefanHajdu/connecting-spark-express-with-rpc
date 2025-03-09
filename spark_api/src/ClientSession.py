@@ -2,12 +2,10 @@ import json
 
 from pyspark.sql import DataFrame
 from constants import PLAN_NODE_ROOT_ID
-from custom_types import SparkNode as SN
 from typing import Iterable
 from abc import ABC, abstractmethod
 
 from utils import log_plan_execution
-from custom_exceptions import SummarizePauseNodeException
 
 
 class ClientSession:
@@ -22,14 +20,13 @@ class ClientSession:
     def plan(self, val):
         self._plan = val
 
-    def load_dataset(self, spark, path: str, data_type: str) -> SN:
+    def load_dataset(self, spark, path: str, data_type: str):
         self._log(f"/load: {path, data_type}")
         node = LoadNode(
             session_id=self.id,
             node_id=PLAN_NODE_ROOT_ID,
             prev_node_id=None,
             operation=f"{__name__}",
-            included=True,
             query="spark.read",
             path=path,
             data_type=data_type,
@@ -45,7 +42,6 @@ class ClientSession:
             node_id=PLAN_NODE_ROOT_ID,
             prev_node_id=None,
             operation=f"{__name__}",
-            included=True,
             query="custom.load_last_df_from_input_session",
             input_session_node_id=input_session_plan.session_id,
         )
@@ -53,34 +49,46 @@ class ClientSession:
         node.df = df
         return node
 
-    def create_sql_node(self, node_id, prev_node_id, query_type, included, query, query_params_json):
+    def add_node(self, spark, node_id, prev_node_id, query_type, query, query_params_json):
         self._log(f"/addNode: {node_id, prev_node_id, query}")
+        new_sql_node = self.create_sql_node(
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+            query=query,
+            query_type=query_type,
+            query_params_json=query_params_json,
+        )
+        self.plan.add_node(spark, new_sql_node)
+
+    def create_sql_node(self, node_id, prev_node_id, query_type, query, query_params_json):
         node = SqlNode(
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
             operation="sql",
-            included=included,
             query=query,
             query_type=query_type,
             query_params_json=query_params_json,
         )
         return node
 
-    def edit_sql_node(self, node_id, query_type, query, query_params_json, included):
+    def edit_node(self, spark, node_id, query_type, query, query_params_json):
         self._log(f"/editNode: {node_id, query}")
+        edited_node = self.edit_sql_node(node_id, query_type, query, query_params_json)
+        self.plan.edit_node(spark, edited_node)
+
+    def edit_sql_node(self, node_id, query_type, query, query_params_json):
         node = self.plan.get_node_by_id(node_id)
         node.edit(
             query_type=query_type,
             query=query,
             query_params_json=query_params_json,
-            included=included,
         )
         return node
 
-    def remove_node(self, spark, node_id, pause_node_flag: bool):
-        self._log(f"/removeNode: {node_id, pause_node_flag}")
-        self.plan.remove_node(spark, node_id, pause_node_flag)
+    def remove_node(self, spark, node_id):
+        self._log(f"/removeNode: {node_id}")
+        self.plan.remove_node(spark, node_id)
 
     @log_plan_execution
     def summarize(self, node_id: str):
@@ -142,14 +150,6 @@ class SparkNode(ABC):
         self._operation = val
 
     @property
-    def included(self):
-        return self._included
-
-    @included.setter
-    def included(self, val: bool):
-        self._included = val
-
-    @property
     def query(self):
         return self._query
 
@@ -158,8 +158,6 @@ class SparkNode(ABC):
         self._query = val
 
     def summarize(self):
-        if not self.included:
-            raise SummarizePauseNodeException()
         return {
             "columns": json.dumps(self.df.columns),
             "count": self.df.count(),
@@ -181,7 +179,6 @@ class LoadNode(SparkNode):
         node_id,
         prev_node_id,
         operation,
-        included,
         query,
         path,
         data_type,
@@ -190,7 +187,6 @@ class LoadNode(SparkNode):
         self._node_id = node_id
         self._prev_node_id = prev_node_id
         self._operation = operation
-        self._included = included
         self._query = query
         self._path = path
         self._data_type = data_type
@@ -212,7 +208,7 @@ class LoadNode(SparkNode):
         self._data_type = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | path: {self.path} | data_type {self.data_type}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}"
 
     def run_transform(self, **kwargs):
         spark = kwargs.get("spark")
@@ -224,12 +220,11 @@ class LoadNode(SparkNode):
 
 
 class LoadFromSessionNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, included, query, input_session_node_id):
+    def __init__(self, session_id, node_id, prev_node_id, operation, query, input_session_node_id):
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
         self._operation = operation
-        self._included = included
         self._query = query
         self._input_session_node_id = input_session_node_id
 
@@ -242,7 +237,7 @@ class LoadFromSessionNode(SparkNode):
         self._input_session_node_id = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | input_session_node_id: {self.input_session_node_id}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | input_session_node_id: {self.input_session_node_id}"
 
     def run_transform(self, **kwargs):
         input_session_plan = kwargs.get("input_session_plan")
@@ -252,13 +247,12 @@ class LoadFromSessionNode(SparkNode):
 
 
 class SqlNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, included, query, query_type, query_params_json):
+    def __init__(self, session_id, node_id, prev_node_id, operation, query, query_type, query_params_json):
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
         self._query_type = query_type
         self._operation = operation
-        self._included = included
         self._query = query
         self._query_params_json = query_params_json
 
@@ -279,7 +273,7 @@ class SqlNode(SparkNode):
         self._query_params_json = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | included: {self.included} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}"
 
     def run_transform(self, **kwargs):
         spark = kwargs.get("spark")
@@ -295,8 +289,7 @@ class SqlNode(SparkNode):
     def _get_parsed_params(self):
         return {}
 
-    def edit(self, query_type, query, query_params_json, included):
+    def edit(self, query_type, query, query_params_json):
         self.query_type = query_type
         self.query = query
         self.query_params_json = query_params_json
-        self.included = included

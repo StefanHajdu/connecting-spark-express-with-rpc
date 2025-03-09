@@ -52,7 +52,6 @@ message PysparkTransformResponse {
 message SparkTransformResponse {
     string session_id = 1;
     string msg = 2;
-    string schema = 3;
 }
 
 message RowStreamResponse {
@@ -99,7 +98,6 @@ message NodeAddRequest {
     string prev_node_id = 3;
     string query_type = 4;
     string query = 5;
-    bool included = 6;
     string query_params_json = 7;
 }
 
@@ -108,14 +106,12 @@ message NodeEditRequest {
     string node_id = 2;
     string query_type = 3;
     string query = 4;
-    bool included = 5;
     string query_params_json = 6;
 }
 
 message NodeRemovalRequest {
     string session_id = 1;
     string node_id = 2;
-    bool pause_node_flag = 3;
 }
 
 message LoadFromSessionRequest {

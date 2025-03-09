@@ -3,7 +3,6 @@ import grpc
 from pyspark.sql import SparkSession
 
 import sparkapi_pb2
-import sparkapi_session_pb2
 
 from concurrent import futures
 from typing import Iterable
@@ -13,26 +12,37 @@ from sparkapi_pb2_grpc import (
 )
 
 from ClientSession import ClientSession
-from SessionTable import SessionTable, ClientSessionTable
+from ClientSessionTable import ClientSessionTable
 from PipelinePlan import SessionPlanner, SessionPlannerMap
 
-sessionTable = SessionTable()
 clientSessionTable = ClientSessionTable()
-sessionPlannerMap = SessionPlannerMap(sessionTable)
+sessionPlannerMap = SessionPlannerMap(clientSessionTable)
 
 
 class SparkApiServicer(SparkApiServicer):
-    def rebuildSession(
-        self, req: sparkapi_pb2.RebuildRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/rebuildSession: {req.session_id}")
-        res = sessionTable.session_table[req.session_id]["stub"].rebuildSession(
-            sparkapi_session_pb2.RebuildRequest(
-                session_id=req.session_id,
-                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-            )
-        )
-        return sparkapi_pb2.PysparkTransformResponse(session_id=res.session_id, msg=res.msg)
+    # def rebuildSession(
+    #     self, req: sparkapi_pb2.RebuildRequest, unused_context
+    # ) -> sparkapi_pb2.PysparkTransformResponse:
+    #     print(f"/rebuildSession: {req.session_id}")
+    #     res = sessionTable.session_table[req.session_id]["stub"].rebuildSession(
+    #         sparkapi_session_pb2.RebuildRequest(
+    #             session_id=req.session_id,
+    #             planner=sessionPlannerMap.get_planner_pickled(req.session_id),
+    #         )
+    #     )
+    #     return sparkapi_pb2.PysparkTransformResponse(session_id=res.session_id, msg=res.msg)
+
+    # def getParentSessionPlan(self, req: sparkapi_pb2.PlanRequest, unused_context) -> sparkapi_pb2.PlanResponse:
+    #     return sparkapi_pb2.PlanResponse(id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id))
+
+    # def getRebuildStatus(
+    #     self, req: sparkapi_pb2.RebuildStatusRequest, unused_context
+    # ) -> sparkapi_pb2.RebuildStatusResponse:
+    #     print(f"/rebuildStatus: {req.id}")
+    #     res = sessionTable.session_table[req.id]["stub"].getRebuildStatus(
+    #         sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
+    #     )
+    #     return sparkapi_pb2.RebuildStatusResponse(id=req.id, rebuild_status=res.rebuild_status)
 
     # refactor -->
 
@@ -53,9 +63,7 @@ class SparkApiServicer(SparkApiServicer):
         session.plan = SessionPlanner(req.session_id, root_plan_node)
         sessionPlannerMap.update_session_plan(session.id, session.plan)
 
-        return sparkapi_pb2.SparkTransformResponse(
-            session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.", schema="schema TO BE PROVIDED"
-        )
+        return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.")
 
     def loadFromSession(
         self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context
@@ -69,50 +77,42 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Dataframe from input session {req.input_session_id} reused input.",
-            schema="schema TO BE PROVIDED",
         )
 
     def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        new_sql_node = session.create_sql_node(
+        session.add_node(
+            spark=spark,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
-            included=True,
             query=req.query,
             query_type=req.query_type,
             query_params_json=req.query_params_json,
         )
-        session.plan.add_node(spark, new_sql_node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Node: {req.node_id} added and transform: {req.query} applied",
-            schema="schema TO BE PROVIDED",
         )
 
-    def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+    def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        edited_node = session.edit_sql_node(
-            req.node_id, req.query_type, req.query, req.query_params_json, included=True
-        )
-        session.plan.edit_node(spark, edited_node)
+        session.edit_node(spark, req.node_id, req.query_type, req.query, req.query_params_json)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Node: {req.node_id} edited and transform: {req.query} applied",
-            schema="schema TO BE PROVIDED",
         )
 
     def removeNode(
         self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.remove_node(spark, req.node_id, req.pause_node_flag)
+        session.remove_node(spark, req.node_id)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} {'removed' if req.pause_node_flag else 'paused'}",
-            schema="schema TO BE PROVIDED",
+            msg=f"Node: {req.node_id} removed",
         )
 
     def summarizeDataset(
@@ -137,18 +137,6 @@ class SparkApiServicer(SparkApiServicer):
 
         for row in row_stream:
             yield sparkapi_pb2.RowStreamResponse(row_json=row)
-
-    def getParentSessionPlan(self, req: sparkapi_pb2.PlanRequest, unused_context) -> sparkapi_pb2.PlanResponse:
-        return sparkapi_pb2.PlanResponse(id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id))
-
-    def getRebuildStatus(
-        self, req: sparkapi_pb2.RebuildStatusRequest, unused_context
-    ) -> sparkapi_pb2.RebuildStatusResponse:
-        print(f"/rebuildStatus: {req.id}")
-        res = sessionTable.session_table[req.id]["stub"].getRebuildStatus(
-            sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
-        )
-        return sparkapi_pb2.RebuildStatusResponse(id=req.id, rebuild_status=res.rebuild_status)
 
 
 spark = (

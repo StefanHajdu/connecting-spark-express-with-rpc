@@ -192,7 +192,6 @@ def test_04_2_parent_session_changed_multi_level():
             "query": "select * from {df} where tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
-            "include_sql": True,
         }
     )
 
@@ -441,7 +440,6 @@ def test_08_remove_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": node_1,
-            "pause_node_flag": False,
         }
     )
 
@@ -449,7 +447,6 @@ def test_08_remove_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": node_2,
-            "pause_node_flag": False,
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -485,7 +482,6 @@ def test_08_remove_sql_before_summarize():
         **{
             "session_id": session_0,
             "node_id": node_1,
-            "pause_node_flag": False,
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
@@ -495,7 +491,6 @@ def test_08_remove_sql_before_summarize():
         **{
             "session_id": session_0,
             "node_id": node_2,
-            "pause_node_flag": False,
         }
     )
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
