@@ -11,15 +11,15 @@ class SessionPlanner:
         self.session_id = session_id
         self.nodes = deque([root_node])
 
-    def get_node_by_id(self, node_id: str) -> SparkNode:
+    def get_node_by_id(self, node_id: str) -> SparkNode | None:
         idx = self._find_node_by_id(node_id)
-        return self.nodes[idx]
+        if idx is not None:
+            return self.nodes[idx]
 
-    def _find_node_by_id(self, node_id: str):
+    def _find_node_by_id(self, node_id: str) -> int | None:
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
                 return idx
-        return -1
 
     def get_node_position(self, node_id: str):
         for idx, node in enumerate(self.nodes):

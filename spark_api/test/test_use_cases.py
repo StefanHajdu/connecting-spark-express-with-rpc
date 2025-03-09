@@ -1,5 +1,8 @@
 import utils as u
 from state import TestState
+from spark_api.src.custom_exceptions import NodeMissingException
+
+nodeMissingException = NodeMissingException()
 
 s = TestState()
 
@@ -450,7 +453,9 @@ def test_08_remove_sql_after_summarize():
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
-    assert df_session_1["count"] == s.total_rows
+    assert nodeMissingException.__str__() in df_session_1["error"]["message"]
+    df_session_2 = u.summarize(session_id=session_0, node_id=s.root_node_id)
+    assert df_session_2["count"] == s.total_rows
 
 
 def test_08_remove_sql_before_summarize():
@@ -494,4 +499,73 @@ def test_08_remove_sql_before_summarize():
         }
     )
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
-    assert df_session_3["count"] == s.total_rows
+    assert nodeMissingException.__str__() in df_session_3["error"]["message"]
+    df_session_4 = u.summarize(session_id=session_0, node_id=s.root_node_id)
+    assert df_session_4["count"] == s.total_rows
+
+
+def test_12_toggle():
+    session_0 = u.create_session(session_id=u.to_session_id(0))
+    u.load(session_id=session_0, src_path=s.path, src_type=s.type)
+    node_1 = u.add_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(1),
+            "prev_node_id": s.root_node_id,
+            "query": "select * from {df} where tld = 'com'",
+            "query_type": "filter",
+            "query_params_json": ["df"],
+        }
+    )
+    node_2 = u.add_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(2),
+            "prev_node_id": node_1,
+            "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
+            "query_type": "filter",
+            "query_params_json": ["df"],
+        }
+    )
+    df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
+
+    u.remove_sql(
+        **{
+            "session_id": session_0,
+            "node_id": node_1,
+        }
+    )
+    u.remove_sql(
+        **{
+            "session_id": session_0,
+            "node_id": node_2,
+        }
+    )
+    res = u.summarize(session_id=session_0, node_id=node_2)
+    assert nodeMissingException.__str__() in res["error"]["message"]
+
+    node_2 = u.add_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(2),
+            "prev_node_id": s.root_node_id,
+            "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
+            "query_type": "filter",
+            "query_params_json": ["df"],
+        }
+    )
+    df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
+    assert df_session_3["count"] > df_session_1["count"]
+
+    node_1 = u.add_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(1),
+            "prev_node_id": s.root_node_id,
+            "query": "select * from {df} where tld = 'com'",
+            "query_type": "filter",
+            "query_params_json": ["df"],
+        }
+    )
+    df_session_4 = u.summarize(session_id=session_0, node_id=node_2)
+    assert df_session_4["count"] == df_session_1["count"]

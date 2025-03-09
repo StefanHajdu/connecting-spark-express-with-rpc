@@ -5,8 +5,9 @@ from constants import PLAN_NODE_ROOT_ID
 from typing import Iterable
 from abc import ABC, abstractmethod
 
-from utils import log_plan_execution
 from spark_session_init import spark
+from utils import log_plan_execution
+from custom_exceptions import NodeMissingException
 
 
 class ClientSession:
@@ -95,7 +96,10 @@ class ClientSession:
     def summarize(self, node_id: str):
         self._log(f"/summarize: {node_id}")
         node = self.plan.get_node_by_id(node_id)
-        return node.summarize()
+        if node:
+            return node.summarize()
+        else:
+            raise NodeMissingException()
 
     @log_plan_execution
     def preview(self, node_id: str, limit: int) -> Iterable[str]:

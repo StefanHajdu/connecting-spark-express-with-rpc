@@ -1,7 +1,8 @@
 import requests
 
-from spark_api.src.custom_exceptions import DuplicateSessionException
+from spark_api.src.custom_exceptions import DuplicateSessionException, NodeMissingException
 
+nodeMissingException = NodeMissingException()
 duplicateSessionException = DuplicateSessionException()
 
 
@@ -73,7 +74,9 @@ def summarize(session_id: str, node_id: str) -> dict:
     }
     res = requests.post("http://localhost:4444/summarize", json=json_data)
 
-    assert res.status_code == 200
+    assert res.status_code == 200 or (
+        res.status_code == 500 and nodeMissingException.__str__() in res.json()["error"]["message"]
+    )
     return res.json()
 
 
