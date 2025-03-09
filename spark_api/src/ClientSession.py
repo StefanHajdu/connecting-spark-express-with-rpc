@@ -6,6 +6,7 @@ from typing import Iterable
 from abc import ABC, abstractmethod
 
 from utils import log_plan_execution
+from spark_session_init import spark
 
 
 class ClientSession:
@@ -20,7 +21,7 @@ class ClientSession:
     def plan(self, val):
         self._plan = val
 
-    def load_dataset(self, spark, path: str, data_type: str):
+    def load_dataset(self, path: str, data_type: str):
         self._log(f"/load: {path, data_type}")
         node = LoadNode(
             session_id=self.id,
@@ -49,7 +50,7 @@ class ClientSession:
         node.df = df
         return node
 
-    def add_node(self, spark, node_id, prev_node_id, query_type, query, query_params_json):
+    def add_node(self, node_id, prev_node_id, query_type, query, query_params_json):
         self._log(f"/addNode: {node_id, prev_node_id, query}")
         new_sql_node = self.create_sql_node(
             node_id=node_id,
@@ -72,7 +73,7 @@ class ClientSession:
         )
         return node
 
-    def edit_node(self, spark, node_id, query_type, query, query_params_json):
+    def edit_node(self, node_id, query_type, query, query_params_json):
         self._log(f"/editNode: {node_id, query}")
         edited_node = self.edit_sql_node(node_id, query_type, query, query_params_json)
         self.plan.edit_node(spark, edited_node)
@@ -86,7 +87,7 @@ class ClientSession:
         )
         return node
 
-    def remove_node(self, spark, node_id):
+    def remove_node(self, node_id):
         self._log(f"/removeNode: {node_id}")
         self.plan.remove_node(spark, node_id)
 

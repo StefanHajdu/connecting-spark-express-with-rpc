@@ -1,7 +1,5 @@
 import grpc
 
-from pyspark.sql import SparkSession
-
 import sparkapi_pb2
 
 from concurrent import futures
@@ -59,7 +57,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.LoadDatasetRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        root_plan_node = session.load_dataset(spark, req.df_path, req.df_type)
+        root_plan_node = session.load_dataset(req.df_path, req.df_type)
         session.plan = SessionPlanner(req.session_id, root_plan_node)
         sessionPlannerMap.update_session_plan(session.id, session.plan)
 
@@ -82,7 +80,6 @@ class SparkApiServicer(SparkApiServicer):
     def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.add_node(
-            spark=spark,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
             query=req.query,
@@ -97,7 +94,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_node(spark, req.node_id, req.query_type, req.query, req.query_params_json)
+        session.edit_node(req.node_id, req.query_type, req.query, req.query_params_json)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -108,7 +105,7 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.remove_node(spark, req.node_id)
+        session.remove_node(req.node_id)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -137,14 +134,6 @@ class SparkApiServicer(SparkApiServicer):
 
         for row in row_stream:
             yield sparkapi_pb2.RowStreamResponse(row_json=row)
-
-
-spark = (
-    SparkSession.builder.appName("SparkSession")
-    .master("local[*]")
-    .config("spark.driver.memory", "30720m")
-    .getOrCreate()
-)
 
 
 def serve():
