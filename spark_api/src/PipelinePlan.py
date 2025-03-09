@@ -64,9 +64,40 @@ class SessionPlanner:
 
         if not node_position == -1:
             # rerun from edited
-            for node_id in range(node_position + 1, len(self.nodes)):
-                node = self.nodes[node_id]
-                node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
+            self.reapply_plan(spark, node_position + 1)
+
+    def remove_node(self, spark: SparkSession, node_id: str, pause_node_flag: bool):
+        del_position = self.get_node_position(node_id)
+        if del_position == 0:
+            raise LoadNodeRemovalException()
+        elif del_position == -1:
+            _ = self.nodes.pop()
+        else:
+            self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
+            self._delete_node(del_position, pause_node_flag)
+            self.reapply_plan(spark, del_position)
+
+    def _delete_node(self, position: int, temp: bool):
+        if temp:
+            self.nodes[position].included = False
+        else:
+            del self.nodes[position]
+
+    def reapply_plan(self, spark: SparkSession, start: int):
+        for node_position in range(start, len(self.nodes)):
+            node = self.nodes[node_position]
+            if node.included:
+                node.df = node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
+
+    def remove_sql_from_nodes(self, node_id: str, temp: bool):
+        to_del = self._find_node_by_id(node_id)
+        if to_del < 0:
+            raise InvalidEditException()
+        elif to_del == 0:
+            raise LoadNodeRemovalException()
+        elif not to_del == len(self.nodes) - 1:
+            self.nodes[to_del + 1]["previous_node_id"] = self.nodes[to_del - 1]["node_id"]
+        self._delete_node(to_del, temp)
 
     def _find_position_to_insert(self, new_node: SparkNode):
         for idx, node in enumerate(self.nodes):
@@ -87,27 +118,11 @@ class SessionPlanner:
 
         self.nodes[id_to_edit]["include_sql"] = node["include_sql"]
 
-    def remove_sql_from_nodes(self, node_id: str, temp: bool):
-        to_del = self._find_node_by_id(node_id)
-        if to_del < 0:
-            raise InvalidEditException()
-        elif to_del == 0:
-            raise LoadNodeRemovalException()
-        elif not to_del == len(self.nodes) - 1:
-            self.nodes[to_del + 1]["previous_node_id"] = self.nodes[to_del - 1]["node_id"]
-        self._delete_node(to_del, temp)
-
     def _find_node_by_id(self, node_id: str):
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
                 return idx
         return -1
-
-    def _delete_node(self, idx: int, temp: bool):
-        if temp:
-            self.nodes[idx]["include_sql"] = False
-        else:
-            del self.nodes[idx]
 
 
 class SessionPlannerMap:

@@ -87,7 +87,7 @@ class SparkApiStub(object):
         self.removeNode = channel.unary_unary(
                 '/sparkapi.SparkApi/removeNode',
                 request_serializer=sparkapi__pb2.NodeRemovalRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
 
 
@@ -216,7 +216,7 @@ def add_SparkApiServicer_to_server(servicer, server):
             'removeNode': grpc.unary_unary_rpc_method_handler(
                     servicer.removeNode,
                     request_deserializer=sparkapi__pb2.NodeRemovalRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -515,7 +515,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/removeNode',
             sparkapi__pb2.NodeRemovalRequest.SerializeToString,
-            sparkapi__pb2.PysparkTransformResponse.FromString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -16,7 +16,7 @@ service SparkApi {
     
     rpc addNode(NodeAddRequest) returns (SparkTransformResponse) {}
     rpc editNode(NodeEditRequest) returns (SparkTransformResponse) {}
-    rpc removeNode(NodeRemovalRequest) returns (PysparkTransformResponse) {}
+    rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
 }
 
 
@@ -115,7 +115,7 @@ message NodeEditRequest {
 message NodeRemovalRequest {
     string session_id = 1;
     string node_id = 2;
-    bool temp = 3;
+    bool pause_node_flag = 3;
 }
 
 message LoadFromSessionRequest {

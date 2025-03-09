@@ -77,6 +77,10 @@ class ClientSession:
         )
         return node
 
+    def remove_node(self, spark, node_id, pause_node_flag: bool):
+        self._log(f"/removeNode: {node_id, pause_node_flag}")
+        self.plan.remove_node(spark, node_id, pause_node_flag)
+
     @log_plan_execution
     def summarize(self, node_id: str):
         self._log(f"/summarize: {node_id}")

@@ -15,41 +15,13 @@ from sparkapi_pb2_grpc import (
 from ClientSession import ClientSession
 from SessionTable import SessionTable, ClientSessionTable
 from PipelinePlan import SessionPlanner, SessionPlannerMap
-from constants import BASE_SESSION_PORT
-
 
 sessionTable = SessionTable()
 clientSessionTable = ClientSessionTable()
 sessionPlannerMap = SessionPlannerMap(sessionTable)
 
 
-def get_new_port(s: SessionTable) -> int:
-    return BASE_SESSION_PORT + len(s.session_table.keys()) + 1
-
-
 class SparkApiServicer(SparkApiServicer):
-    @sessionPlannerMap.spark_transformation_update
-    def removeNode(
-        self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
-        print(f"/removeSql: {req.session_id, req.node_id, req.temp}")
-        res = sessionTable.session_table[req.session_id]["stub"].removeSql(
-            sparkapi_session_pb2.SqlRemovalRequest(
-                session_id=req.session_id,
-                node_id=req.node_id,
-                temp=req.temp,
-                planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-            )
-        )
-
-        return (
-            sparkapi_pb2.PysparkTransformResponse(
-                session_id=res.session_id,
-                msg=res.msg,
-            ),
-            res.planner,
-        )
-
     def rebuildSession(
         self, req: sparkapi_pb2.RebuildRequest, unused_context
     ) -> sparkapi_pb2.PysparkTransformResponse:
@@ -128,6 +100,18 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Node: {req.node_id} edited and transform: {req.query} applied",
+            schema="schema TO BE PROVIDED",
+        )
+
+    def removeNode(
+        self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.remove_node(spark, req.node_id, req.pause_node_flag)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Node: {req.node_id} {'removed' if req.pause_node_flag else 'paused'}",
             schema="schema TO BE PROVIDED",
         )
 
