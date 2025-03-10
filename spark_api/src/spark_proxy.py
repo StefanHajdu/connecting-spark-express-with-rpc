@@ -67,8 +67,11 @@ class SparkApiServicer(SparkApiServicer):
         self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        input_session_plan = sessionPlannerMap.get_session_plan(req.input_session_id)
-        root_plan_node = session.load_from_session(input_session_plan)
+
+        parent_session = clientSessionTable.get_session(req.input_session_id)
+        parent_session_plan = sessionPlannerMap.get_session_plan(req.input_session_id)
+        root_plan_node = session.load_from_session(parent_session, parent_session_plan)
+
         session.plan = SessionPlanner(req.session_id, root_plan_node)
         sessionPlannerMap.update_session_plan(session.id, session.plan)
 
@@ -110,6 +113,17 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f"Node: {req.node_id} removed",
+        )
+
+    def rebuildSession(
+        self, req: sparkapi_pb2.RebuildRequest, unused_context
+    ) -> sparkapi_pb2.PysparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.rebuild()
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Session: {req.session_id} rebuild",
         )
 
     def summarizeDataset(

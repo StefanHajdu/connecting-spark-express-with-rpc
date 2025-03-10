@@ -62,7 +62,7 @@ class SparkApiStub(object):
         self.rebuildSession = channel.unary_unary(
                 '/sparkapi.SparkApi/rebuildSession',
                 request_serializer=sparkapi__pb2.RebuildRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PysparkTransformResponse.FromString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.loadsDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/loadsDataset',
@@ -191,7 +191,7 @@ def add_SparkApiServicer_to_server(servicer, server):
             'rebuildSession': grpc.unary_unary_rpc_method_handler(
                     servicer.rebuildSession,
                     request_deserializer=sparkapi__pb2.RebuildRequest.FromString,
-                    response_serializer=sparkapi__pb2.PysparkTransformResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'loadsDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.loadsDataset,
@@ -380,7 +380,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/rebuildSession',
             sparkapi__pb2.RebuildRequest.SerializeToString,
-            sparkapi__pb2.PysparkTransformResponse.FromString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
             insecure,

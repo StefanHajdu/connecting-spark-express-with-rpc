@@ -6,13 +6,24 @@ from typing import Iterable
 from abc import ABC, abstractmethod
 
 from spark_session_init import spark
-from utils import log_plan_execution
+from utils import log_plan_execution, notify
 from custom_exceptions import NodeMissingException
 
 
 class ClientSession:
     def __init__(self, id):
         self.id = id
+        self.child_sessions = set()
+        self.source_changed_status = False
+
+    def __hash__(self):
+        return hash(self.id)
+
+    def __repr__(self):
+        return f"session: {self.id}, status: {self.source_changed_status}"
+
+    def add_child_session(self, session_id):
+        self.child_sessions.add(session_id)
 
     @property
     def plan(self):
@@ -37,20 +48,22 @@ class ClientSession:
         node.df = df
         return node
 
-    def load_from_session(self, input_session_plan):
-        self._log(f"/loadFromSession: {input_session_plan.session_id}")
+    def load_from_session(self, parent_session, parent_session_plan):
+        self._log(f"/loadFromSession: {parent_session_plan.session_id}")
         node = LoadFromSessionNode(
             session_id=self.id,
             node_id=PLAN_NODE_ROOT_ID,
             prev_node_id=None,
             operation=f"{__name__}",
             query="custom.load_last_df_from_input_session",
-            input_session_node_id=input_session_plan.session_id,
+            parent_session_plan=parent_session_plan,
         )
-        df = node.run_transform(input_session_plan=input_session_plan)
+        parent_session.add_child_session(self)
+        df = node.run_transform()
         node.df = df
         return node
 
+    @notify
     def add_node(self, node_id, prev_node_id, query_type, query, query_params_json):
         self._log(f"/addNode: {node_id, prev_node_id, query}")
         new_sql_node = self.create_sql_node(
@@ -74,12 +87,13 @@ class ClientSession:
         )
         return node
 
+    @notify
     def edit_node(self, node_id, query_type, query, query_params_json):
         self._log(f"/editNode: {node_id, query}")
-        edited_node = self.edit_sql_node(node_id, query_type, query, query_params_json)
+        edited_node = self.adjust_sql_node(node_id, query_type, query, query_params_json)
         self.plan.edit_node(spark, edited_node)
 
-    def edit_sql_node(self, node_id, query_type, query, query_params_json):
+    def adjust_sql_node(self, node_id, query_type, query, query_params_json):
         node = self.plan.get_node_by_id(node_id)
         node.edit(
             query_type=query_type,
@@ -88,9 +102,16 @@ class ClientSession:
         )
         return node
 
+    @notify
     def remove_node(self, node_id):
         self._log(f"/removeNode: {node_id}")
         self.plan.remove_node(spark, node_id)
+
+    @log_plan_execution
+    def rebuild(self):
+        self._log(f"/rebuildSession: {self.id}")
+        self.plan.reapply_plan(spark, start=0)
+        self.source_changed_status = False
 
     @log_plan_execution
     def summarize(self, node_id: str):
@@ -225,29 +246,27 @@ class LoadNode(SparkNode):
 
 
 class LoadFromSessionNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, query, input_session_node_id):
+    def __init__(self, session_id, node_id, prev_node_id, operation, query, parent_session_plan):
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
         self._operation = operation
         self._query = query
-        self._input_session_node_id = input_session_node_id
+        self._parent_session_plan = parent_session_plan
 
     @property
-    def input_session_node_id(self):
-        return self._input_session_node_id
+    def parent_session_plan(self):
+        return self._parent_session_plan
 
-    @input_session_node_id.setter
-    def input_session_node_id(self, val: str):
-        self._input_session_node_id = val
+    @parent_session_plan.setter
+    def parent_session_plan(self, val: str):
+        self._parent_session_plan = val
 
     def __str__(self):
-        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | input_session_node_id: {self.input_session_node_id}"
+        return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}"
 
     def run_transform(self, **kwargs):
-        input_session_plan = kwargs.get("input_session_plan")
-
-        last_node = input_session_plan.get_last_spark_node()
+        last_node = self.parent_session_plan.get_last_spark_node()
         return last_node.df
 
 

@@ -12,3 +12,16 @@ def log_plan_execution(func):
         return res
 
     return wrapper
+
+
+def notify(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        res = func(self, *args, **kwargs)
+
+        for child_session in self.child_sessions:
+            child_session.source_changed_status = True
+
+        return res
+
+    return wrapper

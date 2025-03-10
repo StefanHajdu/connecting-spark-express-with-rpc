@@ -79,7 +79,10 @@ class SessionPlanner:
     def reapply_plan(self, spark: SparkSession, start: int):
         for node_position in range(start, len(self.nodes)):
             node = self.nodes[node_position]
-            node.df = node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
+            node.df = node.run_transform(
+                spark=spark,
+                df=self.nodes[node_position - 1].df,
+            )
 
 
 class SessionPlannerMap:
