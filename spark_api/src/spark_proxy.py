@@ -18,32 +18,6 @@ sessionPlannerMap = SessionPlannerMap(clientSessionTable)
 
 
 class SparkApiServicer(SparkApiServicer):
-    # def rebuildSession(
-    #     self, req: sparkapi_pb2.RebuildRequest, unused_context
-    # ) -> sparkapi_pb2.PysparkTransformResponse:
-    #     print(f"/rebuildSession: {req.session_id}")
-    #     res = sessionTable.session_table[req.session_id]["stub"].rebuildSession(
-    #         sparkapi_session_pb2.RebuildRequest(
-    #             session_id=req.session_id,
-    #             planner=sessionPlannerMap.get_planner_pickled(req.session_id),
-    #         )
-    #     )
-    #     return sparkapi_pb2.PysparkTransformResponse(session_id=res.session_id, msg=res.msg)
-
-    # def getParentSessionPlan(self, req: sparkapi_pb2.PlanRequest, unused_context) -> sparkapi_pb2.PlanResponse:
-    #     return sparkapi_pb2.PlanResponse(id=req.id, planner=sessionPlannerMap.get_planner_pickled(req.id))
-
-    # def getRebuildStatus(
-    #     self, req: sparkapi_pb2.RebuildStatusRequest, unused_context
-    # ) -> sparkapi_pb2.RebuildStatusResponse:
-    #     print(f"/rebuildStatus: {req.id}")
-    #     res = sessionTable.session_table[req.id]["stub"].getRebuildStatus(
-    #         sparkapi_session_pb2.RebuildStatusRequest(id=req.id)
-    #     )
-    #     return sparkapi_pb2.RebuildStatusResponse(id=req.id, rebuild_status=res.rebuild_status)
-
-    # refactor -->
-
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
         clientSessionTable.add(req.id, ClientSession(req.id))
         sessionPlannerMap.add_session(req.id)

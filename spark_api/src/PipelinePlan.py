@@ -1,6 +1,5 @@
 from pyspark.sql import SparkSession
 from collections import deque
-from functools import wraps
 
 from custom_exceptions import LoadNodeRemovalException
 from ClientSession import SparkNode
@@ -98,39 +97,3 @@ class SessionPlannerMap:
 
     def update_session_plan(self, session_id: str, plan: SessionPlanner):
         self.session_planners[session_id] = plan
-
-    # def spark_transformation_update(self, func):
-    #     """Adds rest api query to session plan. Plan is defined by session id and return as binary object.
-    #     Init propagation of the change to child sessions.
-    #     """
-
-    #     @wraps(func)
-    #     def wrapper(*args, **kwargs):
-    #         grpc_res = func(*args, **kwargs)
-    #         self.handle_plan_change(grpc_res.session_id)
-    #         return grpc_res
-
-    #     return wrapper
-
-    # def handle_plan_change(self, session_id: str):
-    #     """Get session ids that use current session as input. And send new query log."""
-    #     ids_to_notify = self._get_session_dependency(session_id)
-    #     for id_to_notify in ids_to_notify:
-    #         self._notify_child_session_input_change(id_to_notify)
-
-    # def _get_session_dependency(self, session_id: str):
-    #     """Filter only session that log plan starts with `loadFromSession` and uses this session id as input."""
-    #     ls = []
-    #     for id, planner in self.session_planners.items():
-    #         plan_init_point = planner.plan[0]
-    #         if plan_init_point["op"] == "loadFromSession" and plan_init_point["input_id"] == session_id:
-    #             ls.append(id)
-    #     return ls
-
-    # def _notify_child_session_input_change(
-    #     self,
-    #     id_to_notify: str,
-    # ):
-    #     _ = self.session_table.get_stub(id_to_notify).notifyMasterInputChange(
-    #         sparkapi_session_pb2.MasterInputChangeNotificationRequest(id=id_to_notify)
-    #     )
