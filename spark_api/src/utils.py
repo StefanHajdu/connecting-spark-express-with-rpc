@@ -14,13 +14,13 @@ def log_plan_execution(func):
     return wrapper
 
 
-def notify(func):
+def notify_plan_change(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         res = func(self, *args, **kwargs)
 
         for child_session in self.child_sessions:
-            child_session.source_changed_status = True
+            child_session.update_status.trigger("Plan changed, operation add/edit/remove applied")
 
         return res
 

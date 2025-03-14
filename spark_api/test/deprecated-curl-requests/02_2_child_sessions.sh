@@ -9,7 +9,6 @@ curl -X POST http://localhost:4444/load \
     -d '{"session_id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub_test.csv", "df_type": "csv"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-
 # 0001
 curl -X POST http://localhost:4444/createSession \
     -H 'Content-Type: application/json' \
@@ -65,7 +64,6 @@ curl -X POST http://localhost:4444/summarize \
     -H 'Content-Type: application/json' \
     -d '{"session_id": "0002", "node_id": "n0001"}' \
     -w '\nTotal: %{time_total}s\n\n'
-
 
 # rebuild
 echo "rebuild 0001"

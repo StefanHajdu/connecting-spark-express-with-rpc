@@ -6,21 +6,38 @@ from typing import Iterable
 from abc import ABC, abstractmethod
 
 from spark_session_init import spark
-from utils import log_plan_execution, notify
+from utils import log_plan_execution, notify_plan_change
 from custom_exceptions import NodeMissingException
+
+
+class UpdateStatus:
+    def __init__(self):
+        self.rebuild_recommendation = False
+        self.cause = ""
+
+    def __repr__(self):
+        return f"rebuild_recommendation: {self.rebuild_recommendation}; cause {self.cause}"
+
+    def reset(self):
+        self.rebuild_recommendation = False
+        self.cause = ""
+
+    def trigger(self, msg: str):
+        self.rebuild_recommendation = True
+        self.cause = msg
 
 
 class ClientSession:
     def __init__(self, id):
         self.id = id
         self.child_sessions = set()
-        self.source_changed_status = False
+        self.update_status = UpdateStatus()
 
     def __hash__(self):
         return hash(self.id)
 
     def __repr__(self):
-        return f"session: {self.id}, status: {self.source_changed_status}"
+        return f"session: {self.id}, status: {self.update_status}"
 
     def add_child_session(self, session_id):
         self.child_sessions.add(session_id)
@@ -63,7 +80,7 @@ class ClientSession:
         node.df = df
         return node
 
-    @notify
+    @notify_plan_change
     def add_node(self, node_id, prev_node_id, query_type, query, query_params_json):
         self._log(f"/addNode: {node_id, prev_node_id, query}")
         new_sql_node = self.create_sql_node(
@@ -87,7 +104,7 @@ class ClientSession:
         )
         return node
 
-    @notify
+    @notify_plan_change
     def edit_node(self, node_id, query_type, query, query_params_json):
         self._log(f"/editNode: {node_id, query}")
         edited_node = self.adjust_sql_node(node_id, query_type, query, query_params_json)
@@ -102,7 +119,7 @@ class ClientSession:
         )
         return node
 
-    @notify
+    @notify_plan_change
     def remove_node(self, node_id):
         self._log(f"/removeNode: {node_id}")
         self.plan.remove_node(spark, node_id)
@@ -111,7 +128,7 @@ class ClientSession:
     def rebuild(self):
         self._log(f"/rebuildSession: {self.id}")
         self.plan.reapply_plan(spark, start=0)
-        self.source_changed_status = False
+        self.update_status.reset()
 
     @log_plan_execution
     def summarize(self, node_id: str):
@@ -129,6 +146,10 @@ class ClientSession:
         rows = node.preview(limit)
         for row in rows:
             yield json.dumps(row)
+
+    def get_session_status(self):
+        self._log(f"/getSessionStatus: {self.id}")
+        return self.update_status.__dict__
 
     def _log(self, msg):
         print(f"*** session - {self.id} *** " + msg)

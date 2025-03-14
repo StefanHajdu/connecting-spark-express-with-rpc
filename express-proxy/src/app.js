@@ -54,8 +54,8 @@ app.post("/createSession", (req, res, next) => {
   sp._createSession(req.body, res, next);
 });
 
-app.get("/rebuildStatus/:id", (req, res, next) => {
-  sp._getRebuildStatus(req.params, res, next);
+app.get("/getSessionStatus/:session_id", (req, res, next) => {
+  sp._getSessionStatus(req.params, res, next);
 });
 
 app.post("/rebuildSession/:session_id", (req, res, next) => {

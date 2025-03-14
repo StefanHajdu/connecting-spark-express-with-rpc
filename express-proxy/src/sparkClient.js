@@ -154,9 +154,9 @@ export class SparkClient {
     );
   }
 
-  _getRebuildStatus(rebuildStatusParams, expressResponse, next) {
-    return this.client.getRebuildStatus(
-      { id: rebuildStatusParams.id },
+  _getSessionStatus(rebuildStatusParams, expressResponse, next) {
+    return this.client.getSessionStatus(
+      { session_id: rebuildStatusParams.session_id },
       (err, newSessionResponse) => {
         if (err) {
           return next(

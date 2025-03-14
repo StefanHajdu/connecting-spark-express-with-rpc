@@ -81,10 +81,10 @@ def summarize(session_id: str, node_id: str) -> dict:
 
 
 def get_rebuild_status(session_id: str) -> bool:
-    res = requests.get(f"http://localhost:4444/rebuildStatus/{session_id}")
+    res = requests.get(f"http://localhost:4444/getSessionStatus/{session_id}")
 
     assert res.status_code == 200
-    return res.json()["rebuild_status"]
+    return res.json()["rebuild_recommendation"]
 
 
 def rebuild_session(session_id: str):

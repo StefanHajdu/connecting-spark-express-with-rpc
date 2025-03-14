@@ -7,8 +7,7 @@ service SparkApi {
     
     rpc previewDataset(PreviewDatasetRequest) returns (stream RowStreamResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
-    rpc getParentSessionPlan(PlanRequest) returns (PlanResponse) {}
-    rpc getRebuildStatus(RebuildStatusRequest) returns (RebuildStatusResponse) {}
+    rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
@@ -58,14 +57,10 @@ message RowStreamResponse {
     string row_json = 1;
 }
 
-message PlanResponse {
-    string id = 1;
-    bytes planner = 2;
-}
-
-message RebuildStatusResponse {
-    string id = 1;
-    bool rebuild_status = 2;
+message StatusResponse {
+    string session_id = 1;
+    bool rebuild_recommendation = 2;
+    string cause = 3;
 }
 
 
@@ -119,15 +114,11 @@ message LoadFromSessionRequest {
     string input_session_id = 2;
 }
 
-message PlanRequest {
-    string id = 1;
-}
-
 message RebuildRequest {
     string session_id = 1;
 }
 
-message RebuildStatusRequest {
-    string id = 1;
+message SessionStatusRequest {
+    string session_id = 1;
 }
 

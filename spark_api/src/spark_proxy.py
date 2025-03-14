@@ -149,6 +149,11 @@ class SparkApiServicer(SparkApiServicer):
         for row in row_stream:
             yield sparkapi_pb2.RowStreamResponse(row_json=row)
 
+    def getSessionStatus(self, req: sparkapi_pb2.SessionStatusRequest, unused_context) -> sparkapi_pb2.StatusResponse:
+        session = clientSessionTable.get_session(req.session_id)
+
+        return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

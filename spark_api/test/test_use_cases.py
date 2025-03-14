@@ -84,7 +84,7 @@ def test_04_1_parent_session_changed():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where tld = 'com' OR tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -94,7 +94,7 @@ def test_04_1_parent_session_changed():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(2),
-            "previous_node_id": node_01,
+            "prev_node_id": node_01,
             "query": "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -105,13 +105,14 @@ def test_04_1_parent_session_changed():
     # session 1
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.load_from_session(session_id=session_1, input_session_id=session_0)
+
     df_session_11 = u.summarize(session_id=session_1, node_id=s.root_node_id)
-    assert df_session_01["num_rows"] == df_session_11["num_rows"]
+    assert df_session_01["count"] == df_session_11["count"]
     node_11 = u.add_sql(
         **{
             "session_id": session_1,
             "node_id": u.to_node_id(1),
-            "previous_node_id": s.root_node_id,
+            "prev_node_id": s.root_node_id,
             "query": "select * from {df} where registrar = 'NameCheap, Inc.'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -124,7 +125,7 @@ def test_04_1_parent_session_changed():
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(3),
-            "previous_node_id": node_02,
+            "prev_node_id": node_02,
             "query": "select * from {df} where tld = 'org'",
             "query_type": "filter",
             "query_params_json": ["df"],
@@ -132,13 +133,13 @@ def test_04_1_parent_session_changed():
     )
     assert u.get_rebuild_status(session_1)
     df_session_02 = u.summarize(session_id=session_0, node_id=node_03)
-    assert df_session_02["num_rows"] < df_session_01["num_rows"] and u.get_rebuild_status(session_1)
+    assert df_session_02["count"] < df_session_01["count"] and u.get_rebuild_status(session_1)
 
     # session 1
     u.rebuild_session(session_1)
     assert not u.get_rebuild_status(session_1)
     df_session_13 = u.summarize(session_id=session_1, node_id=node_11)
-    assert df_session_13["num_rows"] < df_session_12["num_rows"]
+    assert df_session_13["count"] < df_session_12["count"]
 
 
 def test_04_2_parent_session_changed_multi_level():

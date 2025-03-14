@@ -49,15 +49,10 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.SummarizeDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkActionlResponse.FromString,
                 _registered_method=True)
-        self.getParentSessionPlan = channel.unary_unary(
-                '/sparkapi.SparkApi/getParentSessionPlan',
-                request_serializer=sparkapi__pb2.PlanRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.PlanResponse.FromString,
-                _registered_method=True)
-        self.getRebuildStatus = channel.unary_unary(
-                '/sparkapi.SparkApi/getRebuildStatus',
-                request_serializer=sparkapi__pb2.RebuildStatusRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.RebuildStatusResponse.FromString,
+        self.getSessionStatus = channel.unary_unary(
+                '/sparkapi.SparkApi/getSessionStatus',
+                request_serializer=sparkapi__pb2.SessionStatusRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.StatusResponse.FromString,
                 _registered_method=True)
         self.rebuildSession = channel.unary_unary(
                 '/sparkapi.SparkApi/rebuildSession',
@@ -112,13 +107,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def getParentSessionPlan(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def getRebuildStatus(self, request, context):
+    def getSessionStatus(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -178,15 +167,10 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.SummarizeDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkActionlResponse.SerializeToString,
             ),
-            'getParentSessionPlan': grpc.unary_unary_rpc_method_handler(
-                    servicer.getParentSessionPlan,
-                    request_deserializer=sparkapi__pb2.PlanRequest.FromString,
-                    response_serializer=sparkapi__pb2.PlanResponse.SerializeToString,
-            ),
-            'getRebuildStatus': grpc.unary_unary_rpc_method_handler(
-                    servicer.getRebuildStatus,
-                    request_deserializer=sparkapi__pb2.RebuildStatusRequest.FromString,
-                    response_serializer=sparkapi__pb2.RebuildStatusResponse.SerializeToString,
+            'getSessionStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.getSessionStatus,
+                    request_deserializer=sparkapi__pb2.SessionStatusRequest.FromString,
+                    response_serializer=sparkapi__pb2.StatusResponse.SerializeToString,
             ),
             'rebuildSession': grpc.unary_unary_rpc_method_handler(
                     servicer.rebuildSession,
@@ -311,7 +295,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def getParentSessionPlan(request,
+    def getSessionStatus(request,
             target,
             options=(),
             channel_credentials=None,
@@ -324,36 +308,9 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/getParentSessionPlan',
-            sparkapi__pb2.PlanRequest.SerializeToString,
-            sparkapi__pb2.PlanResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def getRebuildStatus(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/sparkapi.SparkApi/getRebuildStatus',
-            sparkapi__pb2.RebuildStatusRequest.SerializeToString,
-            sparkapi__pb2.RebuildStatusResponse.FromString,
+            '/sparkapi.SparkApi/getSessionStatus',
+            sparkapi__pb2.SessionStatusRequest.SerializeToString,
+            sparkapi__pb2.StatusResponse.FromString,
             options,
             channel_credentials,
             insecure,
