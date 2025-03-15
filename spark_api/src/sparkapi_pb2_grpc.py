@@ -69,14 +69,14 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.addNode = channel.unary_unary(
-                '/sparkapi.SparkApi/addNode',
-                request_serializer=sparkapi__pb2.NodeAddRequest.SerializeToString,
+        self.addFilterNode = channel.unary_unary(
+                '/sparkapi.SparkApi/addFilterNode',
+                request_serializer=sparkapi__pb2.FilterNodeAddRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.editNode = channel.unary_unary(
-                '/sparkapi.SparkApi/editNode',
-                request_serializer=sparkapi__pb2.NodeEditRequest.SerializeToString,
+        self.editFilterNode = channel.unary_unary(
+                '/sparkapi.SparkApi/editFilterNode',
+                request_serializer=sparkapi__pb2.FilterNodeEditRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.removeNode = channel.unary_unary(
@@ -131,20 +131,22 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def addNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def addFilterNode(self, request, context):
+        """filter node
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def editNode(self, request, context):
+    def editFilterNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def removeNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """all nodes
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -187,14 +189,14 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.LoadFromSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'addNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.addNode,
-                    request_deserializer=sparkapi__pb2.NodeAddRequest.FromString,
+            'addFilterNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.addFilterNode,
+                    request_deserializer=sparkapi__pb2.FilterNodeAddRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'editNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.editNode,
-                    request_deserializer=sparkapi__pb2.NodeEditRequest.FromString,
+            'editFilterNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.editFilterNode,
+                    request_deserializer=sparkapi__pb2.FilterNodeEditRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'removeNode': grpc.unary_unary_rpc_method_handler(
@@ -403,7 +405,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def addNode(request,
+    def addFilterNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -416,8 +418,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/addNode',
-            sparkapi__pb2.NodeAddRequest.SerializeToString,
+            '/sparkapi.SparkApi/addFilterNode',
+            sparkapi__pb2.FilterNodeAddRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
@@ -430,7 +432,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def editNode(request,
+    def editFilterNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -443,8 +445,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/editNode',
-            sparkapi__pb2.NodeEditRequest.SerializeToString,
+            '/sparkapi.SparkApi/editFilterNode',
+            sparkapi__pb2.FilterNodeEditRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

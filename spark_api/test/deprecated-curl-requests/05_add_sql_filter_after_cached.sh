@@ -8,14 +8,14 @@ curl -X POST http://localhost:4444/load \
     -d '{"session_id": "0000", "df_path": "/home/stephenx/Documents/Datasets/domains_sub_test.csv", "df_type": "csv"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-curl -X POST http://localhost:4444/addSql \
+curl -X POST http://localhost:4444/addNode/filter \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0001", "prev_node_id": "0000-0000-0000", "query": "select * from {df} where tld = '\''com'\'' OR tld = '\''org'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0001", "prev_node_id": "0000-0000-0000", "expressions_json": ["tld = '\''com'\''", "tld = '\''org'\''"], "matching": "or"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-curl -X POST http://localhost:4444/addSql \
+curl -X POST http://localhost:4444/addNode/filter \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0002", "prev_node_id": "n0001", "query": "select * from {df} where registrar = '\''GoDaddy.com, LLC'\'' OR registrar = '\''NameCheap, Inc.'\'' OR registrar = '\''unknown'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0002", "prev_node_id": "n0001", "expressions_json": ["registrar = '\''GoDaddy.com, LLC'\''", "registrar = '\''NameCheap, Inc.'\''", "registrar = '\''unknown'\''"], "matching": "or"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \
@@ -23,9 +23,9 @@ curl -X POST http://localhost:4444/summarize \
     -d '{"session_id": "0000", "node_id": "n0002"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
-curl -X POST http://localhost:4444/addSql \
+curl -X POST http://localhost:4444/addNode/filter \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0003", "prev_node_id": "n0002", "query": "select * from {df} where tld = '\''org'\''", "query_type": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0003", "prev_node_id": "n0002", "expressions_json": ["tld = '\''org'\''"], "matching": ""}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \

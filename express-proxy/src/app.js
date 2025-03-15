@@ -20,16 +20,16 @@ app.post("/loadFromSession", (req, res, next) => {
   sp._loadFromSession(req.body, res, next);
 });
 
-app.post("/addSql", (req, res, next) => {
-  sp._addSql(req.body, res, next);
+app.post("/addNode/filter", (req, res, next) => {
+  sp._addFilterNode(req.body, res, next);
 });
 
-app.post("/editSql", (req, res, next) => {
-  sp._editSql(req.body, res, next);
+app.post("/editNode/filter", (req, res, next) => {
+  sp._editFilterNode(req.body, res, next);
 });
 
-app.post("/removeSql", (req, res, next) => {
-  sp._removeSql(req.body, res, next);
+app.post("/removeNode", (req, res, next) => {
+  sp._removeNode(req.body, res, next);
 });
 
 app.get("/getSessionStatus/:session_id", (req, res, next) => {

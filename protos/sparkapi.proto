@@ -13,8 +13,11 @@ service SparkApi {
     rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
     rpc loadFromSession(LoadFromSessionRequest) returns (SparkTransformResponse) {}
     
-    rpc addNode(NodeAddRequest) returns (SparkTransformResponse) {}
-    rpc editNode(NodeEditRequest) returns (SparkTransformResponse) {}
+    // filter node
+    rpc addFilterNode(FilterNodeAddRequest) returns (SparkTransformResponse) {}
+    rpc editFilterNode(FilterNodeEditRequest) returns (SparkTransformResponse) {}
+    
+    // all nodes
     rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
 }
 
@@ -87,21 +90,20 @@ message SummarizeDatasetRequest {
     string node_id = 2;
 }
 
-message NodeAddRequest {
+message FilterNodeAddRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    string query_type = 4;
-    string query = 5;
-    string query_params_json = 7;
+    string expressions_json = 4;
+    string matching = 5;    // and, or, default=None
 }
 
-message NodeEditRequest {
+message FilterNodeEditRequest {
     string session_id = 1;
     string node_id = 2;
-    string query_type = 3;
-    string query = 4;
-    string query_params_json = 6;
+    string prev_node_id = 3;
+    string expressions_json = 4;
+    string matching = 5;    // and, or, default=None
 }
 
 message NodeRemovalRequest {

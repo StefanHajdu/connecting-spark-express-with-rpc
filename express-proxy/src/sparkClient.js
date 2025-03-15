@@ -79,9 +79,11 @@ export class SparkClient {
     );
   }
 
-  _addSql(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.addNode(
+  _addFilterNode(sqlRequestBody, expressResponse, next) {
+    sqlRequestBody.expressions_json = JSON.stringify(
+      sqlRequestBody.expressions_json
+    );
+    return this.client.addFilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -98,9 +100,11 @@ export class SparkClient {
     );
   }
 
-  _editSql(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.editNode(
+  _editFilterNode(sqlRequestBody, expressResponse, next) {
+    sqlRequestBody.expressions_json = JSON.stringify(
+      sqlRequestBody.expressions_json
+    );
+    return this.client.editFilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -117,7 +121,7 @@ export class SparkClient {
     );
   }
 
-  _removeSql(sqlRequestBody, expressResponse, next) {
+  _removeNode(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
     return this.client.removeNode(
       sqlRequestBody,

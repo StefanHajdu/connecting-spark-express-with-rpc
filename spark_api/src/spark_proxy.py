@@ -54,28 +54,31 @@ class SparkApiServicer(SparkApiServicer):
             msg=f"Dataframe from input session {req.input_session_id} reused input.",
         )
 
-    def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def addFilterNode(
+        self, req: sparkapi_pb2.FilterNodeAddRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_node(
+        session.add_filter_node(
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
-            query=req.query,
-            query_type=req.query_type,
-            query_params_json=req.query_params_json,
+            expressions_json=req.expressions_json,
+            matching=req.matching,
         )
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} added and transform: {req.query} applied",
+            msg=f"Node: {req.node_id} added and transform",
         )
 
-    def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def editFilterNode(
+        self, req: sparkapi_pb2.FilterNodeEditRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_node(req.node_id, req.query_type, req.query, req.query_params_json)
+        session.edit_filter_node(req.node_id, req.expressions_json, req.matching)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} edited and transform: {req.query} applied",
+            msg=f"Node: {req.node_id} edited",
         )
 
     def removeNode(
