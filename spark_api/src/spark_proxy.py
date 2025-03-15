@@ -1,12 +1,7 @@
 from collections.abc import Iterable
-from concurrent import futures
 
-import grpc
 import sparkapi_pb2
-from sparkapi_pb2_grpc import (
-    SparkApiServicer,
-    add_SparkApiServicer_to_server,
-)
+from sparkapi_pb2_grpc import SparkApiServicer
 
 from Client import ClientSession
 from ClientSessionTable import ClientSessionTable
@@ -114,15 +109,3 @@ class SparkApiServicer(SparkApiServicer):
         session = clientSessionTable.get_session(req.session_id)
 
         return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())
-
-
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    add_SparkApiServicer_to_server(SparkApiServicer(), server)
-    server.add_insecure_port('[::]:50051')
-    server.start()
-    server.wait_for_termination()
-
-
-if __name__ == '__main__':
-    serve()
