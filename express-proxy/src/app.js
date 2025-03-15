@@ -8,22 +8,8 @@ app.use(express.json());
 
 let sp = new SparkClient();
 
-app.post("/preview", (req, res) => {
-  let rowStream = sp._previewDataset(req.body);
-
-  res.writeHead(200, {
-    "Content-Type": "text/plain; charset=utf-8",
-    "Transfer-Encoding": "chunked",
-    "X-Content-Type-Options": "nosniff",
-  });
-
-  rowStream.on("data", (row) => {
-    res.write(JSON.stringify(row.row_json));
-  });
-
-  rowStream.on("end", () => {
-    res.end();
-  });
+app.post("/createSession", (req, res, next) => {
+  sp._createSession(req.body, res, next);
 });
 
 app.post("/load", (req, res, next) => {
@@ -46,20 +32,34 @@ app.post("/removeSql", (req, res, next) => {
   sp._removeSql(req.body, res, next);
 });
 
-app.post("/summarize", (req, res, next) => {
-  sp._summarizeDataset(req.body, res, next);
-});
-
-app.post("/createSession", (req, res, next) => {
-  sp._createSession(req.body, res, next);
-});
-
 app.get("/getSessionStatus/:session_id", (req, res, next) => {
   sp._getSessionStatus(req.params, res, next);
 });
 
 app.post("/rebuildSession/:session_id", (req, res, next) => {
   sp._rebuildSession(req.params, res, next);
+});
+
+app.post("/summarize", (req, res, next) => {
+  sp._summarizeDataset(req.body, res, next);
+});
+
+app.post("/preview", (req, res) => {
+  let rowStream = sp._previewDataset(req.body);
+
+  res.writeHead(200, {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Transfer-Encoding": "chunked",
+    "X-Content-Type-Options": "nosniff",
+  });
+
+  rowStream.on("data", (row) => {
+    res.write(JSON.stringify(row.row_json));
+  });
+
+  rowStream.on("end", () => {
+    res.end();
+  });
 });
 
 app.use(errorHandler);
