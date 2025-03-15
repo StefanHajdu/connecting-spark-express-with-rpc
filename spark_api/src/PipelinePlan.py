@@ -1,8 +1,9 @@
-from pyspark.sql import SparkSession
 from collections import deque
 
+from pyspark.sql import SparkSession
+
 from custom_exceptions import LoadNodeRemovalException
-from ClientSession import SparkNode
+from Nodes import SparkNode
 
 
 class SessionPlanner:

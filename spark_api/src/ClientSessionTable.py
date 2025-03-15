@@ -6,7 +6,7 @@ class ClientSessionTable:
         self.session_table = {}
 
     def add(self, id, session):
-        print(f"/createSession: {id}")
+        print(f'/createSession: {id}')
         if id in self.session_table:
             raise DuplicateSessionException()
         else:

@@ -1,15 +1,14 @@
-import grpc
-
-import sparkapi_pb2
-
+from collections.abc import Iterable
 from concurrent import futures
-from typing import Iterable
+
+import grpc
+import sparkapi_pb2
 from sparkapi_pb2_grpc import (
     SparkApiServicer,
     add_SparkApiServicer_to_server,
 )
 
-from ClientSession import ClientSession
+from Client import ClientSession
 from ClientSessionTable import ClientSessionTable
 from PipelinePlan import SessionPlanner, SessionPlannerMap
 
@@ -24,22 +23,18 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.NewSessionResponse(
             id=req.id,
-            msg=f"Session {req.id} created.",
+            msg=f'Session {req.id} created.',
         )
 
-    def loadsDataset(
-        self, req: sparkapi_pb2.LoadDatasetRequest, unused_context
-    ) -> sparkapi_pb2.SparkTransformResponse:
+    def loadsDataset(self, req: sparkapi_pb2.LoadDatasetRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         root_plan_node = session.load_dataset(req.df_path, req.df_type)
         session.plan = SessionPlanner(req.session_id, root_plan_node)
         sessionPlannerMap.update_session_plan(session.id, session.plan)
 
-        return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, msg=f"Dataset {req.df_path} loaded.")
+        return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, msg=f'Dataset {req.df_path} loaded.')
 
-    def loadFromSession(
-        self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context
-    ) -> sparkapi_pb2.SparkTransformResponse:
+    def loadFromSession(self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
 
         parent_session = clientSessionTable.get_session(req.input_session_id)
@@ -51,7 +46,7 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Dataframe from input session {req.input_session_id} reused input.",
+            msg=f'Dataframe from input session {req.input_session_id} reused input.',
         )
 
     def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -66,7 +61,7 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} added and transform: {req.query} applied",
+            msg=f'Node: {req.node_id} added and transform: {req.query} applied',
         )
 
     def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -75,48 +70,40 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} edited and transform: {req.query} applied",
+            msg=f'Node: {req.node_id} edited and transform: {req.query} applied',
         )
 
-    def removeNode(
-        self, req: sparkapi_pb2.NodeRemovalRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
+    def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.remove_node(req.node_id)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Node: {req.node_id} removed",
+            msg=f'Node: {req.node_id} removed',
         )
 
-    def rebuildSession(
-        self, req: sparkapi_pb2.RebuildRequest, unused_context
-    ) -> sparkapi_pb2.PysparkTransformResponse:
+    def rebuildSession(self, req: sparkapi_pb2.RebuildRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.rebuild()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f"Session: {req.session_id} rebuild",
+            msg=f'Session: {req.session_id} rebuild',
         )
 
-    def summarizeDataset(
-        self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context
-    ) -> sparkapi_pb2.SparkActionlResponse:
+    def summarizeDataset(self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context) -> sparkapi_pb2.SparkActionlResponse:
         session = clientSessionTable.get_session(req.session_id)
         summary = session.summarize(req.node_id)
 
         return sparkapi_pb2.SparkActionlResponse(
             session_id=req.session_id,
-            msg=f"Node {req.node_id} summarized",
-            columns=summary["columns"],
-            count=summary["count"],
-            schema=summary["schema"],
+            msg=f'Node {req.node_id} summarized',
+            columns=summary['columns'],
+            count=summary['count'],
+            schema=summary['schema'],
         )
 
-    def previewDataset(
-        self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context
-    ) -> Iterable[sparkapi_pb2.RowStreamResponse]:
+    def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> Iterable[sparkapi_pb2.RowStreamResponse]:
         session = clientSessionTable.get_session(req.session_id)
         row_stream = session.preview(req.node_id, req.limit)
 
@@ -132,10 +119,10 @@ class SparkApiServicer(SparkApiServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     add_SparkApiServicer_to_server(SparkApiServicer(), server)
-    server.add_insecure_port("[::]:50051")
+    server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     serve()

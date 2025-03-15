@@ -4,4 +4,4 @@ pyspark
 asyncio
 pytest
 requests
-pandas
+ruff
