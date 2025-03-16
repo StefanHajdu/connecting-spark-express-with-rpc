@@ -80,9 +80,6 @@ export class SparkClient {
   }
 
   _create_FilterNode(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.expressions_json = JSON.stringify(
-      sqlRequestBody.expressions_json
-    );
     return this.client.create_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
@@ -101,9 +98,6 @@ export class SparkClient {
   }
 
   _edit_FilterNode(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.expressions_json = JSON.stringify(
-      sqlRequestBody.expressions_json
-    );
     return this.client.edit_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {

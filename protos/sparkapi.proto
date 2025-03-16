@@ -98,7 +98,7 @@ message FilterNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    string expressions_json = 4;
+    repeated string expressions = 4;
     string matching = 5;    // and, or, default=None
 }
 

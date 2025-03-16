@@ -82,22 +82,22 @@ class ClientSession:
         return node
 
     @notify_plan_change
-    def add_filter_node(self, node_id: str, prev_node_id: str, expressions_json: str, matching: str):
+    def add_filter_node(self, node_id: str, prev_node_id: str, expressions: list[str], matching: str):
         self._log(f"/addNode/filter: {node_id, prev_node_id}")
         new_sql_node = FilterNode(
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
-            expressions_json=expressions_json,
+            expressions=expressions,
             matching=matching,
         )
         self.plan.add_node(spark, new_sql_node)
 
     @notify_plan_change
-    def edit_filter_node(self, node_id: str, expressions_json: str, matching: str):
+    def edit_filter_node(self, node_id: str, expressions: list[str], matching: str):
         self._log(f"/editNode/filter: {node_id}")
         node = self.plan.get_node_by_id(node_id)
-        node.edit(expressions_json=expressions_json, matching=matching)
+        node.edit(expressions=expressions, matching=matching)
         self.plan.edit_node(spark, node)
 
     @notify_plan_change
@@ -319,11 +319,13 @@ class SqlNode(SparkNode):
 
 
 class FilterNode(SqlNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions_json: str, matching: str = "and"):
+    def __init__(
+        self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str = "and"
+    ):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.expressions = json.loads(expressions_json)
+        self.expressions = expressions
         self.matching = matching
 
     @property
@@ -334,8 +336,8 @@ class FilterNode(SqlNode):
     def query(self) -> str:
         return " ".join([self.query_template, f" {self.matching.strip()} ".join(self.expressions)]).replace('\\"', "")
 
-    def edit(self, expressions_json: str, matching: str):
-        self.expressions = json.loads(expressions_json)
+    def edit(self, expressions: list[str], matching: str):
+        self.expressions = expressions
         self.matching = matching
 
 

@@ -22,7 +22,7 @@ def test_02_load_from_session():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -43,7 +43,7 @@ def test_03_filter():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'"],
+            "expressions": ["tld = 'com'"],
             "matching": "",
         }
     )
@@ -53,7 +53,7 @@ def test_03_filter():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -67,7 +67,7 @@ def test_03_filter():
             "session_id": session_0,
             "node_id": u.to_node_id(3),
             "prev_node_id": node_2,
-            "expressions_json": ["registrar = 'GoDaddy.com, LLC'"],
+            "expressions": ["registrar = 'GoDaddy.com, LLC'"],
             "matching": "",
         }
     )
@@ -85,7 +85,7 @@ def test_04_1_parent_session_changed():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'", "tld = 'org'"],
+            "expressions": ["tld = 'com'", "tld = 'org'"],
             "matching": "or",
         }
     )
@@ -94,7 +94,7 @@ def test_04_1_parent_session_changed():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_01,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -115,7 +115,7 @@ def test_04_1_parent_session_changed():
             "session_id": session_1,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["registrar = 'NameCheap, Inc.'"],
+            "expressions": ["registrar = 'NameCheap, Inc.'"],
             "matching": "",
         }
     )
@@ -127,7 +127,7 @@ def test_04_1_parent_session_changed():
             "session_id": session_0,
             "node_id": u.to_node_id(3),
             "prev_node_id": node_02,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -151,7 +151,7 @@ def test_04_2_parent_session_changed_multi_level():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "previous_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'", "tld = 'org'"],
+            "expressions": ["tld = 'com'", "tld = 'org'"],
             "matching": "or",
         }
     )
@@ -165,7 +165,7 @@ def test_04_2_parent_session_changed_multi_level():
             "session_id": session_1,
             "node_id": u.to_node_id(1),
             "previous_node_id": s.root_node_id,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -183,7 +183,7 @@ def test_04_2_parent_session_changed_multi_level():
             "session_id": session_2,
             "node_id": u.to_node_id(1),
             "previous_node_id": s.root_node_id,
-            "expressions_json": ["registrar = 'GoDaddy.com, LLC'"],
+            "expressions": ["registrar = 'GoDaddy.com, LLC'"],
             "matching": "",
         }
     )
@@ -191,7 +191,7 @@ def test_04_2_parent_session_changed_multi_level():
 
     # session 0
     node_11 = u.edit_filter_sql(
-        **{"session_id": session_0, "node_id": node_11, "expressions_json": ["tld = '.com'"], "matching": ""}
+        **{"session_id": session_0, "node_id": node_11, "expressions": ["tld = '.com'"], "matching": ""}
     )
 
     # rebuilds
@@ -199,8 +199,8 @@ def test_04_2_parent_session_changed_multi_level():
     assert not u.get_rebuild_status(session_2)
 
     u.rebuild_session(session_1)
-    # assert not u.get_rebuild_status(session_1)
-    # assert u.get_rebuild_status(session_2)
+    assert not u.get_rebuild_status(session_1)
+    assert u.get_rebuild_status(session_2)
 
     u.rebuild_session(session_2)
     assert not u.get_rebuild_status(session_1)
@@ -224,7 +224,7 @@ def test_05_append_sql():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'", "tld = 'org'"],
+            "expressions": ["tld = 'com'", "tld = 'org'"],
             "matching": "or",
         }
     )
@@ -233,7 +233,7 @@ def test_05_append_sql():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -248,7 +248,7 @@ def test_05_append_sql():
             "session_id": session_0,
             "node_id": u.to_node_id(3),
             "prev_node_id": node_2,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -264,7 +264,7 @@ def test_05_add_filter_sql_before_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -272,29 +272,27 @@ def test_05_add_filter_sql_before_summarize():
             "matching": "or",
         }
     )
-    # node_2 = u.add_filter_sql(
-    #     **{
-    #         "session_id": session_0,
-    #         "node_id": u.to_node_id(2),
-    #         "prev_node_id": node_1,
-    #         "query": "select registrar from {df}",
-    #         "query_type": "select",
-    #         "query_params_json": ["df"],
-    #     }
-    # )
-    df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
+    node_2 = u.add_addColumn_sql(
+        **{
+            "session_id": session_0,
+            "node_id": u.to_node_id(2),
+            "prev_node_id": node_1,
+            "expressions": [{"expression": "length(registrar)", "col_name": "registrar_len"}],
+        }
+    )
+    df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
 
     # add before cached
     _ = u.add_filter_sql(
         **{
             "session_id": session_0,
             "node_id": u.to_node_id(3),
-            "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "prev_node_id": node_1,
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
-    df_session_2 = u.summarize(session_id=session_0, node_id=node_1)
+    df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_2["count"] < df_session_1["count"]
 
 
@@ -306,7 +304,7 @@ def test_06_unordered_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'"],
+            "expressions": ["tld = 'com'"],
             "matching": "",
         }
     )
@@ -315,7 +313,7 @@ def test_06_unordered_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -328,7 +326,7 @@ def test_06_unordered_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(3),
             "prev_node_id": node_2,
-            "expressions_json": ["registrar = 'GoDaddy.com, LLC'"],
+            "expressions": ["registrar = 'GoDaddy.com, LLC'"],
             "matching": "",
         }
     )
@@ -348,7 +346,7 @@ def test_07_edit_filter_sql_after_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'", "tld = 'org'"],
+            "expressions": ["tld = 'com'", "tld = 'org'"],
             "matching": "or",
         }
     )
@@ -357,7 +355,7 @@ def test_07_edit_filter_sql_after_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -371,7 +369,7 @@ def test_07_edit_filter_sql_after_summarize():
         **{
             "session_id": session_0,
             "node_id": node_2,
-            "expressions_json": ["registrar = 'GoDaddy.com, LLC'"],
+            "expressions": ["registrar = 'GoDaddy.com, LLC'"],
             "matching": "",
         }
     )
@@ -387,7 +385,7 @@ def test_07_edit_filter_sql_before_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = 'com'", "tld = 'org'"],
+            "expressions": ["tld = 'com'", "tld = 'org'"],
             "matching": "or",
         }
     )
@@ -396,7 +394,7 @@ def test_07_edit_filter_sql_before_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -407,7 +405,7 @@ def test_07_edit_filter_sql_before_summarize():
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
 
     node_2 = u.edit_filter_sql(
-        **{"session_id": session_0, "node_id": node_1, "expressions_json": ["tld = '.com'"], "matching": ""}
+        **{"session_id": session_0, "node_id": node_1, "expressions": ["tld = '.com'"], "matching": ""}
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_1["count"] > df_session_2["count"]
@@ -421,7 +419,7 @@ def test_08_remove_sql_after_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -430,7 +428,7 @@ def test_08_remove_sql_after_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -465,7 +463,7 @@ def test_08_remove_sql_before_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -474,7 +472,7 @@ def test_08_remove_sql_before_summarize():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -513,7 +511,7 @@ def test_12_toggle():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
@@ -522,7 +520,7 @@ def test_12_toggle():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": node_1,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -552,7 +550,7 @@ def test_12_toggle():
             "session_id": session_0,
             "node_id": u.to_node_id(2),
             "prev_node_id": s.root_node_id,
-            "expressions_json": [
+            "expressions": [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
                 "registrar = 'unknown'",
@@ -568,7 +566,7 @@ def test_12_toggle():
             "session_id": session_0,
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
-            "expressions_json": ["tld = '.com'"],
+            "expressions": ["tld = '.com'"],
             "matching": "",
         }
     )
