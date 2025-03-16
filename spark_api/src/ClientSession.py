@@ -293,6 +293,8 @@ class SqlNode(SparkNode):
         spark = kwargs.get("spark")
         df = kwargs.get("df")
 
+        print(self.query)
+
         return spark.sql(
             self.query,
             df=df,
@@ -309,7 +311,7 @@ class FilterNode(SqlNode):
 
     @property
     def query(self) -> str:
-        return " ".join([self.SQL_START, f" {self.matching.strip()} ".join(self.expressions)])
+        return " ".join([self.SQL_START, f" {self.matching.strip()} ".join(self.expressions)]).replace('\\"', "")
 
     def edit(self, expressions_json: str, matching: str):
         self.expressions = json.loads(expressions_json)

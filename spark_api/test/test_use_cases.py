@@ -1,5 +1,5 @@
 import utils as u
-from state import TestState
+from state import TestState, text_filters
 from spark_api.src.custom_exceptions import NodeMissingException
 
 nodeMissingException = NodeMissingException()
@@ -569,9 +569,24 @@ def test_12_toggle():
             "node_id": u.to_node_id(1),
             "prev_node_id": s.root_node_id,
             "expressions_json": ["tld = '.com'"],
-            "query_type": "filter",
             "matching": "",
         }
     )
     df_session_4 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_4["count"] == df_session_1["count"]
+
+
+def test_13_text_filter():
+    session_0 = u.create_session(session_id=u.to_session_id(0))
+    for text_filter in text_filters:
+        u.load(session_id=session_0, src_path=s.path, src_type=s.type)
+        node_1 = u.add_filter_sql(
+            **{
+                **{"session_id": session_0, "node_id": u.to_node_id(1), "prev_node_id": s.root_node_id},
+                **text_filter["case"],
+            }
+        )
+        df_session = u.summarize(session_id=session_0, node_id=node_1)
+        if df_session["count"] != text_filter["correct"]:
+            print(text_filter["case"])
+        assert df_session["count"] == text_filter["correct"]
