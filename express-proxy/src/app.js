@@ -20,12 +20,20 @@ app.post("/loadFromSession", (req, res, next) => {
   sp._loadFromSession(req.body, res, next);
 });
 
-app.post("/addSql", (req, res, next) => {
-  sp._addSql(req.body, res, next);
+app.post("/addNode/filter", (req, res, next) => {
+  sp._create_FilterNode(req.body, res, next);
 });
 
-app.post("/editSql", (req, res, next) => {
-  sp._editSql(req.body, res, next);
+app.post("/editNode/filter", (req, res, next) => {
+  sp._edit_FilterNode(req.body, res, next);
+});
+
+app.post("/addNode/addColumn", (req, res, next) => {
+  sp._create_AddColumnNode(req.body, res, next);
+});
+
+app.post("/editNode/addColumn", (req, res, next) => {
+  sp._edit_AddColumnNode(req.body, res, next);
 });
 
 app.post("/removeSql", (req, res, next) => {

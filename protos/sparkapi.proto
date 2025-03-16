@@ -13,8 +13,15 @@ service SparkApi {
     rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
     rpc loadFromSession(LoadFromSessionRequest) returns (SparkTransformResponse) {}
     
-    rpc addNode(NodeAddRequest) returns (SparkTransformResponse) {}
-    rpc editNode(NodeEditRequest) returns (SparkTransformResponse) {}
+    // filter node
+    rpc create_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
+    rpc edit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
+    
+    // add column node
+    rpc create_AddColumnNode(AddColumnNodeRequest) returns (SparkTransformResponse) {}
+    rpc edit_AddColumnNode(AddColumnNodeRequest) returns (SparkTransformResponse) {}
+    
+    // all nodes
     rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
 }
 
@@ -87,7 +94,7 @@ message SummarizeDatasetRequest {
     string node_id = 2;
 }
 
-message NodeAddRequest {
+message FilterNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
@@ -96,12 +103,16 @@ message NodeAddRequest {
     string query_params_json = 7;
 }
 
-message NodeEditRequest {
+message AddColumnExpression {
+    string expression = 1;
+    string col_name = 2;
+}
+
+message AddColumnNodeRequest {
     string session_id = 1;
     string node_id = 2;
-    string query_type = 3;
-    string query = 4;
-    string query_params_json = 6;
+    string prev_node_id = 3;
+    repeated AddColumnExpression expressions = 4;
 }
 
 message NodeRemovalRequest {

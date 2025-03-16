@@ -44,7 +44,7 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Dataframe from input session {req.input_session_id} reused input.',
         )
 
-    def addNode(self, req: sparkapi_pb2.NodeAddRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def create_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.add_node(
             node_id=req.node_id,
@@ -59,13 +59,35 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Node: {req.node_id} added and transform: {req.query} applied',
         )
 
-    def editNode(self, req: sparkapi_pb2.NodeEditRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_node(req.node_id, req.query_type, req.query, req.query_params_json)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} edited and transform: {req.query} applied',
+        )
+
+    def create_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.add_addColumn_node(
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            expressions=list(req.expressions),
+        )
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} added and transform',
+        )
+
+    def edit_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.edit_addColumn_node(req.node_id, list(req.expressions))
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} edited',
         )
 
     def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
