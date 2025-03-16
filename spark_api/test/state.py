@@ -26,6 +26,13 @@ text_filters = [
     },
     {
         "case": {
+            "expressions_json": ["ilike(registrar, 'GoDaddy.com, LLC')"],
+            "matching": "",
+        },
+        "correct": 85127,
+    },
+    {
+        "case": {
             "expressions_json": ["ilike(registrar, 'GoDaddy.%, LLC')"],
             "matching": "",
         },
