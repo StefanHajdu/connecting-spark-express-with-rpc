@@ -1,7 +1,9 @@
 from concurrent import futures
 
 import grpc
-from sparkapi_pb2_grpc import SparkApiServicer, add_SparkApiServicer_to_server
+from sparkapi_pb2_grpc import add_SparkApiServicer_to_server
+
+from spark_proxy import SparkApiServicer
 
 
 def serve():

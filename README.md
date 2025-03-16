@@ -2,5 +2,6 @@ good dataset for testing: https://www.kaggle.com/datasets/wotschofsky/171-millio
 
 
 ```bash
+cd ./spark_api
 pip install --editable .
 ```
