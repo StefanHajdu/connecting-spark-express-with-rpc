@@ -49,9 +49,8 @@ class SparkApiServicer(SparkApiServicer):
         session.add_node(
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
-            query=req.query,
-            query_type=req.query_type,
-            query_params_json=req.query_params_json,
+            expressions=list(req.expressions),
+            matching=req.matching,
         )
 
         return sparkapi_pb2.SparkTransformResponse(
@@ -61,7 +60,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_node(req.node_id, req.query_type, req.query, req.query_params_json)
+        session.edit_filter_node(req.node_id, list(req.expressions), req.matching)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,

@@ -58,6 +58,13 @@ def edit_sql(**kwargs) -> str:
     return kwargs['node_id']
 
 
+def add_addColumn_sql(**kwargs) -> str:
+    res = requests.post("http://localhost:4444/addNode/addColumn", json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs["node_id"]
+
+
 def remove_sql(**kwargs):
     res = requests.post('http://localhost:4444/removeSql', json=kwargs)
 

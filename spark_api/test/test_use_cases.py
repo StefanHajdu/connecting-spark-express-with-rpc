@@ -23,9 +23,8 @@ def test_02_load_from_session():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
@@ -45,9 +44,8 @@ def test_03_filter():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'"],
+            'matching': '',
         }
     )
     df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
@@ -56,9 +54,12 @@ def test_03_filter():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -67,9 +68,8 @@ def test_03_filter():
             'session_id': session_0,
             'node_id': u.to_node_id(3),
             'prev_node_id': node_2,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["registrar = 'GoDaddy.com, LLC'"],
+            'matching': '',
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_3)
@@ -86,9 +86,8 @@ def test_04_1_parent_session_changed():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com' OR tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'", "tld = 'org'"],
+            'matching': 'or',
         }
     )
     node_02 = u.add_sql(
@@ -96,9 +95,12 @@ def test_04_1_parent_session_changed():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_01,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_01 = u.summarize(session_id=session_0, node_id=node_02)
@@ -114,9 +116,8 @@ def test_04_1_parent_session_changed():
             'session_id': session_1,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where registrar = 'NameCheap, Inc.'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["registrar = 'NameCheap, Inc.'"],
+            'matching': '',
         }
     )
     df_session_12 = u.summarize(session_id=session_1, node_id=node_11)
@@ -127,9 +128,8 @@ def test_04_1_parent_session_changed():
             'session_id': session_0,
             'node_id': u.to_node_id(3),
             'prev_node_id': node_02,
-            'query': "select * from {df} where tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     assert u.get_rebuild_status(session_1)
@@ -152,9 +152,8 @@ def test_04_2_parent_session_changed_multi_level():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'previous_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com' OR tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'", "tld = 'org'"],
+            'matching': 'or',
         }
     )
     df_session_01 = u.summarize(session_id=session_0, node_id=node_01)
@@ -167,9 +166,12 @@ def test_04_2_parent_session_changed_multi_level():
             'session_id': session_1,
             'node_id': u.to_node_id(1),
             'previous_node_id': s.root_node_id,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_11 = u.summarize(session_id=session_1, node_id=node_11)
@@ -182,23 +184,14 @@ def test_04_2_parent_session_changed_multi_level():
             'session_id': session_2,
             'node_id': u.to_node_id(1),
             'previous_node_id': s.root_node_id,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["registrar = 'GoDaddy.com, LLC'"],
+            'matching': '',
         }
     )
     df_session_21 = u.summarize(session_id=session_2, node_id=node_21)
 
     # session 0
-    node_11 = u.edit_sql(
-        **{
-            'session_id': session_0,
-            'node_id': node_11,
-            'query': "select * from {df} where tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
-        }
-    )
+    node_11 = u.edit_filter_sql(**{'session_id': session_0, 'node_id': node_11, 'expressions': ["tld = '.com'"], 'matching': ''})
 
     # rebuilds
     assert u.get_rebuild_status(session_1)
@@ -230,9 +223,8 @@ def test_05_append_sql():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com' OR tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'", "tld = 'org'"],
+            'matching': 'or',
         }
     )
     node_2 = u.add_sql(
@@ -240,9 +232,12 @@ def test_05_append_sql():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -252,9 +247,8 @@ def test_05_append_sql():
             'session_id': session_0,
             'node_id': u.to_node_id(3),
             'prev_node_id': node_2,
-            'query': "select * from {df} where tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_3)
@@ -269,19 +263,20 @@ def test_05_add_sql_before_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_addColumn_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': 'select registrar from {df}',
-            'query_type': 'select',
-            'query_params_json': ['df'],
+            'expressions': [{'expression': 'length(registrar)', 'col_name': 'registrar_len'}],
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -291,10 +286,9 @@ def test_05_add_sql_before_summarize():
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
-            'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'prev_node_id': node_1,
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
@@ -309,9 +303,8 @@ def test_06_unordered_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'"],
+            'matching': '',
         }
     )
     node_2 = u.add_sql(
@@ -319,9 +312,12 @@ def test_06_unordered_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     node_3 = u.add_sql(
@@ -329,9 +325,8 @@ def test_06_unordered_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(3),
             'prev_node_id': node_2,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["registrar = 'GoDaddy.com, LLC'"],
+            'matching': '',
         }
     )
 
@@ -350,9 +345,8 @@ def test_07_edit_sql_after_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com' OR tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'", "tld = 'org'"],
+            'matching': 'or',
         }
     )
     node_2 = u.add_sql(
@@ -360,9 +354,12 @@ def test_07_edit_sql_after_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
@@ -371,9 +368,8 @@ def test_07_edit_sql_after_summarize():
         **{
             'session_id': session_0,
             'node_id': node_2,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["registrar = 'GoDaddy.com, LLC'"],
+            'matching': '',
         }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
@@ -388,9 +384,8 @@ def test_07_edit_sql_before_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com' OR tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = 'com'", "tld = 'org'"],
+            'matching': 'or',
         }
     )
     node_2 = u.add_sql(
@@ -398,22 +393,17 @@ def test_07_edit_sql_before_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
 
-    node_2 = u.edit_sql(
-        **{
-            'session_id': session_0,
-            'node_id': node_1,
-            'query': "select * from {df} where tld = 'org'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
-        }
-    )
+    node_2 = u.edit_filter_sql(**{'session_id': session_0, 'node_id': node_1, 'expressions': ["tld = '.com'"], 'matching': ''})
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_1['count'] > df_session_2['count']
 
@@ -426,9 +416,8 @@ def test_08_remove_sql_after_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     node_2 = u.add_sql(
@@ -436,9 +425,12 @@ def test_08_remove_sql_after_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     u.remove_sql(
@@ -468,9 +460,8 @@ def test_08_remove_sql_before_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     node_2 = u.add_sql(
@@ -478,9 +469,12 @@ def test_08_remove_sql_before_summarize():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -514,9 +508,8 @@ def test_12_toggle():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where tld = 'com'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': ["tld = '.com'"],
+            'matching': '',
         }
     )
     node_2 = u.add_sql(
@@ -524,9 +517,12 @@ def test_12_toggle():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_1,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
@@ -551,9 +547,12 @@ def test_12_toggle():
             'session_id': session_0,
             'node_id': u.to_node_id(2),
             'prev_node_id': s.root_node_id,
-            'query': "select * from {df} where registrar = 'GoDaddy.com, LLC' OR registrar = 'NameCheap, Inc.' OR registrar = 'unknown'",
-            'query_type': 'filter',
-            'query_params_json': ['df'],
+            'expressions': [
+                "registrar = 'GoDaddy.com, LLC'",
+                "registrar = 'NameCheap, Inc.'",
+                "registrar = 'unknown'",
+            ],
+            'matching': 'or',
         }
     )
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
@@ -564,7 +563,7 @@ def test_12_toggle():
             'session_id': session_0,
             'node_id': u.to_node_id(1),
             'prev_node_id': s.root_node_id,
-            'expressions_json': ["tld = '.com'"],
+            'expressions': ["tld = '.com'"],
             'matching': '',
         }
     )
