@@ -293,8 +293,6 @@ class SqlNode(SparkNode):
         spark = kwargs.get("spark")
         df = kwargs.get("df")
 
-        print(self.query)
-
         return spark.sql(
             self.query,
             df=df,
