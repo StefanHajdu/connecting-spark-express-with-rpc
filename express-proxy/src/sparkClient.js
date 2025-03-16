@@ -79,11 +79,11 @@ export class SparkClient {
     );
   }
 
-  _addFilterNode(sqlRequestBody, expressResponse, next) {
+  _create_FilterNode(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.expressions_json = JSON.stringify(
       sqlRequestBody.expressions_json
     );
-    return this.client.addFilterNode(
+    return this.client.create_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -100,11 +100,47 @@ export class SparkClient {
     );
   }
 
-  _editFilterNode(sqlRequestBody, expressResponse, next) {
+  _edit_FilterNode(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.expressions_json = JSON.stringify(
       sqlRequestBody.expressions_json
     );
-    return this.client.editFilterNode(
+    return this.client.edit_FilterNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_AddColumnNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _edit_AddColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_AddColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

@@ -5,6 +5,7 @@ from constants import PLAN_NODE_ROOT_ID
 from typing import Iterable
 from abc import ABC, abstractmethod
 
+from sparkapi_pb2 import AddColumnExpression
 from spark_session_init import spark
 from utils import log_plan_execution, notify_plan_change
 from custom_exceptions import NodeMissingException
@@ -96,10 +97,25 @@ class ClientSession:
     def edit_filter_node(self, node_id: str, expressions_json: str, matching: str):
         self._log(f"/editNode/filter: {node_id}")
         node = self.plan.get_node_by_id(node_id)
-        node.edit(
-            expressions_json=expressions_json,
-            matching=matching,
+        node.edit(expressions_json=expressions_json, matching=matching)
+        self.plan.edit_node(spark, node)
+
+    @notify_plan_change
+    def add_addColumn_node(self, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
+        self._log(f"/addNode/addColumn: {node_id, prev_node_id}")
+        new_sql_node = AddColumnNode(
+            session_id=self.id,
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+            expressions=expressions,
         )
+        self.plan.add_node(spark, new_sql_node)
+
+    @notify_plan_change
+    def edit_addColumn_node(self, node_id: str, expressions: list[AddColumnExpression]):
+        self._log(f"/editNode/addColumn: {node_id}")
+        node = self.plan.get_node_by_id(node_id)
+        node.edit(expressions=expressions)
         self.plan.edit_node(spark, node)
 
     @notify_plan_change
@@ -275,10 +291,13 @@ class LoadFromSessionNode(SparkNode):
 
 
 class SqlNode(SparkNode):
-    SQL_START = "select * from {df} where"
-
     def __str__(self):
         return f"node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}"
+
+    @property
+    @abstractmethod
+    def query_template(self) -> str:
+        pass
 
     @property
     @abstractmethod
@@ -308,9 +327,37 @@ class FilterNode(SqlNode):
         self.matching = matching
 
     @property
+    def query_template(self) -> str:
+        return "select * from {df} where"
+
+    @property
     def query(self) -> str:
-        return " ".join([self.SQL_START, f" {self.matching.strip()} ".join(self.expressions)]).replace('\\"', "")
+        return " ".join([self.query_template, f" {self.matching.strip()} ".join(self.expressions)]).replace('\\"', "")
 
     def edit(self, expressions_json: str, matching: str):
         self.expressions = json.loads(expressions_json)
         self.matching = matching
+
+
+class AddColumnNode(SqlNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+
+    @property
+    def query_template(self) -> str:
+        return "select *, {expressions} from {df}"
+
+    @property
+    def query(self) -> str:
+        return self.query_template.format(
+            **{
+                "expressions": ", ".join([" as ".join((obj.expression, obj.col_name)) for obj in self.expressions]),
+                "df": "{df}",
+            }
+        )
+
+    def edit(self, expressions: str):
+        self.expressions = expressions

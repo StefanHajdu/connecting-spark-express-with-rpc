@@ -21,11 +21,19 @@ app.post("/loadFromSession", (req, res, next) => {
 });
 
 app.post("/addNode/filter", (req, res, next) => {
-  sp._addFilterNode(req.body, res, next);
+  sp._create_FilterNode(req.body, res, next);
 });
 
 app.post("/editNode/filter", (req, res, next) => {
-  sp._editFilterNode(req.body, res, next);
+  sp._edit_FilterNode(req.body, res, next);
+});
+
+app.post("/addNode/addColumn", (req, res, next) => {
+  sp._create_AddColumnNode(req.body, res, next);
+});
+
+app.post("/editNode/addColumn", (req, res, next) => {
+  sp._edit_AddColumnNode(req.body, res, next);
 });
 
 app.post("/removeNode", (req, res, next) => {

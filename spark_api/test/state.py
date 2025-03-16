@@ -66,4 +66,11 @@ text_filters = [
         },
         "correct": 19551,
     },
+    {
+        "case": {
+            "expressions_json": ["length(registrar) < 10"],
+            "matching": "",
+        },
+        "correct": 153053,
+    },
 ]

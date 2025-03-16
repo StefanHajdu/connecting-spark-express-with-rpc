@@ -211,9 +211,9 @@ def test_04_2_parent_session_changed_multi_level():
     df_session_12 = u.summarize(session_id=session_1, node_id=node_11)
     df_session_22 = u.summarize(session_id=session_2, node_id=node_21)
 
-    assert df_session_02["num_rows"] < df_session_01["num_rows"]
-    assert df_session_12["num_rows"] < df_session_11["num_rows"]
-    assert df_session_22["num_rows"] < df_session_21["num_rows"]
+    assert df_session_02["count"] < df_session_01["count"]
+    assert df_session_12["count"] < df_session_11["count"]
+    assert df_session_22["count"] < df_session_21["count"]
 
 
 def test_05_append_sql():

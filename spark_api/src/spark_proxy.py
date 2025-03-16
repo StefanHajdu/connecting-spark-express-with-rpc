@@ -54,8 +54,8 @@ class SparkApiServicer(SparkApiServicer):
             msg=f"Dataframe from input session {req.input_session_id} reused input.",
         )
 
-    def addFilterNode(
-        self, req: sparkapi_pb2.FilterNodeAddRequest, unused_context
+    def create_FilterNode(
+        self, req: sparkapi_pb2.FilterNodeRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.add_filter_node(
@@ -70,11 +70,37 @@ class SparkApiServicer(SparkApiServicer):
             msg=f"Node: {req.node_id} added and transform",
         )
 
-    def editFilterNode(
-        self, req: sparkapi_pb2.FilterNodeEditRequest, unused_context
+    def edit_FilterNode(
+        self, req: sparkapi_pb2.FilterNodeRequest, unused_context
     ) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_filter_node(req.node_id, req.expressions_json, req.matching)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Node: {req.node_id} edited",
+        )
+
+    def create_AddColumnNode(
+        self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.add_addColumn_node(
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            expressions=list(req.expressions),
+        )
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f"Node: {req.node_id} added and transform",
+        )
+
+    def edit_AddColumnNode(
+        self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.edit_addColumn_node(req.node_id, list(req.expressions))
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
