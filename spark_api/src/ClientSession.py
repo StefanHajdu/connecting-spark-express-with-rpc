@@ -207,7 +207,7 @@ class SparkNode(ABC):
         return {
             "columns": json.dumps(self.df.columns),
             "count": self.df.count(),
-            "schema": self.df._jdf.schema().treeString(),
+            "schema": self.df.schema.json(),
         }
 
     def preview(self, limit):
