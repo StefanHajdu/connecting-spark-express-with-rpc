@@ -204,8 +204,8 @@ def test_04_2_parent_session_changed_multi_level():
     assert not u.get_rebuild_status(session_2)
 
     u.rebuild_session(session_1)
-    # assert not u.get_rebuild_status(session_1)
-    # assert u.get_rebuild_status(session_2)
+    assert not u.get_rebuild_status(session_1)
+    assert u.get_rebuild_status(session_2)
 
     u.rebuild_session(session_2)
     assert not u.get_rebuild_status(session_1)
