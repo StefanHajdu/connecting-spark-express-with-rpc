@@ -1,12 +1,9 @@
 import json
 
 import utils as u
-import json
-from state import TestState
-from test_queries import text_filters, math_numerical_functions, string_functions, array_functions
 from spark_api.src.custom_exceptions import NodeMissingException
 from state import TestState
-from test_queries import array_functions, math_numerical_functions, string_functions, text_filters
+from test_queries import array_functions, date_functions, math_numerical_functions, misc_functions, string_functions, text_filters
 
 nodeMissingException = NodeMissingException()
 
@@ -662,5 +659,54 @@ def test_16_addColumn_array_functions():
 
         if 'res' not in cols:
             print(array_function)
+
+        assert 'res' in cols
+
+
+def test_17_addColumn_date_functions():
+    session_0 = u.create_session(session_id=u.to_session_id(0))
+    for date_function in date_functions[1:]:
+        u.load(session_id=session_0, src_path=s.path, src_type=s.type)
+
+        node_1 = u.add_addColumn_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'expressions': date_functions[0]},
+            }
+        )
+
+        node_2 = u.add_addColumn_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(2), 'prev_node_id': node_1},
+                **{'expressions': [date_function]},
+            }
+        )
+        df_session = u.summarize(session_id=session_0, node_id=node_2)
+
+        cols = json.loads(df_session['columns'])
+
+        if 'res' not in cols:
+            print(date_function)
+
+        assert 'res' in cols
+
+
+def test_18_misc_functions():
+    session_0 = u.create_session(session_id=u.to_session_id(0))
+    for misc_function in misc_functions:
+        u.load(session_id=session_0, src_path=s.path, src_type=s.type)
+
+        node_1 = u.add_addColumn_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'expressions': [misc_function]},
+            }
+        )
+        df_session = u.summarize(session_id=session_0, node_id=node_1)
+
+        cols = json.loads(df_session['columns'])
+
+        if 'res' not in cols:
+            print(misc_function)
 
         assert 'res' in cols
