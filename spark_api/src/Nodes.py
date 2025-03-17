@@ -105,7 +105,7 @@ class LoadNode(SparkNode):
         self._data_type = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}'
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         spark = kwargs.get('spark')
@@ -134,7 +134,7 @@ class LoadFromSessionNode(SparkNode):
         self._parent_session_plan = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         last_node = self.parent_session_plan.get_last_spark_node()
@@ -168,7 +168,7 @@ class SqlNode(SparkNode):
         self._query_params_json = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}'
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         spark = kwargs.get('spark')

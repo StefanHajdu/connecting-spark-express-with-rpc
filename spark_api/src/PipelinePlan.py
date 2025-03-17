@@ -58,7 +58,7 @@ class SessionPlanner:
         edited_node.df = edited_node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
         self.nodes[node_position] = edited_node
 
-        if not node_position == -1:
+        if node_position != -1:
             # rerun from edited
             self.reapply_plan(spark, node_position + 1)
 

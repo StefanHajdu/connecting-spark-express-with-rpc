@@ -60,8 +60,13 @@ select = [
 ignore = [
     "E203",   # whitespace before ",", ";", or ":"
     "D100",
+    "D101",
+    "D102",   # Missing docstring in public method
     "D103",
     "D104",   # Disable package and module docstrings
+    "D105",
+    "D106",
+    "D107",
     "N812",   # Imports as uppercase (e.g., functions as F)
     "PD901",  # Generic dataframe name df
     "COM812", # Missing trailing comma
