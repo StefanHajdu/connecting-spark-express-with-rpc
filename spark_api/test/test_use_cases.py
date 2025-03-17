@@ -1,9 +1,9 @@
-import utils as u
 import json
-from state import TestState
-from test_queries import text_filters, math_numerical_functions, string_functions, array_functions
+
+import utils as u
 from spark_api.src.custom_exceptions import NodeMissingException
 from state import TestState
+from test_queries import array_functions, math_numerical_functions, string_functions, text_filters
 
 nodeMissingException = NodeMissingException()
 
@@ -20,7 +20,7 @@ def test_01_load_and_summarize():
 def test_02_load_from_session():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -41,7 +41,7 @@ def test_02_load_from_session():
 def test_03_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -51,7 +51,7 @@ def test_03_filter():
         }
     )
     df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -65,7 +65,7 @@ def test_03_filter():
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
-    node_3 = u.add_sql(
+    node_3 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
@@ -83,7 +83,7 @@ def test_04_1_parent_session_changed():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_01 = u.add_sql(
+    node_01 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -92,7 +92,7 @@ def test_04_1_parent_session_changed():
             'matching': 'or',
         }
     )
-    node_02 = u.add_sql(
+    node_02 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -113,7 +113,7 @@ def test_04_1_parent_session_changed():
 
     df_session_11 = u.summarize(session_id=session_1, node_id=s.root_node_id)
     assert df_session_01['count'] == df_session_11['count']
-    node_11 = u.add_sql(
+    node_11 = u.add_filter_sql(
         **{
             'session_id': session_1,
             'node_id': u.to_node_id(1),
@@ -125,7 +125,7 @@ def test_04_1_parent_session_changed():
     df_session_12 = u.summarize(session_id=session_1, node_id=node_11)
 
     # session 0
-    node_03 = u.add_sql(
+    node_03 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
@@ -149,7 +149,7 @@ def test_04_2_parent_session_changed_multi_level():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_01 = u.add_sql(
+    node_01 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -163,7 +163,7 @@ def test_04_2_parent_session_changed_multi_level():
     # session 1
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.load_from_session(session_id=session_1, input_session_id=session_0)
-    node_11 = u.add_sql(
+    node_11 = u.add_filter_sql(
         **{
             'session_id': session_1,
             'node_id': u.to_node_id(1),
@@ -181,7 +181,7 @@ def test_04_2_parent_session_changed_multi_level():
     # session 2
     session_2 = u.create_session(session_id=u.to_session_id(2))
     u.load_from_session(session_id=session_2, input_session_id=session_1)
-    node_21 = u.add_sql(
+    node_21 = u.add_filter_sql(
         **{
             'session_id': session_2,
             'node_id': u.to_node_id(1),
@@ -220,7 +220,7 @@ def test_04_2_parent_session_changed_multi_level():
 def test_05_append_sql():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -229,7 +229,7 @@ def test_05_append_sql():
             'matching': 'or',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -244,7 +244,7 @@ def test_05_append_sql():
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
 
-    node_3 = u.add_sql(
+    node_3 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
@@ -257,10 +257,10 @@ def test_05_append_sql():
     assert df_session_2['count'] < df_session_1['count']
 
 
-def test_05_add_sql_before_summarize():
+def test_05_add_filter_sql_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -284,7 +284,7 @@ def test_05_add_sql_before_summarize():
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
 
     # add before cached
-    _ = u.add_sql(
+    _ = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
@@ -300,7 +300,7 @@ def test_05_add_sql_before_summarize():
 def test_06_unordered_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -309,7 +309,7 @@ def test_06_unordered_summarize():
             'matching': '',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -322,7 +322,7 @@ def test_06_unordered_summarize():
             'matching': 'or',
         }
     )
-    node_3 = u.add_sql(
+    node_3 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(3),
@@ -342,7 +342,7 @@ def test_06_unordered_summarize():
 def test_07_edit_sql_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -351,7 +351,7 @@ def test_07_edit_sql_after_summarize():
             'matching': 'or',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -366,7 +366,7 @@ def test_07_edit_sql_after_summarize():
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
 
-    node_2 = u.edit_sql(
+    node_2 = u.edit_filter_sql(
         **{
             'session_id': session_0,
             'node_id': node_2,
@@ -381,7 +381,7 @@ def test_07_edit_sql_after_summarize():
 def test_07_edit_sql_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -390,7 +390,7 @@ def test_07_edit_sql_before_summarize():
             'matching': 'or',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -413,7 +413,7 @@ def test_07_edit_sql_before_summarize():
 def test_08_remove_sql_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -422,7 +422,7 @@ def test_08_remove_sql_after_summarize():
             'matching': '',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -457,7 +457,7 @@ def test_08_remove_sql_after_summarize():
 def test_08_remove_sql_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -466,7 +466,7 @@ def test_08_remove_sql_before_summarize():
             'matching': '',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -505,7 +505,7 @@ def test_08_remove_sql_before_summarize():
 def test_12_toggle():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
@@ -514,7 +514,7 @@ def test_12_toggle():
             'matching': '',
         }
     )
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -544,7 +544,7 @@ def test_12_toggle():
     res = u.summarize(session_id=session_0, node_id=node_2)
     assert nodeMissingException.__str__() in res['error']['message']
 
-    node_2 = u.add_sql(
+    node_2 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
@@ -560,7 +560,7 @@ def test_12_toggle():
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_3['count'] > df_session_1['count']
 
-    node_1 = u.add_sql(
+    node_1 = u.add_filter_sql(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),

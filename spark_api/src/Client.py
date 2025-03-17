@@ -2,9 +2,11 @@ import json
 from collections.abc import Iterable
 from functools import wraps
 
+from sparkapi_pb2 import AddColumnExpression
+
 from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
-from Nodes import LoadFromSessionNode, LoadNode, SqlNode
+from Nodes import AddColumnNode, FilterNode, LoadFromSessionNode, LoadNode
 from spark_session_init import spark
 
 
@@ -103,43 +105,41 @@ class ClientSession:
         return node
 
     @notify_plan_change
-    def add_node(self, node_id, prev_node_id, query_type, query, query_params_json):
-        self._log(f'/addNode: {node_id, prev_node_id, query}')
-        new_sql_node = self.create_sql_node(
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            query=query,
-            query_type=query_type,
-            query_params_json=query_params_json,
-        )
-        self.plan.add_node(spark, new_sql_node)
-
-    def create_sql_node(self, node_id, prev_node_id, query_type, query, query_params_json):
-        node = SqlNode(
+    def add_filter_node(self, node_id: str, prev_node_id: str, expressions: list[str], matching: str):
+        self._log(f'/addNode/filter: {node_id, prev_node_id}')
+        new_sql_node = FilterNode(
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
-            operation='sql',
-            query=query,
-            query_type=query_type,
-            query_params_json=query_params_json,
+            expressions=expressions,
+            matching=matching,
         )
-        return node
+        self.plan.add_node(spark, new_sql_node)
 
     @notify_plan_change
-    def edit_node(self, node_id, query_type, query, query_params_json):
-        self._log(f'/editNode: {node_id, query}')
-        edited_node = self.adjust_sql_node(node_id, query_type, query, query_params_json)
-        self.plan.edit_node(spark, edited_node)
-
-    def adjust_sql_node(self, node_id, query_type, query, query_params_json):
+    def edit_filter_node(self, node_id: str, expressions: list[str], matching: str):
+        self._log(f'/editNode/filter: {node_id}')
         node = self.plan.get_node_by_id(node_id)
-        node.edit(
-            query_type=query_type,
-            query=query,
-            query_params_json=query_params_json,
+        node.edit(expressions=expressions, matching=matching)
+        self.plan.edit_node(spark, node)
+
+    @notify_plan_change
+    def add_addColumn_node(self, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
+        self._log(f'/addNode/addColumn: {node_id, prev_node_id}')
+        new_sql_node = AddColumnNode(
+            session_id=self.id,
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+            expressions=expressions,
         )
-        return node
+        self.plan.add_node(spark, new_sql_node)
+
+    @notify_plan_change
+    def edit_addColumn_node(self, node_id: str, expressions: list[AddColumnExpression]):
+        self._log(f'/editNode/addColumn: {node_id}')
+        node = self.plan.get_node_by_id(node_id)
+        node.edit(expressions=expressions)
+        self.plan.edit_node(spark, node)
 
     @notify_plan_change
     def remove_node(self, node_id):

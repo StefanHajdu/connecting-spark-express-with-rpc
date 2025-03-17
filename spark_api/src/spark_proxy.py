@@ -46,7 +46,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def create_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_node(
+        session.add_filter_node(
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
             expressions=list(req.expressions),
@@ -55,7 +55,7 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f'Node: {req.node_id} added and transform: {req.query} applied',
+            msg=f'Node: {req.node_id} added',
         )
 
     def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -64,7 +64,7 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f'Node: {req.node_id} edited and transform: {req.query} applied',
+            msg=f'Node: {req.node_id} edited',
         )
 
     def create_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:

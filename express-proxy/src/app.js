@@ -36,7 +36,7 @@ app.post("/editNode/addColumn", (req, res, next) => {
   sp._edit_AddColumnNode(req.body, res, next);
 });
 
-app.post("/removeSql", (req, res, next) => {
+app.post("/removeNode", (req, res, next) => {
   sp._removeSql(req.body, res, next);
 });
 

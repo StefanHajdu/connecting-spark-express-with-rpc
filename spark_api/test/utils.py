@@ -44,29 +44,29 @@ def load_from_session(session_id: str, input_session_id: str) -> None:
     assert res.status_code == 200
 
 
-def add_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addSql', json=kwargs)
+def add_filter_sql(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/addNode/filter', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def edit_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editSql', json=kwargs)
+def edit_filter_sql(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/editNode/filter', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
 def add_addColumn_sql(**kwargs) -> str:
-    res = requests.post("http://localhost:4444/addNode/addColumn", json=kwargs)
+    res = requests.post('http://localhost:4444/addNode/addColumn', json=kwargs)
 
     assert res.status_code == 200
-    return kwargs["node_id"]
+    return kwargs['node_id']
 
 
 def remove_sql(**kwargs):
-    res = requests.post('http://localhost:4444/removeSql', json=kwargs)
+    res = requests.post('http://localhost:4444/removeNode', json=kwargs)
 
     assert res.status_code == 200
 

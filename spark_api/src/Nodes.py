@@ -2,6 +2,7 @@ import json
 from abc import ABC, abstractmethod
 
 from pyspark.sql import DataFrame
+from sparkapi_pb2 import AddColumnExpression
 
 
 class SparkNode(ABC):
@@ -142,49 +143,73 @@ class LoadFromSessionNode(SparkNode):
 
 
 class SqlNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, query, query_type, query_params_json):
-        self._session_id = session_id
-        self._node_id = node_id
-        self._prev_node_id = prev_node_id
-        self._query_type = query_type
-        self._operation = operation
-        self._query = query
-        self._query_params_json = query_params_json
-
-    @property
-    def query_type(self):
-        return self._query_type
-
-    @query_type.setter
-    def query_type(self, val: str):
-        self._query_type = val
-
-    @property
-    def query_params_json(self):
-        return self._query_params_json
-
-    @query_params_json.setter
-    def query_params_json(self, val: str):
-        self._query_params_json = val
-
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}'  # noqa: E501
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+
+    @property
+    @abstractmethod
+    def query_template(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query(self) -> str:
+        pass
+
+    @abstractmethod
+    def edit(self):
+        pass
 
     def run_transform(self, **kwargs):
         spark = kwargs.get('spark')
         df = kwargs.get('df')
 
-        query_kwargs = self._get_parsed_params()
         return spark.sql(
             self.query,
             df=df,
-            **query_kwargs,
         )
 
-    def _get_parsed_params(self):
-        return {}
 
-    def edit(self, query_type, query, query_params_json):
-        self.query_type = query_type
-        self.query = query
-        self.query_params_json = query_params_json
+class FilterNode(SqlNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str = 'and'):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+        self.matching = matching
+
+    @property
+    def query_template(self) -> str:
+        return 'select * from {df} where'
+
+    @property
+    def query(self) -> str:
+        return ' '.join([self.query_template, f' {self.matching.strip()} '.join(self.expressions)]).replace('\\"', '')
+
+    def edit(self, expressions: list[str], matching: str):
+        self.expressions = expressions
+        self.matching = matching
+
+
+class AddColumnNode(SqlNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+
+    @property
+    def query_template(self) -> str:
+        return 'select *, {expressions} from {df}'
+
+    @property
+    def query(self) -> str:
+        return self.query_template.format(
+            **{
+                'expressions': ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions]),
+                'df': '{df}',
+            }
+        )
+
+    def edit(self, expressions: str):
+        self.expressions = expressions
