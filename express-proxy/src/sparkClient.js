@@ -151,7 +151,43 @@ export class SparkClient {
     );
   }
 
-  _removeSql(sqlRequestBody, expressResponse, next) {
+  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_AddColumnNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _edit_AddColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_AddColumnNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _removeNode(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
     return this.client.removeNode(
       sqlRequestBody,

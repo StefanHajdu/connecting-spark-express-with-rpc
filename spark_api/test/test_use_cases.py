@@ -1,6 +1,9 @@
 import json
 
 import utils as u
+import json
+from state import TestState
+from test_queries import text_filters, math_numerical_functions, string_functions, array_functions
 from spark_api.src.custom_exceptions import NodeMissingException
 from state import TestState
 from test_queries import array_functions, math_numerical_functions, string_functions, text_filters
@@ -339,7 +342,7 @@ def test_06_unordered_summarize():
     assert df_session_2['count'] > df_session_3['count']
 
 
-def test_07_edit_sql_after_summarize():
+def test_07_edit_filter_sql_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
     node_1 = u.add_filter_sql(
@@ -378,7 +381,7 @@ def test_07_edit_sql_after_summarize():
     assert df_session_1['count'] > df_session_2['count']
 
 
-def test_07_edit_sql_before_summarize():
+def test_07_edit_filter_sql_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.load(session_id=session_0, src_path=s.path, src_type=s.type)
     node_1 = u.add_filter_sql(

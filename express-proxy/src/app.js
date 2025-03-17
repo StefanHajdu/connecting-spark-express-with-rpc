@@ -37,7 +37,7 @@ app.post("/editNode/addColumn", (req, res, next) => {
 });
 
 app.post("/removeNode", (req, res, next) => {
-  sp._removeSql(req.body, res, next);
+  sp._removeNode(req.body, res, next);
 });
 
 app.get("/getSessionStatus/:session_id", (req, res, next) => {
