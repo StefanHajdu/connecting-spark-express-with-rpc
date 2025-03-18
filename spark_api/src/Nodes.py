@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 from pyspark.sql import DataFrame
 from sparkapi_pb2 import AddColumnExpression
 
+from NodeExtensions import JoinInputExtension
+from utils import spark_read_from_path
+
 
 class SparkNode(ABC):
     @property
@@ -58,7 +61,7 @@ class SparkNode(ABC):
         return {
             'columns': json.dumps(self.df.columns),
             'count': self.df.count(),
-            'schema': self.df._jdf.schema().treeString(),
+            'schema': self.df.schema.json(),
         }
 
     def preview(self, limit):
@@ -109,12 +112,7 @@ class LoadNode(SparkNode):
         return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
 
     def run_transform(self, **kwargs):
-        spark = kwargs.get('spark')
-
-        if self.data_type == 'csv':
-            return spark.read.option('delimiter', ';').option('header', True).csv(self.path)
-        elif self.data_type == 'json':
-            return spark.read.json(self.path)
+        return spark_read_from_path(data_type=self.data_type, path=self.path)
 
 
 class LoadFromSessionNode(SparkNode):
@@ -163,8 +161,6 @@ class SqlNode(SparkNode):
     def run_transform(self, **kwargs):
         spark = kwargs.get('spark')
         df = kwargs.get('df')
-
-        print(self.query)
 
         return spark.sql(
             self.query,
@@ -215,3 +211,23 @@ class AddColumnNode(SqlNode):
 
     def edit(self, expressions: str):
         self.expressions = expressions
+
+
+class JoinNode(SqlNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, input_extension: JoinInputExtension):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.input_extension = input_extension
+        self._query = 'select * from {df}'
+
+    @property
+    def query_template(self) -> str:
+        return ''
+
+    @property
+    def query(self) -> str:
+        return self._query
+
+    def edit(self):
+        pass

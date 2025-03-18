@@ -1,5 +1,11 @@
 from pyspark.sql import SparkSession
 
+from ClientSessionTable import ClientSessionTable
+from PipelinePlan import SessionPlannerMap
+
+clientSessionTable = ClientSessionTable()
+sessionPlannerMap = SessionPlannerMap(clientSessionTable)
+
 spark = (
     SparkSession.builder.appName('SparkSession')
     .master('local[*]')
