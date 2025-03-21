@@ -10,8 +10,6 @@ from PipelinePlan import SessionPlanner, SessionPlannerMap
 clientSessionTable = ClientSessionTable()
 sessionPlannerMap = SessionPlannerMap(clientSessionTable)
 
-print(sessionPlannerMap)
-
 
 class SparkApiServicer(SparkApiServicer):
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
