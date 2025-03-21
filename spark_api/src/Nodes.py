@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pyspark.sql import DataFrame
 from sparkapi_pb2 import AddColumnExpression
 
-from NodeExtensions import JoinInputExtension
+from NodeExtensions import OtherDataframe
 from utils import spark_read_from_path
 
 
@@ -109,7 +109,7 @@ class LoadNode(SparkNode):
         self._data_type = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         return spark_read_from_path(data_type=self.data_type, path=self.path)
@@ -133,7 +133,7 @@ class LoadFromSessionNode(SparkNode):
         self._parent_session_plan = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         last_node = self.parent_session_plan.get_last_spark_node()
@@ -214,12 +214,12 @@ class AddColumnNode(SqlNode):
 
 
 class JoinNode(SqlNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, input_extension: JoinInputExtension):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, other_df: OtherDataframe):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.input_extension = input_extension
-        self._query = 'select * from {df}'
+        self.other_df = other_df
+        self._query = None
 
     @property
     def query_template(self) -> str:
@@ -227,7 +227,10 @@ class JoinNode(SqlNode):
 
     @property
     def query(self) -> str:
-        return self._query
+        if not self._query:
+            return self.other_df.query
+        else:
+            return ''
 
     def edit(self):
         pass

@@ -18,6 +18,6 @@ class NodeMissingException(Exception):
         super().__init__(message)
 
 
-class InvalidInpuTypeException(Exception):
+class InvalidInputTypeException(Exception):
     def __init__(self, message='Input type is not supported. Valid options: ["file", "session"]'):
         super().__init__(message)

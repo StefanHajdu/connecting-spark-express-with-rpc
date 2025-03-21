@@ -6,7 +6,7 @@ from sparkapi_pb2 import AddColumnExpression
 
 from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
-from NodeExtensions import JoinInputExtension
+from NodeExtensions import OtherDataframe
 from Nodes import AddColumnNode, FilterNode, JoinNode, LoadFromSessionNode, LoadNode
 from spark_session_init import spark
 
@@ -145,7 +145,7 @@ class ClientSession:
     @notify_plan_change
     def add_join_node(self, node_id: str, prev_node_id: str, input_type: str, input_pointer: str):
         self._log(f'/addNode/join/inputExtension: {node_id, prev_node_id}')
-        join_extensions_node = JoinInputExtension(
+        other_df = OtherDataframe(
             input_type=input_type,
             input_pointer=input_pointer,
         )
@@ -153,7 +153,7 @@ class ClientSession:
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
-            input_extension=join_extensions_node,
+            other_df=other_df,
         )
         self.plan.add_node(spark, new_join_node)
 
