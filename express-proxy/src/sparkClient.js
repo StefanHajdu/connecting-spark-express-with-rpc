@@ -133,6 +133,24 @@ export class SparkClient {
     );
   }
 
+  _edit_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_JoinNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
   _edit_FilterNode(sqlRequestBody, expressResponse, next) {
     return this.client.edit_FilterNode(
       sqlRequestBody,

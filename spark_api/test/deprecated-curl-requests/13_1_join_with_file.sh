@@ -19,6 +19,12 @@ curl -X POST http://localhost:4444/addNode/join/inputExtension \
     -d '{"session_id": "0000", "node_id": "n0002", "prev_node_id": "n0001", "input_type": "file", "input_pointer": "/home/stephenx/Documents/Datasets/domains_sub_test.csv"}' \
     -w '\nTotal: %{time_total}s\n\n'
 
+echo "JOIN step 2/2"
+curl -X POST http://localhost:4444/editNode/join \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0002", "join_mode": "inner join", "columns_to_keep": ["dnssec", "registrar"], "columns_to_add": ["dnssec", "registrar"], "prefix": "other_", "conditions": ["df.domain == other_df.domain"], "matching": ""}' \
+    -w '\nTotal: %{time_total}s\n\n'
+
 curl -X POST http://localhost:4444/addNode/filter \
     -H 'Content-Type: application/json' \
     -d '{"session_id": "0000", "node_id": "n0003", "prev_node_id": "n0002", "expressions": ["registrar = '\''GoDaddy.com, LLC'\''"], "matching": ""}' \

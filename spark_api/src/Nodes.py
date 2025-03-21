@@ -162,6 +162,8 @@ class SqlNode(SparkNode):
         spark = kwargs.get('spark')
         df = kwargs.get('df')
 
+        print(f'    {self.query}\n')
+
         return spark.sql(
             self.query,
             df=df,
@@ -223,14 +225,44 @@ class JoinNode(SqlNode):
 
     @property
     def query_template(self) -> str:
-        return ''
+        return """select {columns_to_keep}
+            from {df}
+            {join_mode}
+            (select {columns_to_add} from {other_df}) as other_df
+            on
+            {conditions}
+        """
 
     @property
     def query(self) -> str:
-        if not self._query:
+        try:
+            columns_to_add = ', '.join([' as '.join((col_name, self.prefix + col_name)) for col_name in self.columns_to_add])
+            conditions = f' {self.matching.strip()} '.join(self.conditions).replace('\\"', '')
+            return self.query_template.format(
+                **{
+                    'columns_to_keep': ' '.join(self.columns_to_keep),
+                    'df': '{df}',
+                    'join_mode': self.join_mode,
+                    'columns_to_add': columns_to_add,
+                    'other_df': '{other_df}',
+                    'conditions': conditions,
+                }
+            )
+        except Exception:
             return self.other_df.query
-        else:
-            return ''
 
-    def edit(self):
-        pass
+    def edit(
+        self,
+        join_mode: str,
+        columns_to_keep: list[str],
+        columns_to_add: list[str],
+        prefix: str,
+        conditions: list[str],
+        matching: str,
+    ):
+        self.join_mode = join_mode
+        self.columns_to_keep = columns_to_keep
+        self.columns_to_add = columns_to_add
+        self.prefix = prefix
+        self.conditions = conditions
+        self.matching = matching

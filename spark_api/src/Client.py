@@ -143,6 +143,29 @@ class ClientSession:
         self.plan.edit_node(spark, node)
 
     @notify_plan_change
+    def edit_join_node(
+        self,
+        node_id: str,
+        join_mode: str,
+        columns_to_keep: list[str],
+        columns_to_add: list[str],
+        prefix: str,
+        conditions: list[str],
+        matching: str,
+    ):
+        self._log(f'/editNode/join: {node_id}')
+        node = self.plan.get_node_by_id(node_id)
+        node.edit(
+            join_mode=join_mode,
+            columns_to_keep=columns_to_keep,
+            columns_to_add=columns_to_add,
+            prefix=prefix,
+            conditions=conditions,
+            matching=matching,
+        )
+        self.plan.edit_node(spark, node)
+
+    @notify_plan_change
     def add_join_node(self, node_id: str, prev_node_id: str, input_type: str, input_pointer: str):
         self._log(f'/addNode/join/inputExtension: {node_id, prev_node_id}')
         other_df = OtherDataframe(

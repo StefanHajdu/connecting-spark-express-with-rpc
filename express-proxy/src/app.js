@@ -32,6 +32,10 @@ app.post("/addNode/join/inputExtension", (req, res, next) => {
   sp._create_InputExtension_JoinNode(req.body, res, next);
 });
 
+app.post("/editNode/join", (req, res, next) => {
+  sp._edit_JoinNode(req.body, res, next);
+});
+
 app.post("/editNode/filter", (req, res, next) => {
   sp._edit_FilterNode(req.body, res, next);
 });
