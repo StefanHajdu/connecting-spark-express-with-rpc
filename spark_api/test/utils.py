@@ -65,6 +65,20 @@ def add_addColumn_sql(**kwargs) -> str:
     return kwargs['node_id']
 
 
+def create_InputExtension_JoinNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/addNode/join/inputExtension', json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs['node_id']
+
+
+def edit_JoinNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/editNode/join', json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs['node_id']
+
+
 def remove_sql(**kwargs):
     res = requests.post('http://localhost:4444/removeNode', json=kwargs)
 

@@ -235,7 +235,6 @@ class JoinNode(SqlNode):
         return """select {columns} from {df}
             {join_relation} join
             {other_df}
-            on
             {join_criteria}"""
 
     @property
@@ -255,7 +254,7 @@ class JoinNode(SqlNode):
                 df='{df}',
                 join_relation=self.join_relation,
                 other_df='{other_df}',
-                join_criteria=join_criteria,
+                join_criteria='on ' + join_criteria if join_criteria else '',
             )
         except Exception:
             return self.other_df.query
