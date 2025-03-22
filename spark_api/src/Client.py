@@ -118,13 +118,6 @@ class ClientSession:
         self.plan.add_node(spark, new_sql_node)
 
     @notify_plan_change
-    def edit_filter_node(self, node_id: str, expressions: list[str], matching: str):
-        self._log(f'/editNode/filter: {node_id}')
-        node = self.plan.get_node_by_id(node_id)
-        node.edit(expressions=expressions, matching=matching)
-        self.plan.edit_node(spark, node)
-
-    @notify_plan_change
     def add_addColumn_node(self, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
         self._log(f'/addNode/addColumn: {node_id, prev_node_id}')
         new_sql_node = AddColumnNode(
@@ -136,33 +129,10 @@ class ClientSession:
         self.plan.add_node(spark, new_sql_node)
 
     @notify_plan_change
-    def edit_addColumn_node(self, node_id: str, expressions: list[AddColumnExpression]):
-        self._log(f'/editNode/addColumn: {node_id}')
+    def edit_node(self, node_id: str, **kwargs):
         node = self.plan.get_node_by_id(node_id)
-        node.edit(expressions=expressions)
-        self.plan.edit_node(spark, node)
-
-    @notify_plan_change
-    def edit_join_node(
-        self,
-        node_id: str,
-        join_relation: str,
-        columns_to_keep: list[str],
-        columns_to_add: list[str],
-        prefix_for_added_columns: str,
-        join_criteria: list[str],
-        criteria_matching: str,
-    ):
-        self._log(f'/editNode/join: {node_id}')
-        node = self.plan.get_node_by_id(node_id)
-        node.edit(
-            join_relation=join_relation,
-            columns_to_keep=columns_to_keep,
-            columns_to_add=columns_to_add,
-            prefix_for_added_columns=prefix_for_added_columns,
-            join_criteria=join_criteria,
-            criteria_matching=criteria_matching,
-        )
+        self._log(f'/editNode/{node.route}: {node_id}')
+        node.edit(**kwargs)
         self.plan.edit_node(spark, node)
 
     @notify_plan_change

@@ -86,7 +86,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_filter_node(req.node_id, list(req.expressions), req.matching)
+        session.edit_node(req.node_id, expressions=list(req.expressions), matching=req.matching)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -95,7 +95,7 @@ class SparkApiServicer(SparkApiServicer):
 
     def edit_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_addColumn_node(req.node_id, list(req.expressions))
+        session.edit_node(req.node_id, expressions=list(req.expressions))
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -104,14 +104,14 @@ class SparkApiServicer(SparkApiServicer):
 
     def edit_JoinNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.edit_join_node(
+        session.edit_node(
             req.node_id,
-            req.join_relation,
-            list(req.columns_to_keep),
-            list(req.columns_to_add),
-            req.prefix_for_added_columns,
-            list(req.join_criteria),
-            req.criteria_matching,
+            join_relation=req.join_relation,
+            columns_to_keep=list(req.columns_to_keep),
+            columns_to_add=list(req.columns_to_add),
+            prefix_for_added_columns=req.prefix_for_added_columns,
+            join_criteria=list(req.join_criteria),
+            criteria_matching=req.criteria_matching,
         )
 
         return sparkapi_pb2.SparkTransformResponse(
