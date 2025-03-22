@@ -97,8 +97,8 @@ export class SparkClient {
     );
   }
 
-  _edit_FilterNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_FilterNode(
+  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_AddColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -115,8 +115,44 @@ export class SparkClient {
     );
   }
 
-  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_AddColumnNode(
+  _create_InputExtension_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_InputExtension_JoinNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _edit_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_JoinNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _edit_FilterNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

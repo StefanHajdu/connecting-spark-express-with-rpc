@@ -1,9 +1,18 @@
 import json
 
-import utils as u
 from spark_api.src.custom_exceptions import NodeMissingException
 from state import TestState
-from test_queries import array_functions, date_functions, math_numerical_functions, misc_functions, string_functions, text_filters
+from test_queries import (
+    array_functions,
+    date_functions,
+    join_relations,
+    math_numerical_functions,
+    misc_functions,
+    string_functions,
+    text_filters,
+)
+
+import utils as u
 
 nodeMissingException = NodeMissingException()
 
@@ -710,3 +719,35 @@ def test_18_misc_functions():
             print(misc_function)
 
         assert 'res' in cols
+
+
+def test_19_join_relations():
+    session_0 = u.create_session(session_id=u.to_session_id(0))
+    for join_relation in join_relations:
+        u.load(session_id=session_0, src_path='../data/df1.json', src_type='json')
+        node_1 = u.create_InputExtension_JoinNode(
+            **{
+                'session_id': session_0,
+                'node_id': 'n0001',
+                'prev_node_id': s.root_node_id,
+                'input_type': 'file',
+                'input_pointer': '../data/df2.json',
+            }
+        )
+
+        node_1 = u.edit_JoinNode(
+            **{
+                **{
+                    'session_id': session_0,
+                    'node_id': 'n0001',
+                },
+                **join_relation['case'],
+            }
+        )
+
+        df_session = u.summarize(session_id=session_0, node_id=node_1)
+
+        assert set([join_relation['case']['prefix_for_added_columns'] + col for col in join_relation['case']['columns_to_add']]).issubset(
+            set(json.loads(df_session['columns']))
+        )
+        assert df_session['count'] == join_relation['correct_num_rows']

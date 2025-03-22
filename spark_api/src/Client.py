@@ -6,7 +6,8 @@ from sparkapi_pb2 import AddColumnExpression
 
 from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
-from Nodes import AddColumnNode, FilterNode, LoadFromSessionNode, LoadNode
+from NodeExtensions import OtherDataframe
+from Nodes import AddColumnNode, FilterNode, JoinNode, LoadFromSessionNode, LoadNode
 from spark_session_init import spark
 
 
@@ -140,6 +141,44 @@ class ClientSession:
         node = self.plan.get_node_by_id(node_id)
         node.edit(expressions=expressions)
         self.plan.edit_node(spark, node)
+
+    @notify_plan_change
+    def edit_join_node(
+        self,
+        node_id: str,
+        join_relation: str,
+        columns_to_keep: list[str],
+        columns_to_add: list[str],
+        prefix_for_added_columns: str,
+        join_criteria: list[str],
+        criteria_matching: str,
+    ):
+        self._log(f'/editNode/join: {node_id}')
+        node = self.plan.get_node_by_id(node_id)
+        node.edit(
+            join_relation=join_relation,
+            columns_to_keep=columns_to_keep,
+            columns_to_add=columns_to_add,
+            prefix_for_added_columns=prefix_for_added_columns,
+            join_criteria=join_criteria,
+            criteria_matching=criteria_matching,
+        )
+        self.plan.edit_node(spark, node)
+
+    @notify_plan_change
+    def add_join_node(self, node_id: str, prev_node_id: str, input_type: str, input_pointer: str):
+        self._log(f'/addNode/join/inputExtension: {node_id, prev_node_id}')
+        other_df = OtherDataframe(
+            input_type=input_type,
+            input_pointer=input_pointer,
+        )
+        new_join_node = JoinNode(
+            session_id=self.id,
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+            other_df=other_df,
+        )
+        self.plan.add_node(spark, new_join_node)
 
     @notify_plan_change
     def remove_node(self, node_id):

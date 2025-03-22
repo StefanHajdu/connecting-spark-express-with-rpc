@@ -58,15 +58,6 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Node: {req.node_id} added',
         )
 
-    def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
-        session = clientSessionTable.get_session(req.session_id)
-        session.edit_filter_node(req.node_id, list(req.expressions), req.matching)
-
-        return sparkapi_pb2.SparkTransformResponse(
-            session_id=req.session_id,
-            msg=f'Node: {req.node_id} edited',
-        )
-
     def create_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.add_addColumn_node(
@@ -77,12 +68,51 @@ class SparkApiServicer(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
-            msg=f'Node: {req.node_id} added and transform',
+            msg=f'Node: {req.node_id} added',
+        )
+
+    def create_InputExtension_JoinNode(
+        self, req: sparkapi_pb2.JoinInputExtensionRequest, unused_context
+    ) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.add_join_node(
+            node_id=req.node_id, prev_node_id=req.prev_node_id, input_type=req.input_type, input_pointer=req.input_pointer
+        )
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} added',
+        )
+
+    def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.edit_filter_node(req.node_id, list(req.expressions), req.matching)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} edited',
         )
 
     def edit_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_addColumn_node(req.node_id, list(req.expressions))
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} edited',
+        )
+
+    def edit_JoinNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        session.edit_join_node(
+            req.node_id,
+            req.join_relation,
+            list(req.columns_to_keep),
+            list(req.columns_to_add),
+            req.prefix_for_added_columns,
+            list(req.join_criteria),
+            req.criteria_matching,
+        )
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,

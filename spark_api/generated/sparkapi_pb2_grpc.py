@@ -89,6 +89,16 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.AddColumnNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
+        self.create_InputExtension_JoinNode = channel.unary_unary(
+                '/sparkapi.SparkApi/create_InputExtension_JoinNode',
+                request_serializer=sparkapi__pb2.JoinInputExtensionRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
+        self.edit_JoinNode = channel.unary_unary(
+                '/sparkapi.SparkApi/edit_JoinNode',
+                request_serializer=sparkapi__pb2.JoinRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
         self.removeNode = channel.unary_unary(
                 '/sparkapi.SparkApi/removeNode',
                 request_serializer=sparkapi__pb2.NodeRemovalRequest.SerializeToString,
@@ -167,6 +177,19 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def create_InputExtension_JoinNode(self, request, context):
+        """join node
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def edit_JoinNode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def removeNode(self, request, context):
         """all nodes
         """
@@ -230,6 +253,16 @@ def add_SparkApiServicer_to_server(servicer, server):
             'edit_AddColumnNode': grpc.unary_unary_rpc_method_handler(
                     servicer.edit_AddColumnNode,
                     request_deserializer=sparkapi__pb2.AddColumnNodeRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'create_InputExtension_JoinNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.create_InputExtension_JoinNode,
+                    request_deserializer=sparkapi__pb2.JoinInputExtensionRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'edit_JoinNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.edit_JoinNode,
+                    request_deserializer=sparkapi__pb2.JoinRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'removeNode': grpc.unary_unary_rpc_method_handler(
@@ -534,6 +567,60 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/edit_AddColumnNode',
             sparkapi__pb2.AddColumnNodeRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def create_InputExtension_JoinNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/create_InputExtension_JoinNode',
+            sparkapi__pb2.JoinInputExtensionRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def edit_JoinNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/edit_JoinNode',
+            sparkapi__pb2.JoinRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

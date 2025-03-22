@@ -16,3 +16,8 @@ class LoadNodeRemovalException(Exception):
 class NodeMissingException(Exception):
     def __init__(self, message='Node with given node_id is missing'):
         super().__init__(message)
+
+
+class InvalidInputTypeException(Exception):
+    def __init__(self, message='Input type is not supported. Valid options: ["file", "session"]'):
+        super().__init__(message)

@@ -122,3 +122,84 @@ misc_functions = [
     {'expression': 'sha1(domain)', 'col_name': 'res'},
     # {'expression': "from_json(json_col, 'MAP<STRING,INT>')", 'col_name': 'res'},
 ]
+
+prefix_for_added_columns = '_'
+join_relations = [
+    {
+        'case': {
+            'join_relation': 'inner',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': ['name', 'id'],
+            'prefix_for_added_columns': prefix_for_added_columns,
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 2,
+    },
+    {
+        'case': {
+            'join_relation': 'cross',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': ['name', 'id'],
+            'prefix_for_added_columns': prefix_for_added_columns,
+            'join_criteria': [],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 16,
+    },
+    {
+        'case': {
+            'join_relation': 'full',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': ['name', 'id'],
+            'prefix_for_added_columns': prefix_for_added_columns,
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 6,
+    },
+    {
+        'case': {
+            'join_relation': 'left',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': ['name', 'id'],
+            'prefix_for_added_columns': prefix_for_added_columns,
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 4,
+    },
+    {
+        'case': {
+            'join_relation': 'right',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': ['name', 'id'],
+            'prefix_for_added_columns': prefix_for_added_columns,
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 4,
+    },
+    {
+        'case': {
+            'join_relation': 'left semi',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': [],
+            'prefix_for_added_columns': '',
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 2,
+    },
+    {
+        'case': {
+            'join_relation': 'left anti',
+            'columns_to_keep': ['name', 'id'],
+            'columns_to_add': [],
+            'prefix_for_added_columns': '',
+            'join_criteria': ['{df}.name == {other_df}.name'],
+            'criteria_matching': '',
+        },
+        'correct_num_rows': 2,
+    },
+]
