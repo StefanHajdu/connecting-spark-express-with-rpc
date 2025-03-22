@@ -1,4 +1,5 @@
-text_filters = [
+filter_functions = [
+    # text filtering
     {'case': {'expressions': ["contains(domain, 'club')"], 'matching': ''}, 'correct': 2475},
     {
         'case': {
@@ -32,6 +33,32 @@ text_filters = [
     {'case': {'expressions': ["startswith(registrar, 'GoDaddy')"], 'matching': ''}, 'correct': 93668},
     {'case': {'expressions': ["endswith(registrar, 'com')"], 'matching': ''}, 'correct': 19551},
     {'case': {'expressions': ['length(registrar) < 10'], 'matching': ''}, 'correct': 153053},
+    # numerical filtering
+    {'case': {'expressions': ['numerical_col == 1'], 'matching': ''}, 'correct': 499_999},
+    {'case': {'expressions': ['numerical_col > 2'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['numerical_col < -1'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['numerical_col >= 2'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['numerical_col <= -1'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['numerical_col between -1 and 2'], 'matching': ''}, 'correct': 499_999},
+    # date filtering
+    {'case': {'expressions': ['date_col == current_date()'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['date_col > current_date()'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['date_col < current_date()'], 'matching': ''}, 'correct': 375585},
+    {'case': {'expressions': ['date_col >= current_date()'], 'matching': ''}, 'correct': 0},
+    {'case': {'expressions': ['date_col <= current_date()'], 'matching': ''}, 'correct': 375585},
+    {
+        'case': {'expressions': ['date_col between to_date("01-01-1970", "MM-dd-yyyy") and current_date()'], 'matching': ''},
+        'correct': 375585,
+    },
+    # array filtering
+    {'case': {'expressions': ["array_contains(array_col, 'thomas-ds.com')"], 'matching': ''}, 'correct': 1},
+    {
+        'case': {'expressions': ["arrays_overlap(array_col, array('thomas-ds.com', 'Squarespace Domains LLC'))"], 'matching': ''},
+        'correct': 12510,
+    },
+    # null filtering
+    {'case': {'expressions': ['isnull(created_at)'], 'matching': ''}, 'correct': 124414},
+    {'case': {'expressions': ['isnotnull(created_at)'], 'matching': ''}, 'correct': 375585},
 ]
 
 math_numerical_functions = [

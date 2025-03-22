@@ -5,11 +5,11 @@ from state import TestState
 from test_queries import (
     array_functions,
     date_functions,
+    filter_functions,
     join_relations,
     math_numerical_functions,
     misc_functions,
     string_functions,
-    text_filters,
 )
 
 import utils as u
@@ -584,18 +584,40 @@ def test_12_toggle():
 
 def test_13_text_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    for text_filter in text_filters:
+    for filter_function in filter_functions:
         u.load(session_id=session_0, src_path=s.path, src_type=s.type)
-        node_1 = u.add_filter_sql(
+        # add numerical col
+        node_1 = u.add_addColumn_sql(
             **{
                 **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
-                **text_filter['case'],
+                **{'expressions': [{'expression': 1, 'col_name': 'numerical_col'}]},
             }
         )
-        df_session = u.summarize(session_id=session_0, node_id=node_1)
-        if df_session['count'] != text_filter['correct']:
-            print(text_filter['case'])
-        assert df_session['count'] == text_filter['correct']
+        # add array col
+        node_2 = u.add_addColumn_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(2), 'prev_node_id': node_1},
+                **{'expressions': [{'expression': 'array(domain, registrar)', 'col_name': 'array_col'}]},
+            }
+        )
+        # add date col
+        node_3 = u.add_addColumn_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(3), 'prev_node_id': node_2},
+                **{'expressions': [{'expression': 'to_date(created_at)', 'col_name': 'date_col'}]},
+            }
+        )
+        node_4 = u.add_filter_sql(
+            **{
+                **{'session_id': session_0, 'node_id': u.to_node_id(4), 'prev_node_id': node_3},
+                **filter_function['case'],
+            }
+        )
+
+        df_session = u.summarize(session_id=session_0, node_id=node_4)
+        if df_session['count'] != filter_function['correct']:
+            print(filter_function['case'])
+        assert df_session['count'] == filter_function['correct']
 
 
 def test_14_addColumn_math_numerical_functions():
