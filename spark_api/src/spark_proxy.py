@@ -105,7 +105,13 @@ class SparkApiServicer(SparkApiServicer):
     def edit_JoinNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_join_node(
-            req.node_id, req.join_mode, list(req.columns_to_keep), list(req.columns_to_add), req.prefix, list(req.conditions), req.matching
+            req.node_id,
+            req.join_relation,
+            list(req.columns_to_keep),
+            list(req.columns_to_add),
+            req.prefix_for_added_columns,
+            list(req.join_criteria),
+            req.criteria_matching,
         )
 
         return sparkapi_pb2.SparkTransformResponse(

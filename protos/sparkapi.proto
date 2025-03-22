@@ -129,12 +129,12 @@ message JoinInputExtensionRequest {
 message JoinRequest {
     string session_id = 1;
     string node_id = 2;
-    string join_mode = 3;
+    string join_relation = 3;
     repeated string columns_to_keep = 4;
     repeated string columns_to_add = 5;
-    string prefix = 6;
-    repeated string conditions = 7;
-    string matching = 8;
+    string prefix_for_added_columns = 6;
+    repeated string join_criteria = 7;
+    string criteria_matching = 8;
 }
 
 message NodeRemovalRequest {

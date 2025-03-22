@@ -1,9 +1,10 @@
 import json
 
-import utils as u
 from spark_api.src.custom_exceptions import NodeMissingException
 from state import TestState
 from test_queries import array_functions, date_functions, math_numerical_functions, misc_functions, string_functions, text_filters
+
+import utils as u
 
 nodeMissingException = NodeMissingException()
 

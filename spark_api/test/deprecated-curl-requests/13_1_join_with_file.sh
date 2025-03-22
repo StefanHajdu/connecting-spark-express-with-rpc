@@ -22,7 +22,7 @@ curl -X POST http://localhost:4444/addNode/join/inputExtension \
 echo "JOIN step 2/2"
 curl -X POST http://localhost:4444/editNode/join \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0002", "join_mode": "inner join", "columns_to_keep": ["dnssec", "registrar"], "columns_to_add": ["dnssec", "registrar"], "prefix": "other_", "conditions": ["df.domain == other_df.domain"], "matching": ""}' \
+    -d '{"session_id": "0000", "node_id": "n0002", "join_relation": "inner", "columns_to_keep": ["domain", "dnssec", "registrar"], "columns_to_add": ["domain", "created_at"], "prefix_for_added_columns": "_", "join_criteria": ["{df}.domain == {other_df}.domain"], "criteria_matching": ""}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/addNode/filter \

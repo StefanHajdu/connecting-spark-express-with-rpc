@@ -146,12 +146,17 @@ class SqlNode(SparkNode):
 
     @property
     @abstractmethod
+    def query(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def query_template(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def query(self) -> str:
+    def query_kwargs(self) -> str:
         pass
 
     @abstractmethod
@@ -159,15 +164,12 @@ class SqlNode(SparkNode):
         pass
 
     def run_transform(self, **kwargs):
-        spark = kwargs.get('spark')
-        df = kwargs.get('df')
-
-        print(f'    {self.query}\n')
-
-        return spark.sql(
+        spark = kwargs.pop('spark')
+        df_result = spark.sql(
             self.query,
-            df=df,
+            **{**kwargs, **self.query_kwargs},
         )
+        return df_result
 
 
 class FilterNode(SqlNode):
@@ -180,11 +182,16 @@ class FilterNode(SqlNode):
 
     @property
     def query_template(self) -> str:
-        return 'select * from {df} where'
+        return 'select * from {df} where {expressions}'
 
     @property
     def query(self) -> str:
-        return ' '.join([self.query_template, f' {self.matching.strip()} '.join(self.expressions)]).replace('\\"', '')
+        expressions = f' {self.matching.strip()} '.join(self.expressions)
+        return self.query_template.format(expressions=expressions, df='{df}')
+
+    @property
+    def query_kwargs(self) -> str:
+        return {}
 
     def edit(self, expressions: list[str], matching: str):
         self.expressions = expressions
@@ -204,12 +211,12 @@ class AddColumnNode(SqlNode):
 
     @property
     def query(self) -> str:
-        return self.query_template.format(
-            **{
-                'expressions': ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions]),
-                'df': '{df}',
-            }
-        )
+        expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
+        return self.query_template.format(expressions=expressions, df='{df}')
+
+    @property
+    def query_kwargs(self) -> str:
+        return {}
 
     def edit(self, expressions: str):
         self.expressions = expressions
@@ -225,44 +232,46 @@ class JoinNode(SqlNode):
 
     @property
     def query_template(self) -> str:
-        return """select {columns_to_keep}
-            from {df}
-            {join_mode}
-            (select {columns_to_add} from {other_df}) as other_df
+        return """select {columns} from {df}
+            {join_relation} join
+            {other_df}
             on
-            {conditions}
-        """
+            {join_criteria}"""
+
+    @property
+    def query_kwargs(self) -> str:
+        return {'other_df': self.other_df.df}
 
     @property
     def query(self) -> str:
         try:
-            columns_to_add = ', '.join([' as '.join((col_name, self.prefix + col_name)) for col_name in self.columns_to_add])
-            conditions = f' {self.matching.strip()} '.join(self.conditions).replace('\\"', '')
+            columns_to_add = [
+                ' as '.join(('{other_df}.' + col_name, self.prefix_for_added_columns + col_name)) for col_name in self.columns_to_add
+            ]
+            columns_to_keep = ['{df}.' + col_name for col_name in self.columns_to_keep]
+            join_criteria = f' {self.criteria_matching.strip()} '.join(self.join_criteria)
             return self.query_template.format(
-                **{
-                    'columns_to_keep': ' '.join(self.columns_to_keep),
-                    'df': '{df}',
-                    'join_mode': self.join_mode,
-                    'columns_to_add': columns_to_add,
-                    'other_df': '{other_df}',
-                    'conditions': conditions,
-                }
+                columns=', '.join(columns_to_keep + columns_to_add),
+                df='{df}',
+                join_relation=self.join_relation,
+                other_df='{other_df}',
+                join_criteria=join_criteria,
             )
         except Exception:
             return self.other_df.query
 
     def edit(
         self,
-        join_mode: str,
+        join_relation: str,
         columns_to_keep: list[str],
         columns_to_add: list[str],
-        prefix: str,
-        conditions: list[str],
-        matching: str,
+        prefix_for_added_columns: str,
+        join_criteria: list[str],
+        criteria_matching: str,
     ):
-        self.join_mode = join_mode
+        self.join_relation = join_relation
         self.columns_to_keep = columns_to_keep
         self.columns_to_add = columns_to_add
-        self.prefix = prefix
-        self.conditions = conditions
-        self.matching = matching
+        self.prefix_for_added_columns = prefix_for_added_columns
+        self.join_criteria = join_criteria
+        self.criteria_matching = criteria_matching
