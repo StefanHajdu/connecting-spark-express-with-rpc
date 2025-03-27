@@ -131,7 +131,7 @@ class ClientSession:
     @notify_plan_change
     def edit_node(self, node_id: str, **kwargs):
         node = self.plan.get_node_by_id(node_id)
-        self._log(f'/editNode/{node.route}: {node_id}')
+        self._log(f'/editNode/{node.__class__.__name__}: {node_id}')
         node.edit(**kwargs)
         self.plan.edit_node(spark, node)
 

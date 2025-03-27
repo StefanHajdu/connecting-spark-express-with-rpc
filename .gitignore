@@ -315,3 +315,4 @@ playground
 /.vscode
 /.conda
 data/domains.csv
+docs/spark_dataframe_api.md

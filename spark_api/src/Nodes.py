@@ -145,10 +145,6 @@ class SqlNode(SparkNode):
         return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
-    def route(self) -> str:
-        pass
-
-    @property
     @abstractmethod
     def query(self) -> str:
         pass
@@ -185,10 +181,6 @@ class FilterNode(SqlNode):
         self.matching = matching
 
     @property
-    def route(self) -> str:
-        return 'filter'
-
-    @property
     def query_template(self) -> str:
         return 'select * from {df} where {expressions}'
 
@@ -214,10 +206,6 @@ class AddColumnNode(SqlNode):
         self.expressions = expressions
 
     @property
-    def route(self) -> str:
-        return 'addColumn'
-
-    @property
     def query_template(self) -> str:
         return 'select *, {expressions} from {df}'
 
@@ -241,10 +229,6 @@ class JoinNode(SqlNode):
         self.prev_node_id = prev_node_id
         self.other_df = other_df
         self._query = None
-
-    @property
-    def route(self) -> str:
-        return 'join'
 
     @property
     def query_template(self) -> str:
