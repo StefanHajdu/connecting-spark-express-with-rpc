@@ -47,6 +47,7 @@ class SessionPlanner:
         else:
             # rerun from appended
             self.nodes.insert(prev_position + 1, new_sql_node)
+            self.nodes[prev_position + 2].prev_node_id = new_sql_node.node_id
             self.reapply_plan(spark, prev_position + 2)
 
     def edit_node(self, spark: SparkSession, edited_node: SparkNode):
