@@ -7,7 +7,7 @@ from sparkapi_pb2 import AddColumnExpression
 from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
 from NodeExtensions import OtherDataframe
-from Nodes import AddColumnNode, FilterNode, JoinNode, LoadFromSessionNode, LoadNode
+from Nodes import AddColumnNode, FilterNode, JoinNode, LoadFromSessionNode, LoadNode, TableNode
 from spark_session_init import spark
 
 
@@ -108,32 +108,25 @@ class ClientSession:
     @notify_plan_change
     def add_filter_node(self, node_id: str, prev_node_id: str, expressions: list[str], matching: str):
         self._log(f'/addNode/filter: {node_id, prev_node_id}')
-        new_sql_node = FilterNode(
+        new_node = FilterNode(
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
             expressions=expressions,
             matching=matching,
         )
-        self.plan.add_node(spark, new_sql_node)
+        self.plan.add_node(spark, new_node)
 
     @notify_plan_change
     def add_addColumn_node(self, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
         self._log(f'/addNode/addColumn: {node_id, prev_node_id}')
-        new_sql_node = AddColumnNode(
+        new_node = AddColumnNode(
             session_id=self.id,
             node_id=node_id,
             prev_node_id=prev_node_id,
             expressions=expressions,
         )
-        self.plan.add_node(spark, new_sql_node)
-
-    @notify_plan_change
-    def edit_node(self, node_id: str, **kwargs):
-        node = self.plan.get_node_by_id(node_id)
-        self._log(f'/editNode/{node.__class__.__name__}: {node_id}')
-        node.edit(**kwargs)
-        self.plan.edit_node(spark, node)
+        self.plan.add_node(spark, new_node)
 
     @notify_plan_change
     def add_join_node(self, node_id: str, prev_node_id: str, input_type: str, input_pointer: str):
@@ -149,6 +142,22 @@ class ClientSession:
             other_df=other_df,
         )
         self.plan.add_node(spark, new_join_node)
+
+    def add_table_node(self, node_id: str, prev_node_id: str):
+        self._log(f'/addNode/tableNode: {node_id, prev_node_id}')
+        new_node = TableNode(
+            session_id=self.id,
+            node_id=node_id,
+            prev_node_id=prev_node_id,
+        )
+        self.plan.add_visualization_node(spark, new_node)
+
+    @notify_plan_change
+    def edit_node(self, node_id: str, **kwargs):
+        node = self.plan.get_node_by_id(node_id)
+        self._log(f'/editNode/{node.__class__.__name__}: {node_id}')
+        node.edit(**kwargs)
+        self.plan.edit_node(spark, node)
 
     @notify_plan_change
     def remove_node(self, node_id):

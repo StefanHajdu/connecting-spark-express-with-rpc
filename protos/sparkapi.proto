@@ -20,10 +20,13 @@ service SparkApi {
     // add column node
     rpc create_AddColumnNode(AddColumnNodeRequest) returns (SparkTransformResponse) {}
     rpc edit_AddColumnNode(AddColumnNodeRequest) returns (SparkTransformResponse) {}
-
+    
     // join node
     rpc create_InputExtension_JoinNode(JoinInputExtensionRequest) returns (SparkTransformResponse) {}
     rpc edit_JoinNode(JoinRequest) returns (SparkTransformResponse) {}
+    
+    // table node
+    rpc create_TableNode(AddNodeRequest) returns (SparkTransformResponse) {}
     
     // all nodes
     rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
@@ -104,6 +107,12 @@ message FilterNodeRequest {
     string prev_node_id = 3;
     repeated string expressions = 4;
     string matching = 5;    // and, or, default=None
+}
+
+message AddNodeRequest {
+    string session_id = 1;
+    string node_id = 2;
+    string prev_node_id = 3;
 }
 
 message AddColumnExpression {

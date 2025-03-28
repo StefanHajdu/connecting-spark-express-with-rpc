@@ -28,6 +28,10 @@ app.post("/addNode/addColumn", (req, res, next) => {
   sp._create_AddColumnNode(req.body, res, next);
 });
 
+app.post("/addNode/tableNode", (req, res, next) => {
+  sp._create_TableNode(req.body, res, next);
+});
+
 app.post("/addNode/join/inputExtension", (req, res, next) => {
   sp._create_InputExtension_JoinNode(req.body, res, next);
 });

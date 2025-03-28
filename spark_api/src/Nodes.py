@@ -1,5 +1,5 @@
 import json
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from pyspark.sql import DataFrame
 from sparkapi_pb2 import AddColumnExpression
@@ -8,7 +8,7 @@ from NodeExtensions import OtherDataframe
 from utils import spark_read_from_path
 
 
-class SparkNode(ABC):
+class SparkNode:
     @property
     def session_id(self):
         return self._session_id
@@ -68,9 +68,13 @@ class SparkNode(ABC):
         for item in self.df.take(limit):
             yield item.asDict()
 
-    @abstractmethod
     def run_transform(self, **kwargs) -> DataFrame:
-        pass
+        spark = kwargs.pop('spark')
+        df_result = spark.sql(
+            self.query,
+            **{**kwargs, **self.query_kwargs},
+        )
+        return df_result
 
 
 class LoadNode(SparkNode):
@@ -142,7 +146,7 @@ class LoadFromSessionNode(SparkNode):
 
 class TransformNode(SparkNode):
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return f'[Transform] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
     @abstractmethod
@@ -156,20 +160,12 @@ class TransformNode(SparkNode):
 
     @property
     @abstractmethod
-    def query_kwargs(self) -> str:
+    def query_kwargs(self) -> dict:
         pass
 
     @abstractmethod
     def edit(self):
         pass
-
-    def run_transform(self, **kwargs):
-        spark = kwargs.pop('spark')
-        df_result = spark.sql(
-            self.query,
-            **{**kwargs, **self.query_kwargs},
-        )
-        return df_result
 
 
 class FilterNode(TransformNode):
@@ -190,7 +186,7 @@ class FilterNode(TransformNode):
         return self.query_template.format(expressions=expressions, df='{df}')
 
     @property
-    def query_kwargs(self) -> str:
+    def query_kwargs(self) -> dict:
         return {}
 
     def edit(self, expressions: list[str], matching: str):
@@ -215,7 +211,7 @@ class AddColumnNode(TransformNode):
         return self.query_template.format(expressions=expressions, df='{df}')
 
     @property
-    def query_kwargs(self) -> str:
+    def query_kwargs(self) -> dict:
         return {}
 
     def edit(self, expressions: str):
@@ -238,7 +234,7 @@ class JoinNode(TransformNode):
             {join_criteria}"""
 
     @property
-    def query_kwargs(self) -> str:
+    def query_kwargs(self) -> dict:
         return {'other_df': self.other_df.df}
 
     @property
@@ -274,3 +270,49 @@ class JoinNode(TransformNode):
         self.prefix_for_added_columns = prefix_for_added_columns
         self.join_criteria = join_criteria
         self.criteria_matching = criteria_matching
+
+
+class VisualizationNode(SparkNode):
+    def __str__(self):
+        return f'[Visualization] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+
+    @property
+    @abstractmethod
+    def query(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query_template(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query_kwargs(self) -> str:
+        pass
+
+    @abstractmethod
+    def edit(self):
+        pass
+
+
+class TableNode(VisualizationNode):
+    def __init__(self, session_id, node_id, prev_node_id):
+        self._session_id = session_id
+        self._node_id = node_id
+        self._prev_node_id = prev_node_id
+
+    @property
+    def query(self) -> str:
+        return self.query_template
+
+    @property
+    def query_template(self) -> str:
+        return 'select * from {df}'
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {}
+
+    def edit(self):
+        pass

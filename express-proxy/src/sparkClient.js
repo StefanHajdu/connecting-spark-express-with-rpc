@@ -115,6 +115,24 @@ export class SparkClient {
     );
   }
 
+  _create_TableNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_TableNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
   _create_InputExtension_JoinNode(sqlRequestBody, expressResponse, next) {
     return this.client.create_InputExtension_JoinNode(
       sqlRequestBody,
