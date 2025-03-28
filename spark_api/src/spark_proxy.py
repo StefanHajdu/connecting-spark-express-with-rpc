@@ -4,11 +4,8 @@ import sparkapi_pb2
 from sparkapi_pb2_grpc import SparkApiServicer
 
 from Client import ClientSession
-from ClientSessionTable import ClientSessionTable
-from PipelinePlan import SessionPlanner, SessionPlannerMap
-
-clientSessionTable = ClientSessionTable()
-sessionPlannerMap = SessionPlannerMap(clientSessionTable)
+from PipelinePlan import SessionPlanner
+from spark_session_init import clientSessionTable, sessionPlannerMap
 
 
 class SparkApiServicer(SparkApiServicer):

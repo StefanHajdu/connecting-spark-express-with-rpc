@@ -1,5 +1,10 @@
 from pyspark.sql import SparkSession
 
+from ClientSessionTable import ClientSessionTable, SessionPlannerMap
+
+clientSessionTable = ClientSessionTable()
+sessionPlannerMap = SessionPlannerMap(clientSessionTable)
+
 spark = (
     SparkSession.builder.appName('SparkSession')
     .master('local[*]')
@@ -19,7 +24,8 @@ print(rf"""
 \__ \ |_) | (_| | |  |   < 
 |___/ .__/ \__,_|_|  |_|\_{backslash_char}
     | |                    
-    |_|""")
+    |_|
 
-print(f'\nid: {spark_app_id}')
-print('---------------------------\n')
+id: {spark_app_id}
+---------------------------\n
+""")

@@ -83,18 +83,3 @@ class SessionPlanner:
                 spark=spark,
                 df=self.nodes[node_position - 1].df,
             )
-
-
-class SessionPlannerMap:
-    def __init__(self, table):
-        self.session_planners = {}
-        self.session_table = table
-
-    def add_session(self, session_id: str):
-        self.session_planners.update({session_id: None})
-
-    def get_session_plan(self, session_id: str):
-        return self.session_planners[session_id]
-
-    def update_session_plan(self, session_id: str, plan: SessionPlanner):
-        self.session_planners[session_id] = plan
