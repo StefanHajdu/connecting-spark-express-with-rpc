@@ -47,9 +47,7 @@ class SessionPlanner:
         else:
             # rerun from appended
             self.nodes.insert(prev_position + 1, new_sql_node)
-            for node_id in range(prev_position + 2, len(self.nodes)):
-                node = self.nodes[node_id]
-                node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
+            self.reapply_plan(spark, prev_position + 2)
 
     def edit_node(self, spark: SparkSession, edited_node: SparkNode):
         # get node index
@@ -79,7 +77,8 @@ class SessionPlanner:
     def reapply_plan(self, spark: SparkSession, start: int):
         for node_position in range(start, len(self.nodes)):
             node = self.nodes[node_position]
-            node.df = node.run_transform(
-                spark=spark,
-                df=self.nodes[node_position - 1].df,
-            )
+            prev_node = self.get_node_by_id(node.prev_node_id)
+            if prev_node:
+                node.df = node.run_transform(spark=spark, df=prev_node.df)
+            else:
+                node.df = node.run_transform(spark=spark)

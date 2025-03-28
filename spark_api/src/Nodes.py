@@ -140,7 +140,7 @@ class LoadFromSessionNode(SparkNode):
         return last_node.df
 
 
-class SqlNode(SparkNode):
+class TransformNode(SparkNode):
     def __str__(self):
         return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
@@ -172,7 +172,7 @@ class SqlNode(SparkNode):
         return df_result
 
 
-class FilterNode(SqlNode):
+class FilterNode(TransformNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str = 'and'):
         self.session_id = session_id
         self.node_id = node_id
@@ -198,7 +198,7 @@ class FilterNode(SqlNode):
         self.matching = matching
 
 
-class AddColumnNode(SqlNode):
+class AddColumnNode(TransformNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
         self.session_id = session_id
         self.node_id = node_id
@@ -222,7 +222,7 @@ class AddColumnNode(SqlNode):
         self.expressions = expressions
 
 
-class JoinNode(SqlNode):
+class JoinNode(TransformNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, other_df: OtherDataframe):
         self.session_id = session_id
         self.node_id = node_id
