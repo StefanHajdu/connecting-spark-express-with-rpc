@@ -1,6 +1,8 @@
 import json
 from abc import abstractmethod
 
+import sparkapi_pb2
+from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
 from constants import PLAN_NODE_ROOT_ID
@@ -70,6 +72,8 @@ class SparkNode:
             yield item.asDict()
 
     def run_transform(self, **kwargs) -> DataFrame:
+        print(self.query)
+
         spark = kwargs.pop('spark')
         df_result = spark.sql(
             self.query,
@@ -97,10 +101,6 @@ class TransformNode(SparkNode):
     @property
     @abstractmethod
     def query_kwargs(self) -> dict:
-        pass
-
-    @abstractmethod
-    def edit(self):
         pass
 
 
@@ -186,11 +186,6 @@ class FilterNode(TransformNode):
     def query_kwargs(self) -> dict:
         return {}
 
-    def edit(self, expressions: list[str], matching: str, prev_df: DataFrame):
-        self.expressions = expressions
-        self.matching = matching
-        self.df = self.run_transform(spark=spark, df=prev_df)
-
 
 class NewColumnNode(TransformNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], prev_df: DataFrame):
@@ -213,18 +208,23 @@ class NewColumnNode(TransformNode):
     def query_kwargs(self) -> dict:
         return {}
 
-    def edit(self, expressions: str, prev_df: DataFrame):
-        self.expressions = expressions
-        self.df = self.run_transform(spark=spark, df=prev_df)
-
 
 class JoinNode(TransformNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, input_type: str, input_pointer: str, prev_df: DataFrame):
+    def __init__(
+        self,
+        session_id: str,
+        node_id: str,
+        prev_node_id: str,
+        input_type: str,
+        input_pointer: str,
+        joinParams: sparkapi_pb2.JoinParams,
+        prev_df: DataFrame,
+    ):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
         self.other_df = OtherDataframe(input_type, input_pointer)
-        self._query = None
+        self.joinParams = MessageToDict(joinParams)
         self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
@@ -240,39 +240,23 @@ class JoinNode(TransformNode):
 
     @property
     def query(self) -> str:
-        try:
+        print(f'joinParam: {self.joinParams}')
+        if len(self.joinParams) > 0:
             columns_to_add = [
-                ' as '.join(('{other_df}.' + col_name, self.prefix_for_added_columns + col_name)) for col_name in self.columns_to_add
+                ' as '.join(('{other_df}.' + col_name, self.joinParams.get('prefixForAddedColumns', '') + col_name))
+                for col_name in self.joinParams.get('columnsToAdd', [])
             ]
-            columns_to_keep = ['{df}.' + col_name for col_name in self.columns_to_keep]
-            join_criteria = f' {self.criteria_matching.strip()} '.join(self.join_criteria)
+            columns_to_keep = ['{df}.' + col_name for col_name in self.joinParams.get('columnsToKeep', [])]
+            join_criteria = f' {self.joinParams.get("criteriaMatching", "").strip()} '.join(self.joinParams.get('joinCriteria', []))
             return self.query_template.format(
                 columns=', '.join(columns_to_keep + columns_to_add),
                 df='{df}',
-                join_relation=self.join_relation,
+                join_relation=self.joinParams.get('joinRelation', ''),
                 other_df='{other_df}',
                 join_criteria='on ' + join_criteria if join_criteria else '',
             )
-        except Exception:
+        else:
             return self.other_df.query
-
-    def edit(
-        self,
-        join_relation: str,
-        columns_to_keep: list[str],
-        columns_to_add: list[str],
-        prefix_for_added_columns: str,
-        join_criteria: list[str],
-        criteria_matching: str,
-        prev_df: DataFrame,
-    ):
-        self.join_relation = join_relation
-        self.columns_to_keep = columns_to_keep
-        self.columns_to_add = columns_to_add
-        self.prefix_for_added_columns = prefix_for_added_columns
-        self.join_criteria = join_criteria
-        self.criteria_matching = criteria_matching
-        self.df = self.run_transform(spark=spark, df=prev_df)
 
 
 class VisualizationNode(SparkNode):
@@ -310,10 +294,6 @@ class VisualizationNode(SparkNode):
         for item in visualization_df.take(limit):
             yield item.asDict()
 
-    @abstractmethod
-    def edit(self):
-        pass
-
 
 class TableNode(VisualizationNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, prev_df: DataFrame):
@@ -329,9 +309,6 @@ class TableNode(VisualizationNode):
     @property
     def visualization_query_template(self) -> str:
         return 'select * from {df}'
-
-    def edit(self):
-        pass
 
 
 class HistogramNode(VisualizationNode):
@@ -373,6 +350,3 @@ class HistogramNode(VisualizationNode):
             group by {y_axis_col}
             order by {order_by} {sort_by}
         """
-
-    def edit(self):
-        pass

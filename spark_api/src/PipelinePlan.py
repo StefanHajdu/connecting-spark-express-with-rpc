@@ -21,6 +21,9 @@ class SessionPlanner:
             if node.node_id == node_id:
                 return idx
 
+    def is_node_present(self, node: SparkNode):
+        return any(n.node_id == node.node_id for n in self.nodes)
+
     def get_node_position(self, node_id: str):
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
@@ -32,6 +35,12 @@ class SessionPlanner:
         while not isinstance(self.nodes[idx], SparkNode):
             idx -= 1
         return self.nodes[idx]
+
+    def process_node(self, spark: SparkSession, node: SparkNode):
+        if self.is_node_present(node):
+            self.edit_node(spark, node)
+        else:
+            self.add_node(spark, node)
 
     def add_node(self, spark: SparkSession, new_node: SparkNode):
         prev_position = self.get_node_position(new_node.prev_node_id)

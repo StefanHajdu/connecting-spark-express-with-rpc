@@ -63,18 +63,11 @@ class ClientSession:
 
         return wrapper
 
-    def add_node(self, node_class: str, **kwargs):
+    def submit_node(self, node_class: str, **kwargs):
         self._log(f'/addNode/{node_class}')
         node_constructor = getattr(Nodes, node_class)
         node = node_constructor(**kwargs)
         return node
-
-    def edit_node(self, node_id: str, **kwargs):
-        node = self.plan.get_node_by_id(node_id)
-        self._log(f'/editNode/{node.__class__.__name__}: {node_id}')
-        prev_df = self.plan.get_node_by_id(node.prev_node_id).df
-        node.edit(prev_df=prev_df, **kwargs)
-        self.plan.edit_node(spark, node)
 
     def remove_node(self, node):
         self._log(f'/removeNode: {node.node_id}')

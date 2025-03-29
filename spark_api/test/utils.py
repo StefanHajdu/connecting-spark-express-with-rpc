@@ -23,57 +23,43 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def load(session_id: str, src_path: str, src_type: str) -> None:
+def submit_loadNode(session_id: str, src_path: str, src_type: str) -> None:
     json_data = {
         'session_id': session_id,
         'df_path': src_path,
         'df_type': src_type,
     }
-    res = requests.post('http://localhost:4444/addNode/LoadDatasetNode', json=json_data)
+    res = requests.post('http://localhost:4444/submitNode/LoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
 
 
-def load_from_session(session_id: str, input_session_id: str) -> None:
+def submit_loadFromSessionNode(session_id: str, input_session_id: str) -> None:
     json_data = {
         'session_id': session_id,
         'input_session_id': input_session_id,
     }
-    res = requests.post('http://localhost:4444/addNode/LoadFromSessionNode', json=json_data)
+    res = requests.post('http://localhost:4444/submitNode/LoadFromSessionNode', json=json_data)
 
     assert res.status_code == 200
 
 
-def add_filterNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/FilterNode', json=kwargs)
-
-    assert res.status_code == 200
-    return kwargs['node_id']
-
-
-def edit_filterNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editNode/FilterNode', json=kwargs)
+def submit_filterNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/FilterNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def add_newColumnNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/NewColumnNode', json=kwargs)
+def submit_newColumnNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/NewColumnNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def create_JoinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/JoinNode', json=kwargs)
-
-    assert res.status_code == 200
-    return kwargs['node_id']
-
-
-def edit_JoinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editNode/JoinNode', json=kwargs)
+def submit_joinNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/JoinNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']

@@ -43,8 +43,8 @@ export class SparkClient {
     );
   }
 
-  _create_loadDatasetNode(newDatasetRequestBody, expressResponse, next) {
-    return this.client.create_loadDatasetNode(
+  _submit_LoadDatasetNode(newDatasetRequestBody, expressResponse, next) {
+    return this.client.submit_LoadDatasetNode(
       newDatasetRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -61,12 +61,12 @@ export class SparkClient {
     );
   }
 
-  _create_loadFromSessionNode(
+  _submit_LoadFromSessionNode(
     datasetFromSessionRequestBody,
     expressResponse,
     next
   ) {
-    return this.client.create_loadFromSessionNode(
+    return this.client.submit_LoadFromSessionNode(
       datasetFromSessionRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -83,8 +83,8 @@ export class SparkClient {
     );
   }
 
-  _create_FilterNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_FilterNode(
+  _submit_FilterNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -101,8 +101,8 @@ export class SparkClient {
     );
   }
 
-  _create_NewColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_NewColumnNode(
+  _submit_NewColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_NewColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -119,8 +119,8 @@ export class SparkClient {
     );
   }
 
-  _create_TableNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_TableNode(
+  _submit_TableNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_TableNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -137,8 +137,8 @@ export class SparkClient {
     );
   }
 
-  _create_HistogramNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_HistogramNode(
+  _submit_HistogramNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_HistogramNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -155,62 +155,8 @@ export class SparkClient {
     );
   }
 
-  _create_JoinNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_JoinNode(
-      sqlRequestBody,
-      (err, pysparkTransformResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({
-              message: err.message,
-              code: 500,
-            })
-          );
-        } else {
-          expressResponse.json(pysparkTransformResponse);
-        }
-      }
-    );
-  }
-
-  _edit_JoinNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_JoinNode(
-      sqlRequestBody,
-      (err, pysparkTransformResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({
-              message: err.message,
-              code: 500,
-            })
-          );
-        } else {
-          expressResponse.json(pysparkTransformResponse);
-        }
-      }
-    );
-  }
-
-  _edit_FilterNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_FilterNode(
-      sqlRequestBody,
-      (err, pysparkTransformResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({
-              message: err.message,
-              code: 500,
-            })
-          );
-        } else {
-          expressResponse.json(pysparkTransformResponse);
-        }
-      }
-    );
-  }
-
-  _edit_NewColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_NewColumnNode(
+  _submit_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_JoinNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

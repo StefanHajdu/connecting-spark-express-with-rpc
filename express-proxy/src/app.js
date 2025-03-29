@@ -14,45 +14,32 @@ app.post("/createSession", (req, res, next) => {
 });
 
 // ADD NODE
-app.post("/addNode/LoadDatasetNode", (req, res, next) => {
-  sp._create_loadDatasetNode(req.body, res, next);
+app.post("/submitNode/LoadDatasetNode", (req, res, next) => {
+  sp._submit_LoadDatasetNode(req.body, res, next);
 });
 
-app.post("/addNode/LoadFromSessionNode", (req, res, next) => {
-  sp._create_loadFromSessionNode(req.body, res, next);
+app.post("/submitNode/LoadFromSessionNode", (req, res, next) => {
+  sp._submit_LoadFromSessionNode(req.body, res, next);
 });
 
-app.post("/addNode/FilterNode", (req, res, next) => {
-  sp._create_FilterNode(req.body, res, next);
+app.post("/submitNode/FilterNode", (req, res, next) => {
+  sp._submit_FilterNode(req.body, res, next);
 });
 
-app.post("/addNode/NewColumnNode", (req, res, next) => {
-  sp._create_NewColumnNode(req.body, res, next);
+app.post("/submitNode/NewColumnNode", (req, res, next) => {
+  sp._submit_NewColumnNode(req.body, res, next);
 });
 
-app.post("/addNode/JoinNode", (req, res, next) => {
-  sp._create_JoinNode(req.body, res, next);
+app.post("/submitNode/JoinNode", (req, res, next) => {
+  sp._submit_JoinNode(req.body, res, next);
 });
 
-app.post("/addNode/TableNode", (req, res, next) => {
-  sp._create_TableNode(req.body, res, next);
+app.post("/submitNode/TableNode", (req, res, next) => {
+  sp._submit_TableNode(req.body, res, next);
 });
 
-app.post("/addNode/HistogramNode", (req, res, next) => {
-  sp._create_HistogramNode(req.body, res, next);
-});
-
-// EDIT NODE
-app.post("/editNode/FilterNode", (req, res, next) => {
-  sp._edit_FilterNode(req.body, res, next);
-});
-
-app.post("/editNode/NewColumnNode", (req, res, next) => {
-  sp._edit_NewColumnNode(req.body, res, next);
-});
-
-app.post("/editNode/JoinNode", (req, res, next) => {
-  sp._edit_JoinNode(req.body, res, next);
+app.post("/submitNode/HistogramNode", (req, res, next) => {
+  sp._submit_HistogramNode(req.body, res, next);
 });
 
 // REMOVE NODE
