@@ -17,6 +17,7 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Session {req.id} created.',
         )
 
+    # create node
     def create_loadDatasetNode(self, req: sparkapi_pb2.LoadDatasetNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
 
@@ -106,9 +107,11 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Node: {req.node_id} added',
         )
 
+    # edit node
     def edit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_node(req.node_id, expressions=list(req.expressions), matching=req.matching)
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -118,6 +121,7 @@ class SparkApiServicer(SparkApiServicer):
     def edit_NewColumnNode(self, req: sparkapi_pb2.NewColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.edit_node(req.node_id, expressions=list(req.expressions))
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -135,21 +139,25 @@ class SparkApiServicer(SparkApiServicer):
             join_criteria=list(req.join_criteria),
             criteria_matching=req.criteria_matching,
         )
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} edited',
         )
 
+    # remove node
     def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.remove_node(req.node_id)
+        node = session.plan.get_node_by_id(req.node_id)
+        session.remove_node(node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} removed',
         )
 
+    # rebuild node
     def rebuildSession(self, req: sparkapi_pb2.RebuildRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.rebuild()
@@ -159,6 +167,12 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Session: {req.session_id} rebuild',
         )
 
+    def getSessionStatus(self, req: sparkapi_pb2.SessionStatusRequest, unused_context) -> sparkapi_pb2.StatusResponse:
+        session = clientSessionTable.get_session(req.session_id)
+
+        return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())
+
+    # actions
     def summarizeDataset(self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context) -> sparkapi_pb2.SparkActionlResponse:
         session = clientSessionTable.get_session(req.session_id)
         summary = session.summarize(req.node_id)
@@ -177,8 +191,3 @@ class SparkApiServicer(SparkApiServicer):
 
         for row in row_stream:
             yield sparkapi_pb2.RowStreamResponse(row_json=row)
-
-    def getSessionStatus(self, req: sparkapi_pb2.SessionStatusRequest, unused_context) -> sparkapi_pb2.StatusResponse:
-        session = clientSessionTable.get_session(req.session_id)
-
-        return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())

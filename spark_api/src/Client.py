@@ -63,35 +63,23 @@ class ClientSession:
 
         return wrapper
 
-    def notify_plan_change(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            res = func(self, *args, **kwargs)
-
-            for child_session in self.child_sessions:
-                child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
-
-            return res
-
-        return wrapper
-
     def add_node(self, node_class: str, **kwargs):
         self._log(f'/addNode/{node_class}')
         node_constructor = getattr(Nodes, node_class)
         node = node_constructor(**kwargs)
         return node
 
-    @notify_plan_change
     def edit_node(self, node_id: str, **kwargs):
         node = self.plan.get_node_by_id(node_id)
         self._log(f'/editNode/{node.__class__.__name__}: {node_id}')
         node.edit(**kwargs)
         self.plan.edit_node(spark, node)
 
-    @notify_plan_change
-    def remove_node(self, node_id):
-        self._log(f'/removeNode: {node_id}')
-        self.plan.remove_node(spark, node_id)
+    def remove_node(self, node):
+        self._log(f'/removeNode: {node.node_id}')
+        if isinstance(node, Nodes.TransformNode):
+            self.notify_transformation_change()
+        self.plan.remove_node(spark, node.node_id)
 
     @log_plan_execution
     def rebuild(self):
