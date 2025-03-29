@@ -4,10 +4,11 @@ from functools import wraps
 
 from sparkapi_pb2 import AddColumnExpression
 
+import Nodes
 from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
 from NodeExtensions import OtherDataframe
-from Nodes import AddColumnNode, FilterNode, JoinNode, LoadFromSessionNode, LoadNode, TableNode
+from Nodes import FilterNode, JoinNode, LoadFromSessionNode, LoadNode, NewColumnNode, TableNode
 from spark_session_init import spark
 
 
@@ -51,6 +52,10 @@ class ClientSession:
     def plan(self, val):
         self._plan = val
 
+    def notify_transformation_change(self):
+        for child_session in self.child_sessions:
+            child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
+
     def log_plan_execution(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -75,82 +80,11 @@ class ClientSession:
 
         return wrapper
 
-    def load_dataset(self, path: str, data_type: str):
-        self._log(f'/load: {path, data_type}')
-        node = LoadNode(
-            session_id=self.id,
-            node_id=PLAN_NODE_ROOT_ID,
-            prev_node_id=None,
-            operation=f'{__name__}',
-            query='spark.read',
-            path=path,
-            data_type=data_type,
-        )
-        df = node.run_transform(spark=spark)
-        node.df = df
+    def add_node(self, node_class: str, **kwargs):
+        self._log(f'/addNode/{node_class}')
+        node_constructor = getattr(Nodes, node_class)
+        node = node_constructor(**kwargs)
         return node
-
-    def load_from_session(self, parent_session, parent_session_plan):
-        self._log(f'/loadFromSession: {parent_session_plan.session_id}')
-        node = LoadFromSessionNode(
-            session_id=self.id,
-            node_id=PLAN_NODE_ROOT_ID,
-            prev_node_id=None,
-            operation=f'{__name__}',
-            query='custom.load_last_df_from_input_session',
-            parent_session_plan=parent_session_plan,
-        )
-        parent_session.add_child_session(self)
-        df = node.run_transform()
-        node.df = df
-        return node
-
-    @notify_plan_change
-    def add_filter_node(self, node_id: str, prev_node_id: str, expressions: list[str], matching: str):
-        self._log(f'/addNode/filter: {node_id, prev_node_id}')
-        new_node = FilterNode(
-            session_id=self.id,
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            expressions=expressions,
-            matching=matching,
-        )
-        self.plan.add_node(spark, new_node)
-
-    @notify_plan_change
-    def add_addColumn_node(self, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
-        self._log(f'/addNode/addColumn: {node_id, prev_node_id}')
-        new_node = AddColumnNode(
-            session_id=self.id,
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            expressions=expressions,
-        )
-        self.plan.add_node(spark, new_node)
-
-    @notify_plan_change
-    def add_join_node(self, node_id: str, prev_node_id: str, input_type: str, input_pointer: str):
-        self._log(f'/addNode/join/inputExtension: {node_id, prev_node_id}')
-        other_df = OtherDataframe(
-            input_type=input_type,
-            input_pointer=input_pointer,
-        )
-        new_join_node = JoinNode(
-            session_id=self.id,
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            other_df=other_df,
-        )
-        self.plan.add_node(spark, new_join_node)
-
-    def add_table_node(self, node_id: str, prev_node_id: str):
-        self._log(f'/addNode/tableNode: {node_id, prev_node_id}')
-        new_node = TableNode(
-            session_id=self.id,
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-        )
-        self.plan.add_visualization_node(spark, new_node)
 
     @notify_plan_change
     def edit_node(self, node_id: str, **kwargs):

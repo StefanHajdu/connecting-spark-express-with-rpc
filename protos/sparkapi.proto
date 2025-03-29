@@ -22,7 +22,7 @@ service SparkApi {
     rpc edit_AddColumnNode(AddColumnNodeRequest) returns (SparkTransformResponse) {}
     
     // join node
-    rpc create_InputExtension_JoinNode(JoinInputExtensionRequest) returns (SparkTransformResponse) {}
+    rpc create_JoinNode(JoinInputExtensionRequest) returns (SparkTransformResponse) {}
     rpc edit_JoinNode(JoinRequest) returns (SparkTransformResponse) {}
     
     // table node

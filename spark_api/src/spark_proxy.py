@@ -5,7 +5,7 @@ from sparkapi_pb2_grpc import SparkApiServicer
 
 from Client import ClientSession
 from PipelinePlan import SessionPlanner
-from spark_session_init import clientSessionTable, sessionPlannerMap
+from spark_session_init import clientSessionTable, sessionPlannerMap, spark
 
 
 class SparkApiServicer(SparkApiServicer):
@@ -20,22 +20,20 @@ class SparkApiServicer(SparkApiServicer):
 
     def loadsDataset(self, req: sparkapi_pb2.LoadDatasetRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        root_plan_node = session.load_dataset(req.df_path, req.df_type)
-        session.plan = SessionPlanner(req.session_id, root_plan_node)
-        sessionPlannerMap.update_session_plan(session.id, session.plan)
 
+        node = session.add_node(node_class='LoadNode', session_id=session.id, path=req.df_path, data_type=req.df_type)
+
+        session.plan = SessionPlanner(req.session_id, node)
         return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, msg=f'Dataset {req.df_path} loaded.')
 
     def loadFromSession(self, req: sparkapi_pb2.LoadFromSessionRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
 
         parent_session = clientSessionTable.get_session(req.input_session_id)
-        parent_session_plan = sessionPlannerMap.get_session_plan(req.input_session_id)
-        root_plan_node = session.load_from_session(parent_session, parent_session_plan)
+        node = session.add_node(node_class='LoadFromSessionNode', session_id=session.id, parent_session_plan=parent_session.plan)
+        parent_session.add_child_session(session)
 
-        session.plan = SessionPlanner(req.session_id, root_plan_node)
-        sessionPlannerMap.update_session_plan(session.id, session.plan)
-
+        session.plan = SessionPlanner(req.session_id, node)
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Dataframe from input session {req.input_session_id} reused input.',
@@ -43,12 +41,17 @@ class SparkApiServicer(SparkApiServicer):
 
     def create_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_filter_node(
+        node = session.add_node(
+            node_class='FilterNode',
+            session_id=session.id,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
             expressions=list(req.expressions),
             matching=req.matching,
+            prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
+        session.plan.add_node(spark, node)
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -57,24 +60,35 @@ class SparkApiServicer(SparkApiServicer):
 
     def create_AddColumnNode(self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_addColumn_node(
+        node = session.add_node(
+            node_class='NewColumnNode',
+            session_id=session.id,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
             expressions=list(req.expressions),
+            prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
+        session.plan.add_node(spark, node)
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
         )
 
-    def create_InputExtension_JoinNode(
-        self, req: sparkapi_pb2.JoinInputExtensionRequest, unused_context
-    ) -> sparkapi_pb2.SparkTransformResponse:
+    def create_JoinNode(self, req: sparkapi_pb2.JoinInputExtensionRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_join_node(
-            node_id=req.node_id, prev_node_id=req.prev_node_id, input_type=req.input_type, input_pointer=req.input_pointer
+        node = session.add_node(
+            node_class='JoinNode',
+            session_id=session.id,
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            input_type=req.input_type,
+            input_pointer=req.input_pointer,
+            prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
+        session.plan.add_node(spark, node)
+        session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -83,7 +97,8 @@ class SparkApiServicer(SparkApiServicer):
 
     def create_TableNode(self, req: sparkapi_pb2.AddNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        session.add_table_node(node_id=req.node_id, prev_node_id=req.prev_node_id)
+        node = session.add_node(node_class='TableNode', session_id=session.id, node_id=req.node_id, prev_node_id=req.prev_node_id)
+        session.plan.add_visualization_node(spark, node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,

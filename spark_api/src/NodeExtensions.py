@@ -35,7 +35,8 @@ class OtherDataframe(NodeExtension):
             self._df = spark_read_from_path(data_type=Path(input_pointer).suffix[1:], path=input_pointer)
         elif input_type == InputType.SESSION_INPUT.value:
             # input_pointer == session_id
-            self._df = spark_session_init.sessionPlannerMap.get_session_plan(input_pointer).get_last_spark_node().df  # noqa: B009
+            input_session = spark_session_init.clientSessionTable.get_session(input_pointer)
+            self._df = input_session.plan.get_last_spark_node().df
         else:
             raise InvalidInputTypeException()
 

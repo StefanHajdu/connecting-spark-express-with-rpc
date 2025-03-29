@@ -66,7 +66,7 @@ def add_addColumn_sql(**kwargs) -> str:
 
 
 def create_InputExtension_JoinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/join/inputExtension', json=kwargs)
+    res = requests.post('http://localhost:4444/addNode/join', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']

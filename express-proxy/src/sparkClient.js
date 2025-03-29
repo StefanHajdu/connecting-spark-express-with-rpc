@@ -133,8 +133,8 @@ export class SparkClient {
     );
   }
 
-  _create_InputExtension_JoinNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_InputExtension_JoinNode(
+  _create_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_JoinNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {

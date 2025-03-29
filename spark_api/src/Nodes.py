@@ -4,7 +4,9 @@ from abc import abstractmethod
 from pyspark.sql import DataFrame
 from sparkapi_pb2 import AddColumnExpression
 
+from constants import PLAN_NODE_ROOT_ID
 from NodeExtensions import OtherDataframe
+from spark_session_init import spark
 from utils import spark_read_from_path
 
 
@@ -77,73 +79,6 @@ class SparkNode:
         return df_result
 
 
-class LoadNode(SparkNode):
-    def __init__(
-        self,
-        session_id,
-        node_id,
-        prev_node_id,
-        operation,
-        query,
-        path,
-        data_type,
-    ):
-        self._session_id = session_id
-        self._node_id = node_id
-        self._prev_node_id = prev_node_id
-        self._operation = operation
-        self._query = query
-        self._path = path
-        self._data_type = data_type
-
-    @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, val: str):
-        self._path = val
-
-    @property
-    def data_type(self):
-        return self._data_type
-
-    @data_type.setter
-    def data_type(self, val: str):
-        self._data_type = val
-
-    def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
-
-    def run_transform(self, **kwargs):
-        return spark_read_from_path(data_type=self.data_type, path=self.path)
-
-
-class LoadFromSessionNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, query, parent_session_plan):
-        self._session_id = session_id
-        self._node_id = node_id
-        self._prev_node_id = prev_node_id
-        self._operation = operation
-        self._query = query
-        self._parent_session_plan = parent_session_plan
-
-    @property
-    def parent_session_plan(self):
-        return self._parent_session_plan
-
-    @parent_session_plan.setter
-    def parent_session_plan(self, val: str):
-        self._parent_session_plan = val
-
-    def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
-
-    def run_transform(self, **kwargs):
-        last_node = self.parent_session_plan.get_last_spark_node()
-        return last_node.df
-
-
 class TransformNode(SparkNode):
     def __str__(self):
         return f'[Transform] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
@@ -168,13 +103,74 @@ class TransformNode(SparkNode):
         pass
 
 
+class LoadNode(TransformNode):
+    def __init__(self, **kwargs):
+        self._session_id = kwargs.get('session_id')
+        self._node_id = PLAN_NODE_ROOT_ID
+        self._prev_node_id = None
+        self._operation = 'load_dataset'
+        self._query = 'spark.read'
+        self._path = kwargs.get('path')
+        self._data_type = kwargs.get('data_type')
+        self.df = self.run_transform()
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, val: str):
+        self._path = val
+
+    @property
+    def data_type(self):
+        return self._data_type
+
+    @data_type.setter
+    def data_type(self, val: str):
+        self._data_type = val
+
+    def __str__(self):
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
+
+    def run_transform(self, **kwargs):
+        return spark_read_from_path(data_type=self.data_type, path=self.path)
+
+
+class LoadFromSessionNode(TransformNode):
+    def __init__(self, **kwargs):
+        self._session_id = kwargs.get('session_id')
+        self._node_id = PLAN_NODE_ROOT_ID
+        self._prev_node_id = None
+        self._operation = 'load_from_session'
+        self._query = 'load_from_session'
+        self._parent_session_plan = kwargs.get('parent_session_plan')
+        self.df = self.run_transform()
+
+    @property
+    def parent_session_plan(self):
+        return self._parent_session_plan
+
+    @parent_session_plan.setter
+    def parent_session_plan(self, val: str):
+        self._parent_session_plan = val
+
+    def __str__(self):
+        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
+
+    def run_transform(self, **kwargs):
+        last_node = self.parent_session_plan.get_last_spark_node()
+        return last_node.df
+
+
 class FilterNode(TransformNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str = 'and'):
-        self.session_id = session_id
-        self.node_id = node_id
-        self.prev_node_id = prev_node_id
-        self.expressions = expressions
-        self.matching = matching
+    def __init__(self, **kwargs):
+        self.session_id = kwargs.get('session_id')
+        self.node_id = kwargs.get('node_id')
+        self.prev_node_id = kwargs.get('prev_node_id')
+        self.expressions = kwargs.get('expressions')
+        self.matching = kwargs.get('matching')
+        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
 
     @property
     def query_template(self) -> str:
@@ -194,12 +190,13 @@ class FilterNode(TransformNode):
         self.matching = matching
 
 
-class AddColumnNode(TransformNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[AddColumnExpression]):
-        self.session_id = session_id
-        self.node_id = node_id
-        self.prev_node_id = prev_node_id
-        self.expressions = expressions
+class NewColumnNode(TransformNode):
+    def __init__(self, **kwargs):
+        self.session_id = kwargs.get('session_id')
+        self.node_id = kwargs.get('node_id')
+        self.prev_node_id = kwargs.get('prev_node_id')
+        self.expressions = kwargs.get('expressions')
+        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
 
     @property
     def query_template(self) -> str:
@@ -219,12 +216,13 @@ class AddColumnNode(TransformNode):
 
 
 class JoinNode(TransformNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, other_df: OtherDataframe):
-        self.session_id = session_id
-        self.node_id = node_id
-        self.prev_node_id = prev_node_id
-        self.other_df = other_df
+    def __init__(self, **kwargs):
+        self.session_id = kwargs.get('session_id')
+        self.node_id = kwargs.get('node_id')
+        self.prev_node_id = kwargs.get('prev_node_id')
+        self.other_df = OtherDataframe(kwargs.get('input_type'), kwargs.get('input_pointer'))
         self._query = None
+        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
 
     @property
     def query_template(self) -> str:

@@ -89,8 +89,8 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.AddColumnNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.create_InputExtension_JoinNode = channel.unary_unary(
-                '/sparkapi.SparkApi/create_InputExtension_JoinNode',
+        self.create_JoinNode = channel.unary_unary(
+                '/sparkapi.SparkApi/create_JoinNode',
                 request_serializer=sparkapi__pb2.JoinInputExtensionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
@@ -182,7 +182,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def create_InputExtension_JoinNode(self, request, context):
+    def create_JoinNode(self, request, context):
         """join node
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -267,8 +267,8 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.AddColumnNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'create_InputExtension_JoinNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.create_InputExtension_JoinNode,
+            'create_JoinNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.create_JoinNode,
                     request_deserializer=sparkapi__pb2.JoinInputExtensionRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
@@ -596,7 +596,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def create_InputExtension_JoinNode(request,
+    def create_JoinNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -609,7 +609,7 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/create_InputExtension_JoinNode',
+            '/sparkapi.SparkApi/create_JoinNode',
             sparkapi__pb2.JoinInputExtensionRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,

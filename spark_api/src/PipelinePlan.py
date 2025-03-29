@@ -36,9 +36,6 @@ class SessionPlanner:
     def add_node(self, spark: SparkSession, new_sql_node: SparkNode):
         # get prev node index
         prev_position = self.get_node_position(new_sql_node.prev_node_id)
-        prev_node = self.nodes[prev_position]
-        # get new df
-        new_sql_node.df = new_sql_node.run_transform(spark=spark, df=prev_node.df)
         if prev_position == -1:
             # append
             self.nodes.append(new_sql_node)

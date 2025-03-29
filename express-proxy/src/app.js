@@ -32,8 +32,8 @@ app.post("/addNode/tableNode", (req, res, next) => {
   sp._create_TableNode(req.body, res, next);
 });
 
-app.post("/addNode/join/inputExtension", (req, res, next) => {
-  sp._create_InputExtension_JoinNode(req.body, res, next);
+app.post("/addNode/join", (req, res, next) => {
+  sp._create_JoinNode(req.body, res, next);
 });
 
 app.post("/editNode/join", (req, res, next) => {
