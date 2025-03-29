@@ -101,7 +101,12 @@ class SparkApiStub(object):
                 _registered_method=True)
         self.create_TableNode = channel.unary_unary(
                 '/sparkapi.SparkApi/create_TableNode',
-                request_serializer=sparkapi__pb2.AddNodeRequest.SerializeToString,
+                request_serializer=sparkapi__pb2.AddTableNodeRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
+        self.create_HistogramNode = channel.unary_unary(
+                '/sparkapi.SparkApi/create_HistogramNode',
+                request_serializer=sparkapi__pb2.AddHistogramNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.removeNode = channel.unary_unary(
@@ -203,6 +208,12 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def create_HistogramNode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def removeNode(self, request, context):
         """all nodes
         """
@@ -280,7 +291,12 @@ def add_SparkApiServicer_to_server(servicer, server):
             ),
             'create_TableNode': grpc.unary_unary_rpc_method_handler(
                     servicer.create_TableNode,
-                    request_deserializer=sparkapi__pb2.AddNodeRequest.FromString,
+                    request_deserializer=sparkapi__pb2.AddTableNodeRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'create_HistogramNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.create_HistogramNode,
+                    request_deserializer=sparkapi__pb2.AddHistogramNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'removeNode': grpc.unary_unary_rpc_method_handler(
@@ -665,7 +681,34 @@ class SparkApi(object):
             request,
             target,
             '/sparkapi.SparkApi/create_TableNode',
-            sparkapi__pb2.AddNodeRequest.SerializeToString,
+            sparkapi__pb2.AddTableNodeRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def create_HistogramNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/create_HistogramNode',
+            sparkapi__pb2.AddHistogramNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

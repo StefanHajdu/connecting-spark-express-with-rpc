@@ -27,7 +27,8 @@ service SparkApi {
     rpc edit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
     
     // table node
-    rpc create_TableNode(AddNodeRequest) returns (SparkTransformResponse) {}
+    rpc create_TableNode(AddTableNodeRequest) returns (SparkTransformResponse) {}
+    rpc create_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
     
     // all nodes
     rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
@@ -110,10 +111,20 @@ message FilterNodeRequest {
     string matching = 5;    // and, or, default=None
 }
 
-message AddNodeRequest {
+message AddTableNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
+}
+
+message AddHistogramNodeRequest {
+    string session_id = 1;
+    string node_id = 2;
+    string prev_node_id = 3;
+    string y_axis_col = 4;
+    string order_by = 5;
+    string sort_by = 6;
+    string expression = 7;
 }
 
 message AddColumnExpression {

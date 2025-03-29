@@ -137,6 +137,24 @@ export class SparkClient {
     );
   }
 
+  _create_HistogramNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_HistogramNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
   _create_JoinNode(sqlRequestBody, expressResponse, next) {
     return this.client.create_JoinNode(
       sqlRequestBody,

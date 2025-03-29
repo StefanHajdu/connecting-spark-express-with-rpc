@@ -38,6 +38,10 @@ app.post("/addNode/TableNode", (req, res, next) => {
   sp._create_TableNode(req.body, res, next);
 });
 
+app.post("/addNode/HistogramNode", (req, res, next) => {
+  sp._create_HistogramNode(req.body, res, next);
+});
+
 // EDIT NODE
 app.post("/editNode/FilterNode", (req, res, next) => {
   sp._edit_FilterNode(req.body, res, next);

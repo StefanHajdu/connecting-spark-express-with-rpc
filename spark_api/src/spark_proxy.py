@@ -97,13 +97,33 @@ class SparkApiServicer(SparkApiServicer):
             msg=f'Node: {req.node_id} added',
         )
 
-    def create_TableNode(self, req: sparkapi_pb2.AddNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+    def create_TableNode(self, req: sparkapi_pb2.AddTableNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         node = session.add_node(
             node_class='TableNode',
             session_id=session.id,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
+            prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
+        )
+        session.plan.add_node(spark, node)
+
+        return sparkapi_pb2.SparkTransformResponse(
+            session_id=req.session_id,
+            msg=f'Node: {req.node_id} added',
+        )
+
+    def create_HistogramNode(self, req: sparkapi_pb2.AddHistogramNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
+        session = clientSessionTable.get_session(req.session_id)
+        node = session.add_node(
+            node_class='HistogramNode',
+            session_id=session.id,
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            y_axis_col=req.y_axis_col,
+            order_by=req.order_by,
+            sort_by=req.sort_by,
+            expression=req.expression,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
         session.plan.add_node(spark, node)

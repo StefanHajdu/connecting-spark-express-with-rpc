@@ -80,7 +80,9 @@ class SparkNode:
 
 class TransformNode(SparkNode):
     def __str__(self):
-        return f'[Transform] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return (
+            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        )
 
     @property
     @abstractmethod
@@ -130,7 +132,7 @@ class LoadNode(TransformNode):
         self._data_type = val
 
     def __str__(self):
-        return f'[Load] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
 
     def run_transform(self, **kwargs):
         return spark_read_from_path(data_type=self.data_type, path=self.path)
@@ -155,9 +157,7 @@ class LoadFromSessionNode(TransformNode):
         self._parent_session_plan = val
 
     def __str__(self):
-        return (
-            f'[Load] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
-        )
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         last_node = self.parent_session_plan.get_last_spark_node()
@@ -277,7 +277,7 @@ class JoinNode(TransformNode):
 
 class VisualizationNode(SparkNode):
     def __str__(self):
-        return f'[Visualization] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
     def query(self) -> str:
@@ -329,6 +329,50 @@ class TableNode(VisualizationNode):
     @property
     def visualization_query_template(self) -> str:
         return 'select * from {df}'
+
+    def edit(self):
+        pass
+
+
+class HistogramNode(VisualizationNode):
+    def __init__(
+        self,
+        session_id: str,
+        node_id: str,
+        prev_node_id: str,
+        y_axis_col: str,
+        order_by: str,
+        sort_by: str,
+        expression: str,
+        prev_df: DataFrame,
+    ):
+        self._session_id = session_id
+        self._node_id = node_id
+        self._prev_node_id = prev_node_id
+        self.y_axis_col = y_axis_col
+        self.order_by = order_by
+        self.sort_by = sort_by
+        self.expression = expression
+        self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def visualization_query(self) -> str:
+        return self.visualization_query_template.format(
+            y_axis_col=self.y_axis_col,
+            expression=self.expression,
+            df='{df}',
+            order_by=self.order_by,
+            sort_by=self.sort_by,
+        )
+
+    @property
+    def visualization_query_template(self) -> str:
+        return """
+            select {y_axis_col}, {expression} as agg
+            from {df}
+            group by {y_axis_col}
+            order by {order_by} {sort_by}
+        """
 
     def edit(self):
         pass
