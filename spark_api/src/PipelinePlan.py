@@ -49,7 +49,6 @@ class SessionPlanner:
     def edit_node(self, spark: SparkSession, edited_node: SparkNode):
         # get node index
         node_position = self.get_node_position(edited_node.node_id)
-        edited_node.df = edited_node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
         self.nodes[node_position] = edited_node
         if node_position != -1:
             # rerun from edited

@@ -185,9 +185,10 @@ class FilterNode(TransformNode):
     def query_kwargs(self) -> dict:
         return {}
 
-    def edit(self, expressions: list[str], matching: str):
+    def edit(self, expressions: list[str], matching: str, prev_df: DataFrame):
         self.expressions = expressions
         self.matching = matching
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
 
 class NewColumnNode(TransformNode):
@@ -211,8 +212,9 @@ class NewColumnNode(TransformNode):
     def query_kwargs(self) -> dict:
         return {}
 
-    def edit(self, expressions: str):
+    def edit(self, expressions: str, prev_df: DataFrame):
         self.expressions = expressions
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
 
 class JoinNode(TransformNode):
@@ -261,6 +263,7 @@ class JoinNode(TransformNode):
         prefix_for_added_columns: str,
         join_criteria: list[str],
         criteria_matching: str,
+        prev_df: DataFrame,
     ):
         self.join_relation = join_relation
         self.columns_to_keep = columns_to_keep
@@ -268,6 +271,7 @@ class JoinNode(TransformNode):
         self.prefix_for_added_columns = prefix_for_added_columns
         self.join_criteria = join_criteria
         self.criteria_matching = criteria_matching
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
 
 class VisualizationNode(SparkNode):
