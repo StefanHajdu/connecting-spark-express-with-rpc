@@ -52,3 +52,18 @@ curl -X POST http://localhost:4444/preview \
     -H 'Content-Type: application/json' \
     -d '{"session_id": "0000", "node_id": "n0003", "limit": 10}' \
     -w '\nTotal: %{time_total}s\n'
+
+curl -X POST http://localhost:4444/removeNode \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0004"}' \
+    -w '\nTotal: %{time_total}s\n\n'
+
+curl -X POST http://localhost:4444/preview \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0002", "limit": 10}' \
+    -w '\nTotal: %{time_total}s\n'
+
+curl -X POST http://localhost:4444/preview \
+    -H 'Content-Type: application/json' \
+    -d '{"session_id": "0000", "node_id": "n0003", "limit": 10}' \
+    -w '\nTotal: %{time_total}s\n'
