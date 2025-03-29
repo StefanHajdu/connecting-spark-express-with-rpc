@@ -99,8 +99,14 @@ class SparkApiServicer(SparkApiServicer):
 
     def create_TableNode(self, req: sparkapi_pb2.AddNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
-        node = session.add_node(node_class='TableNode', session_id=session.id, node_id=req.node_id, prev_node_id=req.prev_node_id)
-        session.plan.add_visualization_node(spark, node)
+        node = session.add_node(
+            node_class='TableNode',
+            session_id=session.id,
+            node_id=req.node_id,
+            prev_node_id=req.prev_node_id,
+            prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
+        )
+        session.plan.add_node(spark, node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -187,7 +193,8 @@ class SparkApiServicer(SparkApiServicer):
 
     def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> Iterable[sparkapi_pb2.RowStreamResponse]:
         session = clientSessionTable.get_session(req.session_id)
-        row_stream = session.preview(req.node_id, req.limit)
+        node = session.plan.get_node_by_id(req.node_id)
+        row_stream = session.preview(node, req.limit)
 
         for row in row_stream:
             yield sparkapi_pb2.RowStreamResponse(row_json=row)

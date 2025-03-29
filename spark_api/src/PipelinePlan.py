@@ -3,7 +3,7 @@ from collections import deque
 from pyspark.sql import SparkSession
 
 from custom_exceptions import LoadNodeRemovalException
-from Nodes import SparkNode, VisualizationNode
+from Nodes import SparkNode
 
 
 class SessionPlanner:
@@ -33,18 +33,20 @@ class SessionPlanner:
             idx -= 1
         return self.nodes[idx]
 
-    def add_node(self, spark: SparkSession, new_sql_node: SparkNode):
-        # get prev node index
-        prev_position = self.get_node_position(new_sql_node.prev_node_id)
+    def add_node(self, spark: SparkSession, new_node: SparkNode):
+        prev_position = self.get_node_position(new_node.prev_node_id)
+
         if prev_position == -1:
             # append
-            self.nodes.append(new_sql_node)
+            self.nodes.append(new_node)
         else:
+            curr_position = prev_position + 1
+            next_position = prev_position + 2
             # insert
-            self.nodes.insert(prev_position + 1, new_sql_node)
-            self.nodes[prev_position + 2].prev_node_id = new_sql_node.node_id
-            # rerun from appended
-            self.reapply_plan(spark, prev_position + 2)
+            self.nodes.insert(curr_position, new_node)
+            self.nodes[next_position].prev_node_id = new_node.node_id
+            # rerun from next node
+            self.reapply_plan(spark, next_position)
 
     def edit_node(self, spark: SparkSession, edited_node: SparkNode):
         # get node index
@@ -66,40 +68,13 @@ class SessionPlanner:
             # rerun from removed
             self.reapply_plan(spark, del_position)
 
-    def add_visualization_node(self, spark: SparkSession, new_visualization_node: VisualizationNode):
-        # get prev node index
-        prev_position = self.get_node_position(new_visualization_node.prev_node_id)
-        prev_node = self.nodes[prev_position]
-        # get new df
-        new_visualization_node.df = new_visualization_node.run_transform(spark=spark, df=prev_node.df)
-        if prev_position == -1:
-            # append
-            self.nodes.append(new_visualization_node)
-        else:
-            # insert
-            self.nodes.insert(prev_position + 1, new_visualization_node)
-
-    def edit_visualization_node(self, spark: SparkSession, edited_node: VisualizationNode):
-        # get node index
-        node_position = self.get_node_position(edited_node.node_id)
-        edited_node.df = edited_node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
-        self.nodes[node_position] = edited_node
-
-    def remove_visualization_node(self, node_id: str):
-        del_position = self.get_node_position(node_id)
-        if del_position == 0:
-            raise LoadNodeRemovalException()
-        self._delete_node(del_position)
-
     def _delete_node(self, position: int):
         del self.nodes[position]
 
     def reapply_plan(self, spark: SparkSession, start: int):
-        kwargs = {'spark': spark}
         for node_position in range(start, len(self.nodes)):
             node = self.nodes[node_position]
-            prev_node = self.get_node_by_id(node.prev_node_id)
-            if isinstance(prev_node, SparkNode):
-                kwargs['df'] = prev_node.df
-
-            node.df = node.run_transform(**kwargs)
+            node.df = node.run_transform(
+                spark=spark,
+                df=self.nodes[node_position - 1].df,
+            )

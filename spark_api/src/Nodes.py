@@ -2,7 +2,6 @@ import json
 from abc import abstractmethod
 
 from pyspark.sql import DataFrame
-from sparkapi_pb2 import AddColumnExpression
 
 from constants import PLAN_NODE_ROOT_ID
 from NodeExtensions import OtherDataframe
@@ -131,7 +130,7 @@ class LoadNode(TransformNode):
         self._data_type = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
+        return f'[Load] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
 
     def run_transform(self, **kwargs):
         return spark_read_from_path(data_type=self.data_type, path=self.path)
@@ -156,7 +155,9 @@ class LoadFromSessionNode(TransformNode):
         self._parent_session_plan = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
+        return (
+            f'[Load] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
+        )
 
     def run_transform(self, **kwargs):
         last_node = self.parent_session_plan.get_last_spark_node()
@@ -279,19 +280,35 @@ class VisualizationNode(SparkNode):
         return f'[Visualization] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
-    @abstractmethod
     def query(self) -> str:
+        return 'select * from {df}'
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {}
+
+    @property
+    @abstractmethod
+    def visualization_query(self) -> str:
         pass
 
     @property
     @abstractmethod
-    def query_template(self) -> str:
+    def visualization_query_template(self) -> str:
         pass
 
     @property
-    @abstractmethod
-    def query_kwargs(self) -> str:
-        pass
+    def visualization_df(self):
+        return self._visualization_df
+
+    @visualization_df.setter
+    def visualization_df(self, val: DataFrame):
+        self._visualization_df = val
+
+    def preview(self, limit: int, prev_df: DataFrame):
+        visualization_df = spark.sql(self.visualization_query, df=prev_df)
+        for item in visualization_df.take(limit):
+            yield item.asDict()
 
     @abstractmethod
     def edit(self):
@@ -299,22 +316,19 @@ class VisualizationNode(SparkNode):
 
 
 class TableNode(VisualizationNode):
-    def __init__(self, session_id, node_id, prev_node_id):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, prev_df: DataFrame):
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
-    def query(self) -> str:
-        return self.query_template
+    def visualization_query(self) -> str:
+        return self.visualization_query_template
 
     @property
-    def query_template(self) -> str:
+    def visualization_query_template(self) -> str:
         return 'select * from {df}'
-
-    @property
-    def query_kwargs(self) -> dict:
-        return {}
 
     def edit(self):
         pass
