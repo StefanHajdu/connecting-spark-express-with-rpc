@@ -104,14 +104,14 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, **kwargs):
-        self._session_id = kwargs.get('session_id')
+    def __init__(self, session_id: str, path: str, data_type: str):
+        self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
         self._operation = 'load_dataset'
         self._query = 'spark.read'
-        self._path = kwargs.get('path')
-        self._data_type = kwargs.get('data_type')
+        self._path = path
+        self._data_type = data_type
         self.df = self.run_transform()
 
     @property
@@ -138,13 +138,13 @@ class LoadNode(TransformNode):
 
 
 class LoadFromSessionNode(TransformNode):
-    def __init__(self, **kwargs):
-        self._session_id = kwargs.get('session_id')
+    def __init__(self, session_id: str, parent_session_plan: str):
+        self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
         self._operation = 'load_from_session'
         self._query = 'load_from_session'
-        self._parent_session_plan = kwargs.get('parent_session_plan')
+        self._parent_session_plan = parent_session_plan
         self.df = self.run_transform()
 
     @property
@@ -164,13 +164,13 @@ class LoadFromSessionNode(TransformNode):
 
 
 class FilterNode(TransformNode):
-    def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id')
-        self.node_id = kwargs.get('node_id')
-        self.prev_node_id = kwargs.get('prev_node_id')
-        self.expressions = kwargs.get('expressions')
-        self.matching = kwargs.get('matching')
-        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str, prev_df: DataFrame):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+        self.matching = matching
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
     def query_template(self) -> str:
@@ -191,12 +191,12 @@ class FilterNode(TransformNode):
 
 
 class NewColumnNode(TransformNode):
-    def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id')
-        self.node_id = kwargs.get('node_id')
-        self.prev_node_id = kwargs.get('prev_node_id')
-        self.expressions = kwargs.get('expressions')
-        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], prev_df: DataFrame):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
     def query_template(self) -> str:
@@ -216,13 +216,13 @@ class NewColumnNode(TransformNode):
 
 
 class JoinNode(TransformNode):
-    def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id')
-        self.node_id = kwargs.get('node_id')
-        self.prev_node_id = kwargs.get('prev_node_id')
-        self.other_df = OtherDataframe(kwargs.get('input_type'), kwargs.get('input_pointer'))
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, input_type: str, input_pointer: str, prev_df: DataFrame):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.other_df = OtherDataframe(input_type, input_pointer)
         self._query = None
-        self.df = self.run_transform(spark=spark, df=kwargs.get('prev_df'))
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
     def query_template(self) -> str:
