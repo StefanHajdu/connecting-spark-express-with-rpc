@@ -2,13 +2,8 @@ import json
 from collections.abc import Iterable
 from functools import wraps
 
-from sparkapi_pb2 import AddColumnExpression
-
 import Nodes
-from constants import PLAN_NODE_ROOT_ID
 from custom_exceptions import NodeMissingException
-from NodeExtensions import OtherDataframe
-from Nodes import FilterNode, JoinNode, LoadFromSessionNode, LoadNode, NewColumnNode, TableNode
 from spark_session_init import spark
 
 

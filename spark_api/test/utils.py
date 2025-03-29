@@ -29,7 +29,7 @@ def load(session_id: str, src_path: str, src_type: str) -> None:
         'df_path': src_path,
         'df_type': src_type,
     }
-    res = requests.post('http://localhost:4444/load', json=json_data)
+    res = requests.post('http://localhost:4444/addNode/LoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
 
@@ -39,47 +39,47 @@ def load_from_session(session_id: str, input_session_id: str) -> None:
         'session_id': session_id,
         'input_session_id': input_session_id,
     }
-    res = requests.post('http://localhost:4444/loadFromSession', json=json_data)
+    res = requests.post('http://localhost:4444/addNode/LoadFromSessionNode', json=json_data)
 
     assert res.status_code == 200
 
 
-def add_filter_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/filter', json=kwargs)
-
-    assert res.status_code == 200
-    return kwargs['node_id']
-
-
-def edit_filter_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editNode/filter', json=kwargs)
+def add_filterNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/addNode/FilterNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def add_addColumn_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/addColumn', json=kwargs)
+def edit_filterNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/editNode/FilterNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def create_InputExtension_JoinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addNode/join', json=kwargs)
+def add_newColumnNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/addNode/NewColumnNode', json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs['node_id']
+
+
+def create_JoinNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/addNode/JoinNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
 def edit_JoinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editNode/join', json=kwargs)
+    res = requests.post('http://localhost:4444/editNode/JoinNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def remove_sql(**kwargs):
+def removeNode(**kwargs):
     res = requests.post('http://localhost:4444/removeNode', json=kwargs)
 
     assert res.status_code == 200

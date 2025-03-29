@@ -1,9 +1,8 @@
 from pyspark.sql import SparkSession
 
-from ClientSessionTable import ClientSessionTable, SessionPlannerMap
+from ClientSessionTable import ClientSessionTable
 
 clientSessionTable = ClientSessionTable()
-sessionPlannerMap = SessionPlannerMap(clientSessionTable)
 
 spark = (
     SparkSession.builder.appName('SparkSession')

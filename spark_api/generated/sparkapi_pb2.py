@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"v\n\x16PysparkGeneralResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\"g\n\x14SparkActionlResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x0f\n\x07\x63olumns\x18\x03 \x01(\t\x12\x0e\n\x06schema\x18\x04 \x01(\t\x12\r\n\x05\x63ount\x18\x05 \x01(\x05\";\n\x18PysparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"9\n\x16SparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"%\n\x11RowStreamResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\"S\n\x0eStatusResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x1e\n\x16rebuild_recommendation\x18\x02 \x01(\x08\x12\r\n\x05\x63\x61use\x18\x03 \x01(\t\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"J\n\x12LoadDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"K\n\x15PreviewDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\r\n\x05limit\x18\x03 \x01(\x05\">\n\x17SummarizeDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\"u\n\x11\x46ilterNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\x12\x13\n\x0b\x65xpressions\x18\x04 \x03(\t\x12\x10\n\x08matching\x18\x05 \x01(\t\"K\n\x0e\x41\x64\x64NodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\";\n\x13\x41\x64\x64\x43olumnExpression\x12\x12\n\nexpression\x18\x01 \x01(\t\x12\x10\n\x08\x63ol_name\x18\x02 \x01(\t\"\x85\x01\n\x14\x41\x64\x64\x43olumnNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\x12\x32\n\x0b\x65xpressions\x18\x04 \x03(\x0b\x32\x1d.sparkapi.AddColumnExpression\"\x81\x01\n\x19JoinInputExtensionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\x12\x12\n\ninput_type\x18\x04 \x01(\t\x12\x15\n\rinput_pointer\x18\x05 \x01(\t\"\xce\x01\n\x0bJoinRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x15\n\rjoin_relation\x18\x03 \x01(\t\x12\x17\n\x0f\x63olumns_to_keep\x18\x04 \x03(\t\x12\x16\n\x0e\x63olumns_to_add\x18\x05 \x03(\t\x12 \n\x18prefix_for_added_columns\x18\x06 \x01(\t\x12\x15\n\rjoin_criteria\x18\x07 \x03(\t\x12\x19\n\x11\x63riteria_matching\x18\x08 \x01(\t\"9\n\x12NodeRemovalRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\"F\n\x16LoadFromSessionRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x18\n\x10input_session_id\x18\x02 \x01(\t\"$\n\x0eRebuildRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\"*\n\x14SessionStatusRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t2\xfa\t\n\x08SparkApi\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x12R\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1b.sparkapi.RowStreamResponse\"\x00\x30\x01\x12W\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a\x1e.sparkapi.SparkActionlResponse\"\x00\x12N\n\x10getSessionStatus\x12\x1e.sparkapi.SessionStatusRequest\x1a\x18.sparkapi.StatusResponse\"\x00\x12N\n\x0erebuildSession\x12\x18.sparkapi.RebuildRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12P\n\x0cloadsDataset\x12\x1c.sparkapi.LoadDatasetRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12W\n\x0floadFromSession\x12 .sparkapi.LoadFromSessionRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12T\n\x11\x63reate_FilterNode\x12\x1b.sparkapi.FilterNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12R\n\x0f\x65\x64it_FilterNode\x12\x1b.sparkapi.FilterNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12Z\n\x14\x63reate_AddColumnNode\x12\x1e.sparkapi.AddColumnNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12X\n\x12\x65\x64it_AddColumnNode\x12\x1e.sparkapi.AddColumnNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12Z\n\x0f\x63reate_JoinNode\x12#.sparkapi.JoinInputExtensionRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12J\n\redit_JoinNode\x12\x15.sparkapi.JoinRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12P\n\x10\x63reate_TableNode\x12\x18.sparkapi.AddNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12N\n\nremoveNode\x12\x1c.sparkapi.NodeRemovalRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0esparkapi.proto\x12\x08sparkapi\"I\n\x12NewSessionResponse\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1a\n\x12session_server_pid\x18\x02 \x01(\t\x12\x0b\n\x03msg\x18\x03 \x01(\t\"v\n\x16PysparkGeneralResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x14\n\x0c\x63olumns_json\x18\x03 \x01(\t\x12\x13\n\x0bschema_tree\x18\x04 \x01(\t\x12\x10\n\x08num_rows\x18\x05 \x01(\x05\"g\n\x14SparkActionlResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x0f\n\x07\x63olumns\x18\x03 \x01(\t\x12\x0e\n\x06schema\x18\x04 \x01(\t\x12\r\n\x05\x63ount\x18\x05 \x01(\x05\";\n\x18PysparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"9\n\x16SparkTransformResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\"%\n\x11RowStreamResponse\x12\x10\n\x08row_json\x18\x01 \x01(\t\"S\n\x0eStatusResponse\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x1e\n\x16rebuild_recommendation\x18\x02 \x01(\x08\x12\r\n\x05\x63\x61use\x18\x03 \x01(\t\"\x1f\n\x11NewSessionRequest\x12\n\n\x02id\x18\x01 \x01(\t\"N\n\x16LoadDatasetNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x66_path\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x66_type\x18\x03 \x01(\t\"K\n\x15PreviewDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\r\n\x05limit\x18\x03 \x01(\x05\">\n\x17SummarizeDatasetRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\"u\n\x11\x46ilterNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\x12\x13\n\x0b\x65xpressions\x18\x04 \x03(\t\x12\x10\n\x08matching\x18\x05 \x01(\t\"K\n\x0e\x41\x64\x64NodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\";\n\x13\x41\x64\x64\x43olumnExpression\x12\x12\n\nexpression\x18\x01 \x01(\t\x12\x10\n\x08\x63ol_name\x18\x02 \x01(\t\"\x85\x01\n\x14NewColumnNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x03 \x01(\t\x12\x32\n\x0b\x65xpressions\x18\x04 \x03(\x0b\x32\x1d.sparkapi.AddColumnExpression\"\x93\x02\n\x0fJoinNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\x12\x14\n\x0cprev_node_id\x18\x0b \x01(\t\x12\x15\n\rjoin_relation\x18\x03 \x01(\t\x12\x17\n\x0f\x63olumns_to_keep\x18\x04 \x03(\t\x12\x16\n\x0e\x63olumns_to_add\x18\x05 \x03(\t\x12 \n\x18prefix_for_added_columns\x18\x06 \x01(\t\x12\x15\n\rjoin_criteria\x18\x07 \x03(\t\x12\x19\n\x11\x63riteria_matching\x18\x08 \x01(\t\x12\x12\n\ninput_type\x18\t \x01(\t\x12\x15\n\rinput_pointer\x18\n \x01(\t\"9\n\x12NodeRemovalRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x0f\n\x07node_id\x18\x02 \x01(\t\"J\n\x1aLoadFromSessionNodeRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\x12\x18\n\x10input_session_id\x18\x02 \x01(\t\"$\n\x0eRebuildRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t\"*\n\x14SessionStatusRequest\x12\x12\n\nsession_id\x18\x01 \x01(\t2\x91\n\n\x08SparkApi\x12L\n\rcreateSession\x12\x1b.sparkapi.NewSessionRequest\x1a\x1c.sparkapi.NewSessionResponse\"\x00\x12R\n\x0epreviewDataset\x12\x1f.sparkapi.PreviewDatasetRequest\x1a\x1b.sparkapi.RowStreamResponse\"\x00\x30\x01\x12W\n\x10summarizeDataset\x12!.sparkapi.SummarizeDatasetRequest\x1a\x1e.sparkapi.SparkActionlResponse\"\x00\x12N\n\x10getSessionStatus\x12\x1e.sparkapi.SessionStatusRequest\x1a\x18.sparkapi.StatusResponse\"\x00\x12N\n\x0erebuildSession\x12\x18.sparkapi.RebuildRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12^\n\x16\x63reate_loadDatasetNode\x12 .sparkapi.LoadDatasetNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12\x66\n\x1a\x63reate_loadFromSessionNode\x12$.sparkapi.LoadFromSessionNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12T\n\x11\x63reate_FilterNode\x12\x1b.sparkapi.FilterNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12R\n\x0f\x65\x64it_FilterNode\x12\x1b.sparkapi.FilterNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12Z\n\x14\x63reate_NewColumnNode\x12\x1e.sparkapi.NewColumnNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12X\n\x12\x65\x64it_NewColumnNode\x12\x1e.sparkapi.NewColumnNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12P\n\x0f\x63reate_JoinNode\x12\x19.sparkapi.JoinNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12N\n\redit_JoinNode\x12\x19.sparkapi.JoinNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12P\n\x10\x63reate_TableNode\x12\x18.sparkapi.AddNodeRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x12N\n\nremoveNode\x12\x1c.sparkapi.NodeRemovalRequest\x1a .sparkapi.SparkTransformResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -47,32 +47,30 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_STATUSRESPONSE']._serialized_end=570
   _globals['_NEWSESSIONREQUEST']._serialized_start=572
   _globals['_NEWSESSIONREQUEST']._serialized_end=603
-  _globals['_LOADDATASETREQUEST']._serialized_start=605
-  _globals['_LOADDATASETREQUEST']._serialized_end=679
-  _globals['_PREVIEWDATASETREQUEST']._serialized_start=681
-  _globals['_PREVIEWDATASETREQUEST']._serialized_end=756
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=758
-  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=820
-  _globals['_FILTERNODEREQUEST']._serialized_start=822
-  _globals['_FILTERNODEREQUEST']._serialized_end=939
-  _globals['_ADDNODEREQUEST']._serialized_start=941
-  _globals['_ADDNODEREQUEST']._serialized_end=1016
-  _globals['_ADDCOLUMNEXPRESSION']._serialized_start=1018
-  _globals['_ADDCOLUMNEXPRESSION']._serialized_end=1077
-  _globals['_ADDCOLUMNNODEREQUEST']._serialized_start=1080
-  _globals['_ADDCOLUMNNODEREQUEST']._serialized_end=1213
-  _globals['_JOININPUTEXTENSIONREQUEST']._serialized_start=1216
-  _globals['_JOININPUTEXTENSIONREQUEST']._serialized_end=1345
-  _globals['_JOINREQUEST']._serialized_start=1348
-  _globals['_JOINREQUEST']._serialized_end=1554
-  _globals['_NODEREMOVALREQUEST']._serialized_start=1556
-  _globals['_NODEREMOVALREQUEST']._serialized_end=1613
-  _globals['_LOADFROMSESSIONREQUEST']._serialized_start=1615
-  _globals['_LOADFROMSESSIONREQUEST']._serialized_end=1685
-  _globals['_REBUILDREQUEST']._serialized_start=1687
-  _globals['_REBUILDREQUEST']._serialized_end=1723
-  _globals['_SESSIONSTATUSREQUEST']._serialized_start=1725
-  _globals['_SESSIONSTATUSREQUEST']._serialized_end=1767
-  _globals['_SPARKAPI']._serialized_start=1770
-  _globals['_SPARKAPI']._serialized_end=3044
+  _globals['_LOADDATASETNODEREQUEST']._serialized_start=605
+  _globals['_LOADDATASETNODEREQUEST']._serialized_end=683
+  _globals['_PREVIEWDATASETREQUEST']._serialized_start=685
+  _globals['_PREVIEWDATASETREQUEST']._serialized_end=760
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_start=762
+  _globals['_SUMMARIZEDATASETREQUEST']._serialized_end=824
+  _globals['_FILTERNODEREQUEST']._serialized_start=826
+  _globals['_FILTERNODEREQUEST']._serialized_end=943
+  _globals['_ADDNODEREQUEST']._serialized_start=945
+  _globals['_ADDNODEREQUEST']._serialized_end=1020
+  _globals['_ADDCOLUMNEXPRESSION']._serialized_start=1022
+  _globals['_ADDCOLUMNEXPRESSION']._serialized_end=1081
+  _globals['_NEWCOLUMNNODEREQUEST']._serialized_start=1084
+  _globals['_NEWCOLUMNNODEREQUEST']._serialized_end=1217
+  _globals['_JOINNODEREQUEST']._serialized_start=1220
+  _globals['_JOINNODEREQUEST']._serialized_end=1495
+  _globals['_NODEREMOVALREQUEST']._serialized_start=1497
+  _globals['_NODEREMOVALREQUEST']._serialized_end=1554
+  _globals['_LOADFROMSESSIONNODEREQUEST']._serialized_start=1556
+  _globals['_LOADFROMSESSIONNODEREQUEST']._serialized_end=1630
+  _globals['_REBUILDREQUEST']._serialized_start=1632
+  _globals['_REBUILDREQUEST']._serialized_end=1668
+  _globals['_SESSIONSTATUSREQUEST']._serialized_start=1670
+  _globals['_SESSIONSTATUSREQUEST']._serialized_end=1712
+  _globals['_SPARKAPI']._serialized_start=1715
+  _globals['_SPARKAPI']._serialized_end=3012
 # @@protoc_insertion_point(module_scope)

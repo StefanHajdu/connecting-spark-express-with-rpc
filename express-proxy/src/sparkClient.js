@@ -43,8 +43,8 @@ export class SparkClient {
     );
   }
 
-  _loadDataset(newDatasetRequestBody, expressResponse, next) {
-    return this.client.loadsDataset(
+  _create_loadDatasetNode(newDatasetRequestBody, expressResponse, next) {
+    return this.client.create_loadDatasetNode(
       newDatasetRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -61,8 +61,12 @@ export class SparkClient {
     );
   }
 
-  _loadFromSession(datasetFromSessionRequestBody, expressResponse, next) {
-    return this.client.loadFromSession(
+  _create_loadFromSessionNode(
+    datasetFromSessionRequestBody,
+    expressResponse,
+    next
+  ) {
+    return this.client.create_loadFromSessionNode(
       datasetFromSessionRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -97,8 +101,8 @@ export class SparkClient {
     );
   }
 
-  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_AddColumnNode(
+  _create_NewColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.create_NewColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -187,44 +191,8 @@ export class SparkClient {
     );
   }
 
-  _edit_AddColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_AddColumnNode(
-      sqlRequestBody,
-      (err, pysparkTransformResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({
-              message: err.message,
-              code: 500,
-            })
-          );
-        } else {
-          expressResponse.json(pysparkTransformResponse);
-        }
-      }
-    );
-  }
-
-  _create_AddColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.create_AddColumnNode(
-      sqlRequestBody,
-      (err, pysparkTransformResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({
-              message: err.message,
-              code: 500,
-            })
-          );
-        } else {
-          expressResponse.json(pysparkTransformResponse);
-        }
-      }
-    );
-  }
-
-  _edit_AddColumnNode(sqlRequestBody, expressResponse, next) {
-    return this.client.edit_AddColumnNode(
+  _edit_NewColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.edit_NewColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
