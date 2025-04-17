@@ -266,8 +266,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
-pyspark-api-venv
-spark-venv
+pyspark-venv
 playground
 env/
 venv/
