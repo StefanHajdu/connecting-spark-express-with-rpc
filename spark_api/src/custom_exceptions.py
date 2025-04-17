@@ -3,11 +3,6 @@ class DuplicateSessionException(Exception):
         super().__init__(message)
 
 
-class InvalidEditException(Exception):
-    def __init__(self, message='Invalid sql id provided'):
-        super().__init__(message)
-
-
 class LoadNodeRemovalException(Exception):
     def __init__(self, message='Cannot remove load node from plan'):
         super().__init__(message)
@@ -15,4 +10,9 @@ class LoadNodeRemovalException(Exception):
 
 class NodeMissingException(Exception):
     def __init__(self, message='Node with given node_id is missing'):
+        super().__init__(message)
+
+
+class InvalidInputTypeException(Exception):
+    def __init__(self, message='Input type is not supported. Valid options: ["file", "session"]'):
         super().__init__(message)

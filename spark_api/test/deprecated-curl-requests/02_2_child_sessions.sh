@@ -33,9 +33,9 @@ curl -X POST http://localhost:4444/loadFromSession \
     -w '\nTotal: %{time_total}s\n\n'
 
 # add sql 0000
-curl -X POST http://localhost:4444/addSql \
+curl -X POST http://localhost:4444/addNode/filter \
     -H 'Content-Type: application/json' \
-    -d '{"session_id": "0000", "node_id": "n0001", "prev_node_id": "0000-0000-0000", "query": "select * from {df} where tld = '\''org'\''", "query_name": "filter", "query_params_json": ["df"]}' \
+    -d '{"session_id": "0000", "node_id": "n0001", "prev_node_id": "0000-0000-0000", "expressions_json": ["tld = '\''org'\''"], "matching": ""}' \
     -w '\nTotal: %{time_total}s\n\n'
 
 curl -X POST http://localhost:4444/summarize \

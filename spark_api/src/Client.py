@@ -2,9 +2,8 @@ import json
 from collections.abc import Iterable
 from functools import wraps
 
-from constants import PLAN_NODE_ROOT_ID
+import Nodes
 from custom_exceptions import NodeMissingException
-from Nodes import LoadFromSessionNode, LoadNode, SqlNode
 from spark_session_init import spark
 
 
@@ -48,6 +47,10 @@ class ClientSession:
     def plan(self, val):
         self._plan = val
 
+    def notify_transformation_change(self):
+        for child_session in self.child_sessions:
+            child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
+
     def log_plan_execution(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -60,91 +63,17 @@ class ClientSession:
 
         return wrapper
 
-    def notify_plan_change(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            res = func(self, *args, **kwargs)
-
-            for child_session in self.child_sessions:
-                child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
-
-            return res
-
-        return wrapper
-
-    def load_dataset(self, path: str, data_type: str):
-        self._log(f'/load: {path, data_type}')
-        node = LoadNode(
-            session_id=self.id,
-            node_id=PLAN_NODE_ROOT_ID,
-            prev_node_id=None,
-            operation=f'{__name__}',
-            query='spark.read',
-            path=path,
-            data_type=data_type,
-        )
-        df = node.run_transform(spark=spark)
-        node.df = df
+    def submit_node(self, node_class: str, **kwargs):
+        self._log(f'/addNode/{node_class}')
+        node_constructor = getattr(Nodes, node_class)
+        node = node_constructor(**kwargs)
         return node
 
-    def load_from_session(self, parent_session, parent_session_plan):
-        self._log(f'/loadFromSession: {parent_session_plan.session_id}')
-        node = LoadFromSessionNode(
-            session_id=self.id,
-            node_id=PLAN_NODE_ROOT_ID,
-            prev_node_id=None,
-            operation=f'{__name__}',
-            query='custom.load_last_df_from_input_session',
-            parent_session_plan=parent_session_plan,
-        )
-        parent_session.add_child_session(self)
-        df = node.run_transform()
-        node.df = df
-        return node
-
-    @notify_plan_change
-    def add_node(self, node_id, prev_node_id, query_type, query, query_params_json):
-        self._log(f'/addNode: {node_id, prev_node_id, query}')
-        new_sql_node = self.create_sql_node(
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            query=query,
-            query_type=query_type,
-            query_params_json=query_params_json,
-        )
-        self.plan.add_node(spark, new_sql_node)
-
-    def create_sql_node(self, node_id, prev_node_id, query_type, query, query_params_json):
-        node = SqlNode(
-            session_id=self.id,
-            node_id=node_id,
-            prev_node_id=prev_node_id,
-            operation='sql',
-            query=query,
-            query_type=query_type,
-            query_params_json=query_params_json,
-        )
-        return node
-
-    @notify_plan_change
-    def edit_node(self, node_id, query_type, query, query_params_json):
-        self._log(f'/editNode: {node_id, query}')
-        edited_node = self.adjust_sql_node(node_id, query_type, query, query_params_json)
-        self.plan.edit_node(spark, edited_node)
-
-    def adjust_sql_node(self, node_id, query_type, query, query_params_json):
-        node = self.plan.get_node_by_id(node_id)
-        node.edit(
-            query_type=query_type,
-            query=query,
-            query_params_json=query_params_json,
-        )
-        return node
-
-    @notify_plan_change
-    def remove_node(self, node_id):
-        self._log(f'/removeNode: {node_id}')
-        self.plan.remove_node(spark, node_id)
+    def remove_node(self, node):
+        self._log(f'/removeNode: {node.node_id}')
+        if isinstance(node, Nodes.TransformNode):
+            self.notify_transformation_change()
+        self.plan.remove_node(spark, node.node_id)
 
     @log_plan_execution
     def rebuild(self):
@@ -162,10 +91,13 @@ class ClientSession:
             raise NodeMissingException()
 
     @log_plan_execution
-    def preview(self, node_id: str, limit: int) -> Iterable[str]:
-        self._log(f'/preview {node_id}, {limit}')
-        node = self.plan.get_node_by_id(node_id)
-        rows = node.preview(limit)
+    def preview(self, node: Nodes.SparkNode, limit: int) -> Iterable[str]:
+        self._log(f'/preview {node.node_id}, {limit}')
+        if isinstance(node, Nodes.TransformNode):
+            rows = node.preview(limit)
+        else:
+            prev_df = self.plan.get_node_by_id(node.prev_node_id).df
+            rows = node.preview(limit, prev_df)
         for row in rows:
             yield json.dumps(row)
 

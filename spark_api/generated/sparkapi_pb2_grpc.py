@@ -5,7 +5,7 @@ import warnings
 
 import sparkapi_pb2 as sparkapi__pb2
 
-GRPC_GENERATED_VERSION = '1.70.0'
+GRPC_GENERATED_VERSION = '1.71.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -59,24 +59,39 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.RebuildRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.loadsDataset = channel.unary_unary(
-                '/sparkapi.SparkApi/loadsDataset',
-                request_serializer=sparkapi__pb2.LoadDatasetRequest.SerializeToString,
+        self.submit_LoadDatasetNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_LoadDatasetNode',
+                request_serializer=sparkapi__pb2.LoadDatasetNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.loadFromSession = channel.unary_unary(
-                '/sparkapi.SparkApi/loadFromSession',
-                request_serializer=sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
+        self.submit_LoadFromSessionNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_LoadFromSessionNode',
+                request_serializer=sparkapi__pb2.LoadFromSessionNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.addNode = channel.unary_unary(
-                '/sparkapi.SparkApi/addNode',
-                request_serializer=sparkapi__pb2.NodeAddRequest.SerializeToString,
+        self.submit_FilterNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_FilterNode',
+                request_serializer=sparkapi__pb2.FilterNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.editNode = channel.unary_unary(
-                '/sparkapi.SparkApi/editNode',
-                request_serializer=sparkapi__pb2.NodeEditRequest.SerializeToString,
+        self.submit_NewColumnNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_NewColumnNode',
+                request_serializer=sparkapi__pb2.NewColumnNodeRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
+        self.submit_JoinNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_JoinNode',
+                request_serializer=sparkapi__pb2.JoinNodeRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
+        self.submit_TableNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_TableNode',
+                request_serializer=sparkapi__pb2.AddTableNodeRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
+        self.submit_HistogramNode = channel.unary_unary(
+                '/sparkapi.SparkApi/submit_HistogramNode',
+                request_serializer=sparkapi__pb2.AddHistogramNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.removeNode = channel.unary_unary(
@@ -119,32 +134,56 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def loadsDataset(self, request, context):
+    def submit_LoadDatasetNode(self, request, context):
+        """load node
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def submit_LoadFromSessionNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def loadFromSession(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def submit_FilterNode(self, request, context):
+        """filter node
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def addNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def submit_NewColumnNode(self, request, context):
+        """add column node
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def editNode(self, request, context):
+    def submit_JoinNode(self, request, context):
+        """join node
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def submit_TableNode(self, request, context):
+        """table node
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def submit_HistogramNode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def removeNode(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """all nodes
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -177,24 +216,39 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.RebuildRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'loadsDataset': grpc.unary_unary_rpc_method_handler(
-                    servicer.loadsDataset,
-                    request_deserializer=sparkapi__pb2.LoadDatasetRequest.FromString,
+            'submit_LoadDatasetNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_LoadDatasetNode,
+                    request_deserializer=sparkapi__pb2.LoadDatasetNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'loadFromSession': grpc.unary_unary_rpc_method_handler(
-                    servicer.loadFromSession,
-                    request_deserializer=sparkapi__pb2.LoadFromSessionRequest.FromString,
+            'submit_LoadFromSessionNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_LoadFromSessionNode,
+                    request_deserializer=sparkapi__pb2.LoadFromSessionNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'addNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.addNode,
-                    request_deserializer=sparkapi__pb2.NodeAddRequest.FromString,
+            'submit_FilterNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_FilterNode,
+                    request_deserializer=sparkapi__pb2.FilterNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'editNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.editNode,
-                    request_deserializer=sparkapi__pb2.NodeEditRequest.FromString,
+            'submit_NewColumnNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_NewColumnNode,
+                    request_deserializer=sparkapi__pb2.NewColumnNodeRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'submit_JoinNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_JoinNode,
+                    request_deserializer=sparkapi__pb2.JoinNodeRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'submit_TableNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_TableNode,
+                    request_deserializer=sparkapi__pb2.AddTableNodeRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'submit_HistogramNode': grpc.unary_unary_rpc_method_handler(
+                    servicer.submit_HistogramNode,
+                    request_deserializer=sparkapi__pb2.AddHistogramNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'removeNode': grpc.unary_unary_rpc_method_handler(
@@ -349,7 +403,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def loadsDataset(request,
+    def submit_LoadDatasetNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -362,8 +416,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/loadsDataset',
-            sparkapi__pb2.LoadDatasetRequest.SerializeToString,
+            '/sparkapi.SparkApi/submit_LoadDatasetNode',
+            sparkapi__pb2.LoadDatasetNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
@@ -376,7 +430,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def loadFromSession(request,
+    def submit_LoadFromSessionNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -389,8 +443,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/loadFromSession',
-            sparkapi__pb2.LoadFromSessionRequest.SerializeToString,
+            '/sparkapi.SparkApi/submit_LoadFromSessionNode',
+            sparkapi__pb2.LoadFromSessionNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
@@ -403,7 +457,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def addNode(request,
+    def submit_FilterNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -416,8 +470,8 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/addNode',
-            sparkapi__pb2.NodeAddRequest.SerializeToString,
+            '/sparkapi.SparkApi/submit_FilterNode',
+            sparkapi__pb2.FilterNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,
@@ -430,7 +484,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def editNode(request,
+    def submit_NewColumnNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -443,8 +497,89 @@ class SparkApi(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sparkapi.SparkApi/editNode',
-            sparkapi__pb2.NodeEditRequest.SerializeToString,
+            '/sparkapi.SparkApi/submit_NewColumnNode',
+            sparkapi__pb2.NewColumnNodeRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def submit_JoinNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/submit_JoinNode',
+            sparkapi__pb2.JoinNodeRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def submit_TableNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/submit_TableNode',
+            sparkapi__pb2.AddTableNodeRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def submit_HistogramNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sparkapi.SparkApi/submit_HistogramNode',
+            sparkapi__pb2.AddHistogramNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

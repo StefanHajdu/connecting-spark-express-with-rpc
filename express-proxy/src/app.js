@@ -8,30 +8,46 @@ app.use(express.json());
 
 let sp = new SparkClient();
 
+// CREATE SESSION
 app.post("/createSession", (req, res, next) => {
   sp._createSession(req.body, res, next);
 });
 
-app.post("/load", (req, res, next) => {
-  sp._loadDataset(req.body, res, next);
+// ADD NODE
+app.post("/submitNode/LoadDatasetNode", (req, res, next) => {
+  sp._submit_LoadDatasetNode(req.body, res, next);
 });
 
-app.post("/loadFromSession", (req, res, next) => {
-  sp._loadFromSession(req.body, res, next);
+app.post("/submitNode/LoadFromSessionNode", (req, res, next) => {
+  sp._submit_LoadFromSessionNode(req.body, res, next);
 });
 
-app.post("/addSql", (req, res, next) => {
-  sp._addSql(req.body, res, next);
+app.post("/submitNode/FilterNode", (req, res, next) => {
+  sp._submit_FilterNode(req.body, res, next);
 });
 
-app.post("/editSql", (req, res, next) => {
-  sp._editSql(req.body, res, next);
+app.post("/submitNode/NewColumnNode", (req, res, next) => {
+  sp._submit_NewColumnNode(req.body, res, next);
 });
 
-app.post("/removeSql", (req, res, next) => {
-  sp._removeSql(req.body, res, next);
+app.post("/submitNode/JoinNode", (req, res, next) => {
+  sp._submit_JoinNode(req.body, res, next);
 });
 
+app.post("/submitNode/TableNode", (req, res, next) => {
+  sp._submit_TableNode(req.body, res, next);
+});
+
+app.post("/submitNode/HistogramNode", (req, res, next) => {
+  sp._submit_HistogramNode(req.body, res, next);
+});
+
+// REMOVE NODE
+app.post("/removeNode", (req, res, next) => {
+  sp._removeNode(req.body, res, next);
+});
+
+// REBUILD SESSION
 app.get("/getSessionStatus/:session_id", (req, res, next) => {
   sp._getSessionStatus(req.params, res, next);
 });
@@ -40,6 +56,7 @@ app.post("/rebuildSession/:session_id", (req, res, next) => {
   sp._rebuildSession(req.params, res, next);
 });
 
+// ACTIONS
 app.post("/summarize", (req, res, next) => {
   sp._summarizeDataset(req.body, res, next);
 });

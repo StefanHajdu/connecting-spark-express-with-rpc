@@ -1,10 +1,17 @@
 import json
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+import sparkapi_pb2
+from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
+from constants import PLAN_NODE_ROOT_ID
+from NodeExtensions import OtherDataframe
+from spark_session_init import spark
+from utils import spark_read_from_path
 
-class SparkNode(ABC):
+
+class SparkNode:
     @property
     def session_id(self):
         return self._session_id
@@ -57,36 +64,56 @@ class SparkNode(ABC):
         return {
             'columns': json.dumps(self.df.columns),
             'count': self.df.count(),
-            'schema': self.df._jdf.schema().treeString(),
+            'schema': self.df.schema.json(),
         }
 
     def preview(self, limit):
         for item in self.df.take(limit):
             yield item.asDict()
 
-    @abstractmethod
     def run_transform(self, **kwargs) -> DataFrame:
+        print(self.query)
+
+        spark = kwargs.pop('spark')
+        df_result = spark.sql(
+            self.query,
+            **{**kwargs, **self.query_kwargs},
+        )
+        return df_result
+
+
+class TransformNode(SparkNode):
+    def __str__(self):
+        return (
+            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        )
+
+    @property
+    @abstractmethod
+    def query(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query_template(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def query_kwargs(self) -> dict:
         pass
 
 
-class LoadNode(SparkNode):
-    def __init__(
-        self,
-        session_id,
-        node_id,
-        prev_node_id,
-        operation,
-        query,
-        path,
-        data_type,
-    ):
+class LoadNode(TransformNode):
+    def __init__(self, session_id: str, path: str, data_type: str):
         self._session_id = session_id
-        self._node_id = node_id
-        self._prev_node_id = prev_node_id
-        self._operation = operation
-        self._query = query
+        self._node_id = PLAN_NODE_ROOT_ID
+        self._prev_node_id = None
+        self._operation = 'load_dataset'
+        self._query = 'spark.read'
         self._path = path
         self._data_type = data_type
+        self.df = self.run_transform()
 
     @property
     def path(self):
@@ -105,25 +132,21 @@ class LoadNode(SparkNode):
         self._data_type = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | path: {self.path} | data_type {self.data_type}'  # noqa: E501
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
 
     def run_transform(self, **kwargs):
-        spark = kwargs.get('spark')
-
-        if self.data_type == 'csv':
-            return spark.read.option('delimiter', ';').option('header', True).csv(self.path)
-        elif self.data_type == 'json':
-            return spark.read.json(self.path)
+        return spark_read_from_path(data_type=self.data_type, path=self.path)
 
 
-class LoadFromSessionNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, query, parent_session_plan):
+class LoadFromSessionNode(TransformNode):
+    def __init__(self, session_id: str, parent_session_plan: str):
         self._session_id = session_id
-        self._node_id = node_id
-        self._prev_node_id = prev_node_id
-        self._operation = operation
-        self._query = query
+        self._node_id = PLAN_NODE_ROOT_ID
+        self._prev_node_id = None
+        self._operation = 'load_from_session'
+        self._query = 'load_from_session'
         self._parent_session_plan = parent_session_plan
+        self.df = self.run_transform()
 
     @property
     def parent_session_plan(self):
@@ -134,57 +157,196 @@ class LoadFromSessionNode(SparkNode):
         self._parent_session_plan = val
 
     def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | parent_session: {self.parent_session_plan.session_id}'  # noqa: E501
 
     def run_transform(self, **kwargs):
         last_node = self.parent_session_plan.get_last_spark_node()
         return last_node.df
 
 
-class SqlNode(SparkNode):
-    def __init__(self, session_id, node_id, prev_node_id, operation, query, query_type, query_params_json):
+class FilterNode(TransformNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str, prev_df: DataFrame):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+        self.matching = matching
+        self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def query_template(self) -> str:
+        return 'select * from {df} where {expressions}'
+
+    @property
+    def query(self) -> str:
+        expressions = f' {self.matching.strip()} '.join(self.expressions)
+        return self.query_template.format(expressions=expressions, df='{df}')
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {}
+
+
+class NewColumnNode(TransformNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], prev_df: DataFrame):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.expressions = expressions
+        self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def query_template(self) -> str:
+        return 'select *, {expressions} from {df}'
+
+    @property
+    def query(self) -> str:
+        expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
+        return self.query_template.format(expressions=expressions, df='{df}')
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {}
+
+
+class JoinNode(TransformNode):
+    def __init__(
+        self,
+        session_id: str,
+        node_id: str,
+        prev_node_id: str,
+        input_type: str,
+        input_pointer: str,
+        joinParams: sparkapi_pb2.JoinParams,
+        prev_df: DataFrame,
+    ):
+        self.session_id = session_id
+        self.node_id = node_id
+        self.prev_node_id = prev_node_id
+        self.other_df = OtherDataframe(input_type, input_pointer)
+        self.joinParams = MessageToDict(joinParams)
+        self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def query_template(self) -> str:
+        return """select {columns} from {df}
+            {join_relation} join
+            {other_df}
+            {join_criteria}"""
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {'other_df': self.other_df.df}
+
+    @property
+    def query(self) -> str:
+        print(f'joinParam: {self.joinParams}')
+        if len(self.joinParams) > 0:
+            columns_to_add = [
+                ' as '.join(('{other_df}.' + col_name, self.joinParams.get('prefixForAddedColumns', '') + col_name))
+                for col_name in self.joinParams.get('columnsToAdd', [])
+            ]
+            columns_to_keep = ['{df}.' + col_name for col_name in self.joinParams.get('columnsToKeep', [])]
+            join_criteria = f' {self.joinParams.get("criteriaMatching", "").strip()} '.join(self.joinParams.get('joinCriteria', []))
+            return self.query_template.format(
+                columns=', '.join(columns_to_keep + columns_to_add),
+                df='{df}',
+                join_relation=self.joinParams.get('joinRelation', ''),
+                other_df='{other_df}',
+                join_criteria='on ' + join_criteria if join_criteria else '',
+            )
+        else:
+            return self.other_df.query
+
+
+class VisualizationNode(SparkNode):
+    def __str__(self):
+        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+
+    @property
+    def query(self) -> str:
+        return 'select * from {df}'
+
+    @property
+    def query_kwargs(self) -> dict:
+        return {}
+
+    @property
+    @abstractmethod
+    def visualization_query(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def visualization_query_template(self) -> str:
+        pass
+
+    @property
+    def visualization_df(self):
+        return self._visualization_df
+
+    @visualization_df.setter
+    def visualization_df(self, val: DataFrame):
+        self._visualization_df = val
+
+    def preview(self, limit: int, prev_df: DataFrame):
+        visualization_df = spark.sql(self.visualization_query, df=prev_df)
+        for item in visualization_df.take(limit):
+            yield item.asDict()
+
+
+class TableNode(VisualizationNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, prev_df: DataFrame):
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
-        self._query_type = query_type
-        self._operation = operation
-        self._query = query
-        self._query_params_json = query_params_json
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
-    def query_type(self):
-        return self._query_type
-
-    @query_type.setter
-    def query_type(self, val: str):
-        self._query_type = val
+    def visualization_query(self) -> str:
+        return self.visualization_query_template
 
     @property
-    def query_params_json(self):
-        return self._query_params_json
+    def visualization_query_template(self) -> str:
+        return 'select * from {df}'
 
-    @query_params_json.setter
-    def query_params_json(self, val: str):
-        self._query_params_json = val
 
-    def __str__(self):
-        return f'node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | operation: {self.operation} | query: {self.query} | query_params: {self.query_params_json} | query_type: {self.query_type}'  # noqa: E501
+class HistogramNode(VisualizationNode):
+    def __init__(
+        self,
+        session_id: str,
+        node_id: str,
+        prev_node_id: str,
+        y_axis_col: str,
+        order_by: str,
+        sort_by: str,
+        expression: str,
+        prev_df: DataFrame,
+    ):
+        self._session_id = session_id
+        self._node_id = node_id
+        self._prev_node_id = prev_node_id
+        self.y_axis_col = y_axis_col
+        self.order_by = order_by
+        self.sort_by = sort_by
+        self.expression = expression
+        self.df = self.run_transform(spark=spark, df=prev_df)
 
-    def run_transform(self, **kwargs):
-        spark = kwargs.get('spark')
-        df = kwargs.get('df')
-
-        query_kwargs = self._get_parsed_params()
-        return spark.sql(
-            self.query,
-            df=df,
-            **query_kwargs,
+    @property
+    def visualization_query(self) -> str:
+        return self.visualization_query_template.format(
+            y_axis_col=self.y_axis_col,
+            expression=self.expression,
+            df='{df}',
+            order_by=self.order_by,
+            sort_by=self.sort_by,
         )
 
-    def _get_parsed_params(self):
-        return {}
-
-    def edit(self, query_type, query, query_params_json):
-        self.query_type = query_type
-        self.query = query
-        self.query_params_json = query_params_json
+    @property
+    def visualization_query_template(self) -> str:
+        return """
+            select {y_axis_col}, {expression} as agg
+            from {df}
+            group by {y_axis_col}
+            order by {order_by} {sort_by}
+        """

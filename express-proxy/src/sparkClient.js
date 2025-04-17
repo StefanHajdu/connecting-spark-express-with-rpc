@@ -43,8 +43,8 @@ export class SparkClient {
     );
   }
 
-  _loadDataset(newDatasetRequestBody, expressResponse, next) {
-    return this.client.loadsDataset(
+  _submit_LoadDatasetNode(newDatasetRequestBody, expressResponse, next) {
+    return this.client.submit_LoadDatasetNode(
       newDatasetRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -61,8 +61,12 @@ export class SparkClient {
     );
   }
 
-  _loadFromSession(datasetFromSessionRequestBody, expressResponse, next) {
-    return this.client.loadFromSession(
+  _submit_LoadFromSessionNode(
+    datasetFromSessionRequestBody,
+    expressResponse,
+    next
+  ) {
+    return this.client.submit_LoadFromSessionNode(
       datasetFromSessionRequestBody,
       (err, pysparkGeneralResponse) => {
         if (err) {
@@ -79,9 +83,8 @@ export class SparkClient {
     );
   }
 
-  _addSql(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.addNode(
+  _submit_FilterNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_FilterNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -98,9 +101,8 @@ export class SparkClient {
     );
   }
 
-  _editSql(sqlRequestBody, expressResponse, next) {
-    sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
-    return this.client.editNode(
+  _submit_NewColumnNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_NewColumnNode(
       sqlRequestBody,
       (err, pysparkTransformResponse) => {
         if (err) {
@@ -117,7 +119,61 @@ export class SparkClient {
     );
   }
 
-  _removeSql(sqlRequestBody, expressResponse, next) {
+  _submit_TableNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_TableNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _submit_HistogramNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_HistogramNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _submit_JoinNode(sqlRequestBody, expressResponse, next) {
+    return this.client.submit_JoinNode(
+      sqlRequestBody,
+      (err, pysparkTransformResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkTransformResponse);
+        }
+      }
+    );
+  }
+
+  _removeNode(sqlRequestBody, expressResponse, next) {
     sqlRequestBody.params_json = JSON.stringify(sqlRequestBody.params_json);
     return this.client.removeNode(
       sqlRequestBody,

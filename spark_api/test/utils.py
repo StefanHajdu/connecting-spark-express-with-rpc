@@ -23,43 +23,50 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def load(session_id: str, src_path: str, src_type: str) -> None:
+def submit_loadNode(session_id: str, src_path: str, src_type: str) -> None:
     json_data = {
         'session_id': session_id,
         'df_path': src_path,
         'df_type': src_type,
     }
-    res = requests.post('http://localhost:4444/load', json=json_data)
+    res = requests.post('http://localhost:4444/submitNode/LoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
 
 
-def load_from_session(session_id: str, input_session_id: str) -> None:
+def submit_loadFromSessionNode(session_id: str, input_session_id: str) -> None:
     json_data = {
         'session_id': session_id,
         'input_session_id': input_session_id,
     }
-    res = requests.post('http://localhost:4444/loadFromSession', json=json_data)
+    res = requests.post('http://localhost:4444/submitNode/LoadFromSessionNode', json=json_data)
 
     assert res.status_code == 200
 
 
-def add_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/addSql', json=kwargs)
-
-    assert res.status_code == 200
-    return kwargs['node_id']
-
-
-def edit_sql(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/editSql', json=kwargs)
+def submit_filterNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/FilterNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
-def remove_sql(**kwargs):
-    res = requests.post('http://localhost:4444/removeSql', json=kwargs)
+def submit_newColumnNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/NewColumnNode', json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs['node_id']
+
+
+def submit_joinNode(**kwargs) -> str:
+    res = requests.post('http://localhost:4444/submitNode/JoinNode', json=kwargs)
+
+    assert res.status_code == 200
+    return kwargs['node_id']
+
+
+def removeNode(**kwargs):
+    res = requests.post('http://localhost:4444/removeNode', json=kwargs)
 
     assert res.status_code == 200
 

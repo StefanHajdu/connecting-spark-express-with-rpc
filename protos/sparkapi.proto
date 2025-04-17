@@ -10,11 +10,24 @@ service SparkApi {
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
-    rpc loadsDataset(LoadDatasetRequest) returns (SparkTransformResponse) {}
-    rpc loadFromSession(LoadFromSessionRequest) returns (SparkTransformResponse) {}
+    // load node
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
-    rpc addNode(NodeAddRequest) returns (SparkTransformResponse) {}
-    rpc editNode(NodeEditRequest) returns (SparkTransformResponse) {}
+    // filter node
+    rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
+    
+    // add column node
+    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (SparkTransformResponse) {}
+    
+    // join node
+    rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
+    
+    // table node
+    rpc submit_TableNode(AddTableNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
+    
+    // all nodes
     rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
 }
 
@@ -70,7 +83,7 @@ message NewSessionRequest {
     string id = 1;
 }
 
-message LoadDatasetRequest {
+message LoadDatasetNodeRequest {
     string session_id = 1;
     string df_path = 2;
     string df_type = 3;
@@ -87,21 +100,58 @@ message SummarizeDatasetRequest {
     string node_id = 2;
 }
 
-message NodeAddRequest {
+message FilterNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    string query_type = 4;
-    string query = 5;
-    string query_params_json = 7;
+    repeated string expressions = 4;
+    string matching = 5;    // and, or, default=None
 }
 
-message NodeEditRequest {
+message AddTableNodeRequest {
     string session_id = 1;
     string node_id = 2;
-    string query_type = 3;
-    string query = 4;
-    string query_params_json = 6;
+    string prev_node_id = 3;
+}
+
+message AddHistogramNodeRequest {
+    string session_id = 1;
+    string node_id = 2;
+    string prev_node_id = 3;
+    string y_axis_col = 4;
+    string order_by = 5;
+    string sort_by = 6;
+    string expression = 7;
+}
+
+message AddColumnExpression {
+    string expression = 1;
+    string col_name = 2;
+}
+
+message NewColumnNodeRequest {
+    string session_id = 1;
+    string node_id = 2;
+    string prev_node_id = 3;
+    repeated AddColumnExpression expressions = 4;
+}
+
+message JoinParams {
+    string join_relation = 1;
+    repeated string columns_to_keep = 2;
+    repeated string columns_to_add = 3;
+    string prefix_for_added_columns = 4;
+    repeated string join_criteria = 5;
+    string criteria_matching = 6;
+}
+
+message JoinNodeRequest {
+    string session_id = 1;
+    string node_id = 2;
+    string prev_node_id = 3;
+    string input_type = 4;
+    string input_pointer = 5;
+    JoinParams joinParams = 6;
 }
 
 message NodeRemovalRequest {
@@ -109,7 +159,7 @@ message NodeRemovalRequest {
     string node_id = 2;
 }
 
-message LoadFromSessionRequest {
+message LoadFromSessionNodeRequest {
     string session_id = 1;
     string input_session_id = 2;
 }

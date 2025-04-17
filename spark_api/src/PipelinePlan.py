@@ -21,6 +21,9 @@ class SessionPlanner:
             if node.node_id == node_id:
                 return idx
 
+    def is_node_present(self, node: SparkNode):
+        return any(n.node_id == node.node_id for n in self.nodes)
+
     def get_node_position(self, node_id: str):
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
@@ -33,31 +36,31 @@ class SessionPlanner:
             idx -= 1
         return self.nodes[idx]
 
-    def add_node(self, spark: SparkSession, new_sql_node: SparkNode):
-        # get prev node index
-        prev_position = self.get_node_position(new_sql_node.prev_node_id)
-        prev_node = self.nodes[prev_position]
+    def process_node(self, spark: SparkSession, node: SparkNode):
+        if self.is_node_present(node):
+            self.edit_node(spark, node)
+        else:
+            self.add_node(spark, node)
 
-        # get then insert new df
-        new_sql_node.df = new_sql_node.run_transform(spark=spark, df=prev_node.df)
+    def add_node(self, spark: SparkSession, new_node: SparkNode):
+        prev_position = self.get_node_position(new_node.prev_node_id)
 
         if prev_position == -1:
             # append
-            self.nodes.append(new_sql_node)
+            self.nodes.append(new_node)
         else:
-            # rerun from appended
-            self.nodes.insert(prev_position + 1, new_sql_node)
-            for node_id in range(prev_position + 2, len(self.nodes)):
-                node = self.nodes[node_id]
-                node.df = node.run_transform(spark=spark, df=self.nodes[node_id - 1].df)
+            curr_position = prev_position + 1
+            next_position = prev_position + 2
+            # insert
+            self.nodes.insert(curr_position, new_node)
+            self.nodes[next_position].prev_node_id = new_node.node_id
+            # rerun from next node
+            self.reapply_plan(spark, next_position)
 
     def edit_node(self, spark: SparkSession, edited_node: SparkNode):
         # get node index
         node_position = self.get_node_position(edited_node.node_id)
-
-        edited_node.df = edited_node.run_transform(spark=spark, df=self.nodes[node_position - 1].df)
         self.nodes[node_position] = edited_node
-
         if node_position != -1:
             # rerun from edited
             self.reapply_plan(spark, node_position + 1)
@@ -71,6 +74,7 @@ class SessionPlanner:
         else:
             self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
             self._delete_node(del_position)
+            # rerun from removed
             self.reapply_plan(spark, del_position)
 
     def _delete_node(self, position: int):
@@ -83,18 +87,3 @@ class SessionPlanner:
                 spark=spark,
                 df=self.nodes[node_position - 1].df,
             )
-
-
-class SessionPlannerMap:
-    def __init__(self, table):
-        self.session_planners = {}
-        self.session_table = table
-
-    def add_session(self, session_id: str):
-        self.session_planners.update({session_id: None})
-
-    def get_session_plan(self, session_id: str):
-        return self.session_planners[session_id]
-
-    def update_session_plan(self, session_id: str, plan: SessionPlanner):
-        self.session_planners[session_id] = plan
