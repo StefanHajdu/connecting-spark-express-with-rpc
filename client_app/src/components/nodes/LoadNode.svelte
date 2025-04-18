@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Input, Button } from "flowbite-svelte";
-import { fetchLoadTransform } from "$lib/clientApi";
+import { type SparkLoadFileResponse, fetchSparkApi } from "$lib/clientApi";
 
 let { node, analysis_id } = $props();
 let filePath: string = $state("");
@@ -11,10 +11,13 @@ let fileSize = $state(0);
 
 // /home/stephenx/Documents/Programming/01_Blogs/contour-app/data/domains_small.parquet
 async function submitLoad() {
-  let loadResponse = await fetchLoadTransform("submitNode/LoadDatasetNode", {
-    session_id: analysis_id,
-    path: filePath,
-  });
+  let loadResponse: SparkLoadFileResponse = await fetchSparkApi(
+    "submitNode/LoadDatasetNode",
+    {
+      session_id: analysis_id,
+      path: filePath,
+    },
+  );
 
   if (loadResponse) {
     console.log(loadResponse);

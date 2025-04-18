@@ -6,7 +6,7 @@ import {
   toLocalStorage,
 } from "$lib/localStorageHandles";
 import { getUniqueAnalysesId } from "../lib/utils";
-import { fetchCreateSession } from "$lib/clientApi";
+import { type CreateSessionResponse, fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
 
 let { analyses } = $props();
@@ -16,7 +16,10 @@ let name = $state("");
 let id = getUniqueAnalysesId();
 
 async function initNewAnalysis() {
-  let createSessionResponse = await fetchCreateSession(id, name);
+  let createSessionResponse: CreateSessionResponse = await fetchSparkApi(
+    id,
+    name,
+  );
   if (createSessionResponse) {
     analyses[id] = {
       id: id,
