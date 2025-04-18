@@ -1,11 +1,19 @@
 const BASE_URL = "http://localhost:4444";
 
+export type SparkActionlResponse = {
+  session_id: string;
+  msg: string;
+  columns: string;
+  schema: string;
+  count: number;
+};
+
 export type CreateSessionResponse = {
   session_id: string;
   msg: string;
 };
 
-type Column = {
+export type Column = {
   name: string;
   dtype: string;
 };

@@ -17,8 +17,8 @@ let id = getUniqueAnalysesId();
 
 async function initNewAnalysis() {
   let createSessionResponse: CreateSessionResponse = await fetchSparkApi(
-    id,
-    name,
+    "createSession",
+    { id: id, name: name },
   );
   if (createSessionResponse) {
     analyses[id] = {

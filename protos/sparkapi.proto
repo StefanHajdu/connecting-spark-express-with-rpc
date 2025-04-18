@@ -39,14 +39,6 @@ message NewSessionResponse {
     string msg = 2;
 }
 
-message PysparkGeneralResponse {
-    string session_id = 1;
-    string msg = 2;
-    string columns_json = 3;
-    string schema_tree = 4;
-    int32 num_rows = 5;
-}
-
 message SparkActionlResponse {
     string session_id = 1;
     string msg = 2;

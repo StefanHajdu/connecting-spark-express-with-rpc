@@ -11,11 +11,20 @@ import {
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
 import { nodeFactoryMethod } from "./NodeInstance";
+import { type SparkActionlResponse, fetchSparkApi } from "$lib/clientApi";
 import LoadNode from "./LoadNode.svelte";
 
 let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
+let dataFrameColumns = $state([{ name: "", dtype: "" }]);
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
+let summarizeState = $state({
+  session_id: analysis_id,
+  msg: "",
+  columns: "",
+  schema: "",
+  count: -1,
+});
 
 $effect(() => {
   if (nextNodeId !== "") {
@@ -40,6 +49,21 @@ function removeNode() {
   let itemIdx = nodesInAnalysis.findIndex((n: any) => n.uuid === node.uuid);
   nodesInAnalysis.splice(itemIdx, 1);
 }
+
+async function preview() {}
+
+async function summarize() {
+  let countResponse: SparkActionlResponse = await fetchSparkApi("summarize", {
+    session_id: analysis_id,
+    node_id: node.uuid,
+  });
+
+  if (countResponse) {
+    summarizeState = { ...countResponse };
+  }
+}
+
+$inspect(dataFrameColumns);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -57,8 +81,16 @@ function removeNode() {
       <p>type: {node.nodeType}</p>
     </div>
     {#if node.title === "Load"}<LoadNode
+        bind:dataFrameColumns={dataFrameColumns}
         node={node}
         analysis_id={analysis_id} />{/if}
+    <div class="mt-2">
+      <Button size="xs" color="light" on:click={preview}>Preview</Button>
+      <Button size="xs" color="light" on:click={summarize}>Summarize</Button>
+      {#if summarizeState.count > -1}
+        <p>{summarizeState.count}</p>
+      {/if}
+    </div>
   </Card>
 </div>
 <div class="flex justify-center">
