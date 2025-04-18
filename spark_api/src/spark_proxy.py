@@ -25,7 +25,11 @@ class SparkApiServicer(SparkApiServicer):
 
         session.plan = SessionPlanner(req.session_id, node)
         return sparkapi_pb2.SparkLoadFileResponse(
-            transformResponse=sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, msg=f'LOADED: {req.path}.'),
+            transformResponse=sparkapi_pb2.SparkTransformResponse(
+                session_id=req.session_id,
+                msg=f'LOADED: {req.path}.',
+                columns=node.columns,
+            ),
             size=node.input_size,
         )
 
@@ -40,8 +44,7 @@ class SparkApiServicer(SparkApiServicer):
 
         session.plan = SessionPlanner(req.session_id, node)
         return sparkapi_pb2.SparkTransformResponse(
-            session_id=req.session_id,
-            msg=f'Dataframe from input session {req.input_session_id} reused input.',
+            session_id=req.session_id, msg=f'Dataframe from input session {req.input_session_id} reused input.', columns=node.columns
         )
 
     def submit_FilterNode(self, req: sparkapi_pb2.FilterNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -61,6 +64,7 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
+            columns=node.columns,
         )
 
     def submit_NewColumnNode(self, req: sparkapi_pb2.NewColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -79,6 +83,7 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
+            columns=node.columns,
         )
 
     def submit_JoinNode(self, req: sparkapi_pb2.JoinNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -99,6 +104,7 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
+            columns=node.columns,
         )
 
     def submit_TableNode(self, req: sparkapi_pb2.AddTableNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -115,6 +121,7 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
+            columns=node.columns,
         )
 
     def submit_HistogramNode(self, req: sparkapi_pb2.AddHistogramNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
@@ -135,10 +142,11 @@ class SparkApiServicer(SparkApiServicer):
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
             msg=f'Node: {req.node_id} added',
+            columns=node.columns,
         )
 
     # remove node
-    def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+    def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
         session.remove_node(node)
@@ -149,7 +157,7 @@ class SparkApiServicer(SparkApiServicer):
         )
 
     # rebuild node
-    def rebuildSession(self, req: sparkapi_pb2.RebuildRequest, unused_context) -> sparkapi_pb2.PysparkTransformResponse:
+    def rebuildSession(self, req: sparkapi_pb2.RebuildRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
         session.rebuild()
 

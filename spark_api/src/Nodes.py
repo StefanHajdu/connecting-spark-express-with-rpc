@@ -55,6 +55,13 @@ class SparkNode:
         self._operation = val
 
     @property
+    def columns(self):
+        return [
+            sparkapi_pb2.Column(name=field.get('name', ''), dtype=field.get('type', ''))
+            for field in json.loads(self.df.schema.json()).get('fields', [])
+        ]
+
+    @property
     def query(self):
         return self._query
 
@@ -74,8 +81,6 @@ class SparkNode:
             yield item.asDict()
 
     def run_transform(self, **kwargs) -> DataFrame:
-        print(self.query)
-
         spark = kwargs.pop('spark')
         df_result = spark.sql(
             self.query,

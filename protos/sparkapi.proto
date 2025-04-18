@@ -55,14 +55,15 @@ message SparkActionlResponse {
     int32 count = 5;
 }
 
-message PysparkTransformResponse {
-    string session_id = 1;
-    string msg = 2;
+message Column {
+    string name = 1;
+    string dtype = 2;
 }
 
 message SparkTransformResponse {
     string session_id = 1;
     string msg = 2;
+    repeated Column columns = 3;
 }
 
 message SparkLoadFileResponse {
