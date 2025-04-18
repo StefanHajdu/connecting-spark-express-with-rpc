@@ -13,7 +13,7 @@ import {
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
-let { nodesInAnalysis = $bindable(), node } = $props();
+let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
 
@@ -56,7 +56,9 @@ function removeNode() {
       <p>id: {node.uuid.slice(-5)}</p>
       <p>type: {node.nodeType}</p>
     </div>
-    {#if node.title === "Load"}<LoadNode node={node} />{/if}
+    {#if node.title === "Load"}<LoadNode
+        node={node}
+        analysis_id={analysis_id} />{/if}
   </Card>
 </div>
 <div class="flex justify-center">

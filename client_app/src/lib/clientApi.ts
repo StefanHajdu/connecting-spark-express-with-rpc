@@ -1,16 +1,15 @@
 const BASE_URL = "http://localhost:4444";
 
-async function post(url: URL, body: Object): Promise<any> {
+async function post(url: URL, body: Object): Promise<Response> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  console.log(response);
   if (!response.ok) {
     throw new Error(`Response status: ${response.status}`);
   }
-  return await response.json();
+  return response;
 }
 
 type CreateSessionResponse = {
@@ -23,9 +22,40 @@ export async function fetchCreateSession(
   sessionName: string,
 ): Promise<CreateSessionResponse> {
   let url = new URL("createSession", BASE_URL);
-  const responseJSON = await post(url, { id: sessionId, name: sessionName });
-  return {
-    session_id: responseJSON.session_id,
-    msg: responseJSON.msg,
-  };
+  const response = await post(url, { id: sessionId, name: sessionName });
+  return response.json();
+}
+
+type Column = {
+  name: string;
+  dtype: string;
+};
+
+type SparkTransformResponse = {
+  session_id: string;
+  msg: string;
+  columns: Column[];
+};
+
+type SparkLoadFileResponse = {
+  transformResponse: SparkTransformResponse;
+  size: number;
+};
+
+export async function fetchLoadTransform(
+  transformRoute: string,
+  body: any,
+): Promise<SparkLoadFileResponse> {
+  let url = new URL(transformRoute, BASE_URL);
+  const response = await post(url, body);
+  return response.json();
+}
+
+export async function fetchTransform(
+  transformRoute: string,
+  body: any,
+): Promise<SparkTransformResponse> {
+  let url = new URL(transformRoute, BASE_URL);
+  const response = await post(url, body);
+  return response.json();
 }

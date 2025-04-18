@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export function getUniqueAnalysesId(): string {
-	return 'analyses-' + uuidv4();
+  return "analysis-" + uuidv4();
 }

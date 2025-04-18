@@ -1,10 +1,30 @@
 <script lang="ts">
 import { Input, Button } from "flowbite-svelte";
+import { fetchLoadTransform } from "$lib/clientApi";
 
-let { node } = $props();
+let { node, analysis_id } = $props();
 let filePath: string = $state("");
 
-$inspect(filePath);
+let msg = $state("");
+let dataFrameColumns = $state([{ name: "", dtype: "" }]);
+let fileSize = $state(0);
+
+// /home/stephenx/Documents/Programming/01_Blogs/contour-app/data/domains_small.parquet
+async function submitLoad() {
+  let loadResponse = await fetchLoadTransform("submitNode/LoadDatasetNode", {
+    session_id: analysis_id,
+    path: filePath,
+  });
+
+  if (loadResponse) {
+    console.log(loadResponse);
+    msg = loadResponse.transformResponse.msg;
+    dataFrameColumns = loadResponse.transformResponse.columns;
+    fileSize = loadResponse.size;
+  }
+}
+
+$inspect(msg, dataFrameColumns, fileSize);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -22,5 +42,5 @@ $inspect(filePath);
 </div>
 
 <div class="mt-4 flex space-x-3 lg:mt-6 rtl:space-x-reverse">
-  <Button>Submit</Button>
+  <Button on:click={submitLoad}>Submit</Button>
 </div>
