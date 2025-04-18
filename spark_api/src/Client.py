@@ -25,8 +25,9 @@ class UpdateStatus:
 
 
 class ClientSession:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
+        self.name = name
         self.child_sessions = set()
         self.update_status = UpdateStatus()
 

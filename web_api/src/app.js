@@ -1,10 +1,12 @@
 import express from "express";
+import cors from "cors";
 import { SparkClient } from "./sparkClient.js";
 import { errorHandler } from "./errors/errorHandler.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 let sp = new SparkClient();
 

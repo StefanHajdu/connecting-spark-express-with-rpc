@@ -44,7 +44,7 @@ declare module '$env/static/private' {
 	export const NVM_BIN: string;
 	export const npm_package_json: string;
 	export const NVM_INC: string;
-	export const GIO_LAUNCHED_DESKTOP_FILE: string;
+	export const PANEL_GDK_CORE_DEVICE_EVENTS: string;
 	export const XDG_SEAT_PATH: string;
 	export const VSCODE_GIT_ASKPASS_MAIN: string;
 	export const PS1: string;
@@ -56,7 +56,6 @@ declare module '$env/static/private' {
 	export const BUNDLED_DEBUGPY_PATH: string;
 	export const DBUS_SESSION_BUS_ADDRESS: string;
 	export const COLORTERM: string;
-	export const GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 	export const COLOR: string;
 	export const GNOME_KEYRING_CONTROL: string;
 	export const NVM_DIR: string;
@@ -178,7 +177,7 @@ declare module '$env/dynamic/private' {
 		NVM_BIN: string;
 		npm_package_json: string;
 		NVM_INC: string;
-		GIO_LAUNCHED_DESKTOP_FILE: string;
+		PANEL_GDK_CORE_DEVICE_EVENTS: string;
 		XDG_SEAT_PATH: string;
 		VSCODE_GIT_ASKPASS_MAIN: string;
 		PS1: string;
@@ -190,7 +189,6 @@ declare module '$env/dynamic/private' {
 		BUNDLED_DEBUGPY_PATH: string;
 		DBUS_SESSION_BUS_ADDRESS: string;
 		COLORTERM: string;
-		GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 		COLOR: string;
 		GNOME_KEYRING_CONTROL: string;
 		NVM_DIR: string;

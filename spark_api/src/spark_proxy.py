@@ -10,10 +10,10 @@ from spark_session_init import clientSessionTable, spark
 
 class SparkApiServicer(SparkApiServicer):
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
-        clientSessionTable.add(req.id, ClientSession(req.id))
+        clientSessionTable.add(req.id, ClientSession(req.id, req.name))
 
         return sparkapi_pb2.NewSessionResponse(
-            id=req.id,
+            session_id=req.id,
             msg=f'Session {req.id} created.',
         )
 

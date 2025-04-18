@@ -35,9 +35,8 @@ service SparkApi {
 // --- Responses ---
 
 message NewSessionResponse {
-    string id = 1;
-    string session_server_pid = 2;
-    string msg = 3;
+    string session_id = 1;
+    string msg = 2;
 }
 
 message PysparkGeneralResponse {
@@ -81,6 +80,7 @@ message StatusResponse {
 
 message NewSessionRequest {
     string id = 1;
+    string name = 2;
 }
 
 message LoadDatasetNodeRequest {
