@@ -11,6 +11,7 @@ import {
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
 import { nodeFactoryMethod } from "./NodeInstance";
+import LoadNode from "./LoadNode.svelte";
 
 let { nodesInAnalysis = $bindable(), node } = $props();
 let nextNodeId = $state("");
@@ -55,16 +56,7 @@ function removeNode() {
       <p>id: {node.uuid.slice(-5)}</p>
       <p>type: {node.nodeType}</p>
     </div>
-    <div class="flex flex-col items-center pb-4">
-      <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-        {node.title}
-      </h5>
-      <span class="text-sm text-gray-500 dark:text-gray-400">SQL Node</span>
-      <div class="mt-4 flex space-x-3 lg:mt-6 rtl:space-x-reverse">
-        <Button>Summarize</Button>
-        <Button>Data</Button>
-      </div>
-    </div>
+    {#if node.title === "Load"}<LoadNode node={node} />{/if}
   </Card>
 </div>
 <div class="flex justify-center">

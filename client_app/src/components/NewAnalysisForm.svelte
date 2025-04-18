@@ -52,6 +52,6 @@ async function initNewAnalysis() {
         bind:value={name} />
     </Label>
 
-    <Button on:click={initNewAnalysis} class="w-full1">Create</Button>
+    <Button onclick={initNewAnalysis} class="w-full1">Create</Button>
   </div>
 </Modal>

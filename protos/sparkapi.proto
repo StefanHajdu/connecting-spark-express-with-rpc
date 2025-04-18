@@ -11,7 +11,7 @@ service SparkApi {
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkLoadFileResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node
@@ -65,6 +65,11 @@ message SparkTransformResponse {
     string msg = 2;
 }
 
+message SparkLoadFileResponse {
+    SparkTransformResponse transformResponse = 1;
+    int64 size = 2;
+}
+
 message RowStreamResponse {
     string row_json = 1;
 }
@@ -85,8 +90,7 @@ message NewSessionRequest {
 
 message LoadDatasetNodeRequest {
     string session_id = 1;
-    string df_path = 2;
-    string df_type = 3;
+    string path = 2;
 }
 
 message PreviewDatasetRequest {
