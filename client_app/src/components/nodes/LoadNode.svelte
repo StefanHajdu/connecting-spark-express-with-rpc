@@ -2,7 +2,7 @@
 import { Input, Button } from "flowbite-svelte";
 import { type SparkLoadFileResponse, fetchSparkApi } from "$lib/clientApi";
 
-let { dataFrameColumns = $bindable(), analysis_id, node } = $props();
+let { dataFrameColumns = $bindable(), analysiId, node } = $props();
 let filePath: string = $state("");
 
 let msg = $state("");
@@ -13,7 +13,7 @@ async function submitLoad() {
   let loadResponse: SparkLoadFileResponse = await fetchSparkApi(
     "submitNode/LoadDatasetNode",
     {
-      session_id: analysis_id,
+      session_id: analysiId,
       path: filePath,
     },
   );

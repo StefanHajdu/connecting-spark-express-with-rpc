@@ -73,7 +73,7 @@ app.post("/preview", (req, res) => {
   });
 
   rowStream.on("data", (row) => {
-    res.write(JSON.stringify(row.row_json));
+    res.write(row.row_json + "<stream_chunk_done>");
   });
 
   rowStream.on("end", () => {

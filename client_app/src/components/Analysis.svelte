@@ -14,10 +14,7 @@ $inspect(nodesInAnalysis);
       <b>{name}</b>
     </p>
     {#each nodesInAnalysis as node}
-      <Node
-        bind:nodesInAnalysis={nodesInAnalysis}
-        node={node}
-        analysis_id={id} />
+      <Node bind:nodesInAnalysis={nodesInAnalysis} node={node} analysiId={id} />
     {/each}
   </div>
 </TabItem>

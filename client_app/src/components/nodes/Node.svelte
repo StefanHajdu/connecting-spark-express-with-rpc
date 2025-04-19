@@ -11,18 +11,18 @@ import {
   DotsHorizontalOutline,
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
-import { type SparkActionlResponse, fetchSparkApi } from "$lib/clientApi";
+import { fetchSparkApi } from "$lib/clientApi";
 import { previewState } from "$lib/stores";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
-let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
+let { nodesInAnalysis = $bindable(), node, analysiId } = $props();
 let dataFrameColumns = $state([{ name: "", dtype: "" }]);
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
 let summarizePromise = $state(
   Promise.resolve({
-    session_id: analysis_id,
+    session_id: analysiId,
     msg: "",
     columns: "",
     schema: "",
@@ -56,13 +56,19 @@ function removeNode() {
 
 async function preview() {
   previewState.update((previewState) => {
-    return { ...previewState, previewHidden: false };
+    return {
+      ...previewState,
+      analysiId: analysiId,
+      nodeId: node.uuid,
+      columns: dataFrameColumns,
+      previewHidden: false,
+    };
   });
 }
 
 function summarize() {
   summarizePromise = fetchSparkApi("summarize", {
-    session_id: analysis_id,
+    session_id: analysiId,
     node_id: node.uuid,
   });
 }
@@ -87,7 +93,7 @@ $inspect(dataFrameColumns);
     {#if node.title === "Load"}<LoadNode
         bind:dataFrameColumns={dataFrameColumns}
         node={node}
-        analysis_id={analysis_id} />{/if}
+        analysiId={analysiId} />{/if}
     <div class="mt-2">
       <Button size="xs" color="light" on:click={preview}>Preview</Button>
       <Button size="xs" color="light" on:click={summarize}>Summarize</Button>
