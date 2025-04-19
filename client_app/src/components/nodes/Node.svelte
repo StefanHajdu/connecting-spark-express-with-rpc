@@ -5,6 +5,7 @@ import {
   DropdownItem,
   DropdownDivider,
   Button,
+  Spinner,
 } from "flowbite-svelte";
 import {
   DotsHorizontalOutline,
@@ -19,13 +20,15 @@ let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
 let dataFrameColumns = $state([{ name: "", dtype: "" }]);
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
-let summarizeState = $state({
-  session_id: analysis_id,
-  msg: "",
-  columns: "",
-  schema: "",
-  count: -1,
-});
+let summarizePromise = $state(
+  Promise.resolve({
+    session_id: analysis_id,
+    msg: "",
+    columns: "",
+    schema: "",
+    count: -1,
+  }),
+);
 
 $effect(() => {
   if (nextNodeId !== "") {
@@ -57,15 +60,11 @@ async function preview() {
   });
 }
 
-async function summarize() {
-  let countResponse: SparkActionlResponse = await fetchSparkApi("summarize", {
+function summarize() {
+  summarizePromise = fetchSparkApi("summarize", {
     session_id: analysis_id,
     node_id: node.uuid,
   });
-
-  if (countResponse) {
-    summarizeState = { ...countResponse };
-  }
 }
 
 $inspect(dataFrameColumns);
@@ -92,10 +91,14 @@ $inspect(dataFrameColumns);
     <div class="mt-2">
       <Button size="xs" color="light" on:click={preview}>Preview</Button>
       <Button size="xs" color="light" on:click={summarize}>Summarize</Button>
-      {#if summarizeState.count > -1}
-        <p>{summarizeState.count}</p>
-      {/if}
     </div>
+    {#await summarizePromise}
+      <Spinner size={6} />
+    {:then summarizeResponse}
+      {#if summarizeResponse.count > 0}
+        <p>{summarizeResponse.count}</p>
+      {/if}
+    {/await}
   </Card>
 </div>
 <div class="flex justify-center">
