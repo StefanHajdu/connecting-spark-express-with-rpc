@@ -10,8 +10,9 @@ import {
   DotsHorizontalOutline,
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
-import { nodeFactoryMethod } from "./NodeInstance";
 import { type SparkActionlResponse, fetchSparkApi } from "$lib/clientApi";
+import { previewState } from "$lib/stores";
+import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
 let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
@@ -50,7 +51,11 @@ function removeNode() {
   nodesInAnalysis.splice(itemIdx, 1);
 }
 
-async function preview() {}
+async function preview() {
+  previewState.update((previewState) => {
+    return { ...previewState, previewHidden: false };
+  });
+}
 
 async function summarize() {
   let countResponse: SparkActionlResponse = await fetchSparkApi("summarize", {
