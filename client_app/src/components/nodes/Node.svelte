@@ -12,11 +12,16 @@ import {
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { previewState } from "$lib/stores";
+import { actionState, requestAction } from "$lib/stores";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
-let { nodesInAnalysis = $bindable(), node, analysiId } = $props();
+let {
+  nodesInAnalysis = $bindable(),
+  node,
+  analysiId,
+  analysisRandomSeed,
+} = $props();
 let dataFrameColumns = $state([{ name: "", dtype: "" }]);
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
@@ -54,19 +59,17 @@ function removeNode() {
   nodesInAnalysis.splice(itemIdx, 1);
 }
 
-async function preview() {
-  previewState.update((previewState) => {
-    return {
-      ...previewState,
-      analysiId: analysiId,
-      nodeId: node.uuid,
-      columns: dataFrameColumns,
-      previewHidden: false,
-    };
-  });
+function previewEvent() {
+  requestAction(
+    actionState,
+    analysiId,
+    analysisRandomSeed,
+    dataFrameColumns,
+    node.uuid,
+  );
 }
 
-function summarize() {
+function summarizeEvent() {
   summarizePromise = fetchSparkApi("summarize", {
     session_id: analysiId,
     node_id: node.uuid,
@@ -95,8 +98,9 @@ $inspect(dataFrameColumns);
         node={node}
         analysiId={analysiId} />{/if}
     <div class="mt-2">
-      <Button size="xs" color="light" on:click={preview}>Preview</Button>
-      <Button size="xs" color="light" on:click={summarize}>Summarize</Button>
+      <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>
+      <Button size="xs" color="light" on:click={summarizeEvent}
+        >Summarize</Button>
     </div>
     {#await summarizePromise}
       <Spinner size={6} />

@@ -5,7 +5,10 @@ import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load")]);
-$inspect(nodesInAnalysis);
+let randomSeed = $derived.by(() => {
+  return Math.random();
+});
+$inspect(nodesInAnalysis, randomSeed);
 </script>
 
 <TabItem open title={name}>
@@ -14,7 +17,11 @@ $inspect(nodesInAnalysis);
       <b>{name}</b>
     </p>
     {#each nodesInAnalysis as node}
-      <Node bind:nodesInAnalysis={nodesInAnalysis} node={node} analysiId={id} />
+      <Node
+        bind:nodesInAnalysis={nodesInAnalysis}
+        node={node}
+        analysiId={id}
+        analysisRandomSeed={randomSeed} />
     {/each}
   </div>
 </TabItem>

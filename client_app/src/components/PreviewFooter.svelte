@@ -2,7 +2,7 @@
 import { AngleUpOutline } from "flowbite-svelte-icons";
 import { Drawer, Button, CloseButton } from "flowbite-svelte";
 import { sineIn } from "svelte/easing";
-import { previewState } from "$lib/stores";
+import { actionState } from "$lib/stores";
 import DataFrameTable from "./DataFrameTable/DataFrameTable.svelte";
 
 let title: string = "(footer)";
@@ -15,14 +15,14 @@ let transitionParamsBottom = {
 };
 
 function closePreview() {
-  previewState.update((previewState) => {
-    return { ...previewState, previewHidden: true };
+  actionState.update((actionState) => {
+    return { ...actionState, hidden: true };
   });
 }
 
 function openPreview() {
-  previewState.update((previewState) => {
-    return { ...previewState, previewHidden: false };
+  actionState.update((actionState) => {
+    return { ...actionState, hidden: false };
   });
 }
 </script>
@@ -40,7 +40,7 @@ function openPreview() {
       transitionParams={transitionParamsBottom}
       activateClickOutside={activateClickOutside}
       backdrop={backdrop}
-      bind:hidden={$previewState.previewHidden}
+      bind:hidden={$actionState.hidden}
       id="sidebar8"
       class="outline-1 outline-black">
       <div class="mb-2 flex h-6 items-center">

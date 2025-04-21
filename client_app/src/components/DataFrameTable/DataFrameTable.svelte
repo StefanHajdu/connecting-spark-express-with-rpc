@@ -8,20 +8,19 @@ import {
   TableHeadCell,
   Spinner,
 } from "flowbite-svelte";
-import { get } from "svelte/store";
-import { previewState } from "$lib/stores";
+import { actionState, finishAction } from "$lib/stores";
 import { fetchSparkStreamingApi } from "$lib/clientApi";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-let localPreviewState = $state(get(previewState));
 let rowBuffer = $derived.by(async () => {
   let localBuffer: any[] = [];
-  if (localPreviewState.previewInProgress === false) {
+  if ($actionState.inProgress) {
+    console.log($actionState.inProgress, "preview");
     const response = await fetchSparkStreamingApi("preview", {
-      session_id: $previewState.analysiId,
-      node_id: $previewState.nodeId,
-      limit: 100,
+      session_id: $actionState.analysiId,
+      node_id: $actionState.currNode,
+      limit: 10,
     });
 
     if (response.ok && response.body) {
@@ -41,28 +40,44 @@ let rowBuffer = $derived.by(async () => {
   return localBuffer;
 });
 
-$inspect(localPreviewState, rowBuffer);
+function readRows(rowBuffer: string[]): any[] {
+  let malformedBuffer: string = "";
+  return rowBuffer
+    .filter((r) => r !== "")
+    .map((r) => {
+      try {
+        return JSON.parse(r);
+      } catch (error) {
+        malformedBuffer += r;
+        try {
+          let bufferedChunk = JSON.parse(malformedBuffer);
+          malformedBuffer = "";
+          return bufferedChunk;
+        } catch (error) {}
+      }
+    })
+    .filter(Boolean);
+}
+$inspect($actionState);
 </script>
 
 {#await rowBuffer}
   <Spinner size={6} />
-{:then rowBufferVal}
+{:then rowBufferFulfiled}
   <div class="h-80 overflow-y-auto">
     <Table>
       <TableHead>
         <TableHeadCell
           class="text- normal border border-black px-3 py-2 text-xs"
         ></TableHeadCell>
-        {#each localPreviewState.columns as column}
+        {#each $actionState.columns as column}
           <DataFrameTableHeadCell
             columnName={column.name}
             dType={column.dtype} />
         {/each}
       </TableHead>
       <TableBody>
-        {#each rowBufferVal
-          .filter((r) => r !== "")
-          .map((r) => JSON.parse(r)) as row, id}
+        {#each readRows(rowBufferFulfiled) as row, id}
           <TableBodyRow>
             <TableBodyCell
               class="text- normal border border-black px-3 py-2 text-xs"

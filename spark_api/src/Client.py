@@ -1,3 +1,4 @@
+import datetime
 import json
 from collections.abc import Iterable
 from functools import wraps
@@ -55,11 +56,13 @@ class ClientSession:
     def log_plan_execution(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
+            start = datetime.datetime.now()
+            print(f'\n>[start: {start}] PLAN TO APPLY for session: {self.id} <')
             res = func(self, *args, **kwargs)
-            print(f'>>> PLAN TO APPLY for session: {self.id} >>>')
             for idx, node in enumerate(self.plan.nodes):
                 print(f'    {idx}. {node}')
-            print(f'>>> PLAN TO APPLY for session: {self.id} >>>\n')
+            end = datetime.datetime.now()
+            print(f'>[end: {end} | diff: {end - start}] PLAN EXECUTED for session: {self.id} <')
             return res
 
         return wrapper
