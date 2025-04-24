@@ -12,7 +12,7 @@ import {
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { actionState, requestAction } from "$lib/stores";
+import { actionState, requestAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
@@ -60,13 +60,8 @@ function removeNode() {
 }
 
 function previewEvent() {
-  requestAction(
-    actionState,
-    analysiId,
-    analysisRandomSeed,
-    dataFrameColumns,
-    node.uuid,
-  );
+  console.log(node.uuid);
+  requestAction(analysiId, analysisRandomSeed, dataFrameColumns, node.uuid);
 }
 
 function summarizeEvent() {
@@ -76,7 +71,7 @@ function summarizeEvent() {
   });
 }
 
-$inspect(dataFrameColumns);
+$inspect("Node", actionState);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>

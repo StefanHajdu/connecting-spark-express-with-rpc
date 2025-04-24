@@ -2,7 +2,7 @@
 import { AngleUpOutline } from "flowbite-svelte-icons";
 import { Drawer, Button, CloseButton } from "flowbite-svelte";
 import { sineIn } from "svelte/easing";
-import { actionState } from "$lib/stores";
+import { actionState } from "$lib/actionState.svelte";
 import DataFrameTable from "./DataFrameTable/DataFrameTable.svelte";
 
 let title: string = "(footer)";
@@ -13,24 +13,15 @@ let transitionParamsBottom = {
   duration: 200,
   easing: sineIn,
 };
-
-function closePreview() {
-  actionState.update((actionState) => {
-    return { ...actionState, hidden: true };
-  });
-}
-
-function openPreview() {
-  actionState.update((actionState) => {
-    return { ...actionState, hidden: false };
-  });
-}
 </script>
 
 <div class="sticky bottom-0">
   <footer class="p-1/2 flex items-center justify-between bg-gray-300">
     <p>{title}</p>
-    <Button on:click={openPreview}>
+    <Button
+      on:click={() => {
+        actionState.hidden = false;
+      }}>
       <AngleUpOutline />
     </Button>
     <Drawer
@@ -40,12 +31,16 @@ function openPreview() {
       transitionParams={transitionParamsBottom}
       activateClickOutside={activateClickOutside}
       backdrop={backdrop}
-      bind:hidden={$actionState.hidden}
+      bind:hidden={actionState.hidden}
       id="sidebar8"
       class="outline-1 outline-black">
       <div class="mb-2 flex h-6 items-center">
         <p>Preview</p>
-        <CloseButton on:click={closePreview} class="dark:text-white" />
+        <CloseButton
+          on:click={() => {
+            actionState.hidden = true;
+          }}
+          class="dark:text-white" />
       </div>
       <DataFrameTable />
     </Drawer>

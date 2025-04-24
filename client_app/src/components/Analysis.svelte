@@ -6,7 +6,7 @@ import Node from "./nodes/Node.svelte";
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load")]);
 let randomSeed = $derived.by(() => {
-  return Math.random();
+  return Math.random() * nodesInAnalysis.length;
 });
 $inspect(nodesInAnalysis, randomSeed);
 </script>
