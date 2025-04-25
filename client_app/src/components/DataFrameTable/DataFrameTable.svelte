@@ -8,44 +8,39 @@ import {
   TableHeadCell,
   Spinner,
 } from "flowbite-svelte";
+import { lastPreviewedRows } from "$lib/stores";
 import { actionState, finishAction } from "$lib/actionState.svelte";
 import { fetchSparkStreamingApi } from "$lib/clientApi";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-const sleepNow = (delay: number) =>
-  new Promise((resolve) => setTimeout(resolve, delay * 1000));
-
 let rowBuffer = $derived.by(async () => {
-  let localBuffer: any[] = [];
   if (actionState.inProgress) {
-    console.log(actionState.inProgress, "preview");
-    // const response = await fetchSparkStreamingApi("preview", {
-    //   session_id: actionState.analysiId,
-    //   node_id: actionState.currNode,
-    //   limit: 10,
-    // });
+    let localBuffer: any[] = [];
+    const response = await fetchSparkStreamingApi("preview", {
+      session_id: actionState.analysiId,
+      node_id: actionState.currNode,
+      limit: 1000,
+    });
 
-    // if (response.ok && response.body) {
-    //   const reader = response.body.getReader();
-    //   try {
-    //     while (true) {
-    //       const { value, done } = await reader?.read();
-    //       if (done) break;
-    //       const text = new TextDecoder().decode(value);
-    //       localBuffer.push(...text.split("<stream_chunk_done>"));
-    //     }
-    //   } finally {
-    //     reader.releaseLock();
-    //   }
-    // }
-
-    await sleepNow(5);
+    if (response.ok && response.body) {
+      const reader = response.body.getReader();
+      try {
+        while (true) {
+          const { value, done } = await reader?.read();
+          if (done) break;
+          const text = new TextDecoder().decode(value);
+          localBuffer.push(...text.split("<stream_chunk_done>"));
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    }
     finishAction();
-  } else {
-    console.log("REJECTED");
+    lastPreviewedRows.update(() => {
+      return localBuffer;
+    });
   }
-  return localBuffer;
 });
 
 function readRows(rowBuffer: string[]): any[] {
@@ -66,14 +61,14 @@ function readRows(rowBuffer: string[]): any[] {
     })
     .filter(Boolean);
 }
+
 $inspect("Table", actionState);
 </script>
 
 {#await rowBuffer}
   <Spinner size={6} />
-{:then rowBufferFulfiled}
-  <p>Hello from Global State</p>
-  <!-- <div class="h-80 overflow-y-auto">
+{:then rowBufferFullfiled}
+  <div class="h-80 overflow-y-auto">
     <Table>
       <TableHead>
         <TableHeadCell
@@ -86,7 +81,7 @@ $inspect("Table", actionState);
         {/each}
       </TableHead>
       <TableBody>
-        {#each readRows(rowBufferFulfiled) as row, id}
+        {#each readRows($lastPreviewedRows) as row, id}
           <TableBodyRow>
             <TableBodyCell
               class="text- normal border border-black px-3 py-2 text-xs"
@@ -98,6 +93,5 @@ $inspect("Table", actionState);
         {/each}
       </TableBody>
     </Table>
-  </div> -->
-  <!-- {finishAction()} -->
+  </div>
 {/await}
