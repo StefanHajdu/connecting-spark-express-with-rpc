@@ -63,22 +63,8 @@ app.post("/summarize", (req, res, next) => {
   sp._summarizeDataset(req.body, res, next);
 });
 
-app.post("/preview", (req, res) => {
-  let rowStream = sp._previewDataset(req.body);
-
-  res.writeHead(200, {
-    "Content-Type": "text/plain; charset=utf-8",
-    "Transfer-Encoding": "chunked",
-    "X-Content-Type-Options": "nosniff",
-  });
-
-  rowStream.on("data", (row) => {
-    res.write(row.row_json + "<stream_chunk_done>");
-  });
-
-  rowStream.on("end", () => {
-    res.end();
-  });
+app.post("/preview", (req, res, next) => {
+  sp._previewDataset(req.body, res, next);
 });
 
 app.use(errorHandler);

@@ -184,10 +184,8 @@ class SparkApiServicer(SparkApiServicer):
             schema=summary['schema'],
         )
 
-    def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> Iterable[sparkapi_pb2.RowStreamResponse]:
+    def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> sparkapi_pb2.RowsResponse:
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
-        row_stream = session.preview(node, req.limit)
-
-        for row in row_stream:
-            yield sparkapi_pb2.RowStreamResponse(row_json=row)
+        rows = session.preview(node, req.limit)
+        return sparkapi_pb2.RowsResponse(row_json=rows)

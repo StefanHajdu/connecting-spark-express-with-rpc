@@ -73,6 +73,8 @@ function summarizeEvent() {
     console.log("summarize, rejected");
   }
 }
+
+$inspect("node", actionState);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>

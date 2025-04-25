@@ -5,7 +5,7 @@ package sparkapi;
 service SparkApi {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     
-    rpc previewDataset(PreviewDatasetRequest) returns (stream RowStreamResponse) {}
+    rpc previewDataset(PreviewDatasetRequest) returns (RowsResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
@@ -63,8 +63,8 @@ message SparkLoadFileResponse {
     int64 size = 2;
 }
 
-message RowStreamResponse {
-    string row_json = 1;
+message RowsResponse {
+    repeated string row_json = 1;
 }
 
 message StatusResponse {
