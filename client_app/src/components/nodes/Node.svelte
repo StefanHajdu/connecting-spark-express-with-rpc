@@ -12,7 +12,7 @@ import {
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { requestAction } from "$lib/actionState.svelte";
+import { actionState, requestAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
@@ -64,10 +64,14 @@ function previewEvent() {
 }
 
 function summarizeEvent() {
-  summarizePromise = fetchSparkApi("summarize", {
-    session_id: analysiId,
-    node_id: node.uuid,
-  });
+  if (!actionState.inProgress) {
+    summarizePromise = fetchSparkApi("summarize", {
+      session_id: analysiId,
+      node_id: node.uuid,
+    });
+  } else {
+    console.log("summarize, rejected");
+  }
 }
 </script>
 

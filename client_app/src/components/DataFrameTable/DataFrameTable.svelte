@@ -14,7 +14,7 @@ import { fetchSparkStreamingApi } from "$lib/clientApi";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-let rowBuffer = $derived.by(async () => {
+async function bufferPreview() {
   if (actionState.inProgress) {
     let localBuffer: any[] = [];
     const response = await fetchSparkStreamingApi("preview", {
@@ -41,7 +41,7 @@ let rowBuffer = $derived.by(async () => {
       return localBuffer;
     });
   }
-});
+}
 
 function readRows(rowBuffer: string[]): any[] {
   let malformedBuffer: string = "";
@@ -65,7 +65,7 @@ function readRows(rowBuffer: string[]): any[] {
 $inspect("Table", actionState);
 </script>
 
-{#await rowBuffer}
+{#await bufferPreview()}
   <Spinner size={6} />
 {:then rowBufferFullfiled}
   <div class="h-80 overflow-y-auto">
