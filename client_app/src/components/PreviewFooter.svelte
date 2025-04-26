@@ -20,7 +20,7 @@ let transitionParamsBottom = {
     <p>{title}</p>
     <Button
       on:click={() => {
-        actionState.hidden = false;
+        actionState.previewTableHidden = false;
       }}>
       <AngleUpOutline />
     </Button>
@@ -31,14 +31,14 @@ let transitionParamsBottom = {
       transitionParams={transitionParamsBottom}
       activateClickOutside={activateClickOutside}
       backdrop={backdrop}
-      bind:hidden={actionState.hidden}
+      bind:hidden={actionState.previewTableHidden}
       id="sidebar8"
       class="outline-1 outline-black">
       <div class="mb-2 flex h-6 items-center">
         <p>Preview</p>
         <CloseButton
           on:click={() => {
-            actionState.hidden = true;
+            actionState.previewTableHidden = true;
           }}
           class="dark:text-white" />
       </div>

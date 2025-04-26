@@ -15,10 +15,10 @@ import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
 let previewPromise = $derived.by(() => {
-  if (actionState.inProgress) {
+  if (actionState.confirmed) {
     return fetchSparkApi("preview", {
       session_id: actionState.analysiId,
-      node_id: actionState.currNode,
+      node_id: actionState.nodeId,
       limit: 1000,
     }).then((previewResponse) => {
       let parsed = previewResponse.row_json.map((row: string) => {
@@ -30,6 +30,8 @@ let previewPromise = $derived.by(() => {
         return parsed;
       });
     });
+  } else {
+    console.log("preview, rejected");
   }
   return "preview";
 });

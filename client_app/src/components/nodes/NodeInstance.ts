@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { type Column } from "$lib/clientApi";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -21,14 +20,10 @@ export function nodeFactoryMethod(title: string): Node {
 
 export abstract class Node {
   uuid: string;
-  dataFrameColumns: Column[];
 
   constructor() {
     this.uuid = "node-" + uuidv4();
-    this.dataFrameColumns = [{ name: "", dtype: "" }];
   }
-
-  abstract getState(): string;
 }
 
 class LoadNode extends Node {
@@ -40,10 +35,6 @@ class LoadNode extends Node {
     this.uuid = MASTER_NODE_ID;
     this.title = title;
   }
-
-  getState(): string {
-    return this.title;
-  }
 }
 
 class FilterNode extends Node {
@@ -53,10 +44,6 @@ class FilterNode extends Node {
   constructor(title: string) {
     super();
     this.title = title;
-  }
-
-  getState(): string {
-    return this.title;
   }
 }
 
@@ -68,10 +55,6 @@ class JoinNode extends Node {
     super();
     this.title = title;
   }
-
-  getState(): string {
-    return this.title;
-  }
 }
 
 class TableNode extends Node {
@@ -82,10 +65,6 @@ class TableNode extends Node {
     super();
     this.title = title;
   }
-
-  getState(): string {
-    return this.title;
-  }
 }
 
 class AddColumnNode extends Node {
@@ -95,9 +74,5 @@ class AddColumnNode extends Node {
   constructor(title: string) {
     super();
     this.title = title;
-  }
-
-  getState(): string {
-    return this.title;
   }
 }

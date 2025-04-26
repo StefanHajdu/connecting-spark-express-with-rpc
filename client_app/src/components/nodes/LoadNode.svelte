@@ -2,7 +2,12 @@
 import { Input, Button } from "flowbite-svelte";
 import { type SparkLoadFileResponse, fetchSparkApi } from "$lib/clientApi";
 
-let { dataFrameColumns = $bindable(), analysiId, node } = $props();
+let {
+  analysiId,
+  node,
+  dataFrameColumns = $bindable(),
+  formFields = $bindable(),
+} = $props();
 let filePath: string = $state("");
 
 let msg = $state("");
@@ -20,8 +25,9 @@ async function submitLoad() {
 
   if (loadResponse) {
     msg = loadResponse.transformResponse.msg;
-    dataFrameColumns = loadResponse.transformResponse.columns;
     fileSize = loadResponse.size;
+    dataFrameColumns = loadResponse.transformResponse.columns;
+    formFields = new Map([["path", filePath]]);
   }
 }
 </script>

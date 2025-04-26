@@ -11,18 +11,19 @@ import {
   DotsHorizontalOutline,
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
-import { fetchSparkApi } from "$lib/clientApi";
-import { actionState, requestAction } from "$lib/actionState.svelte";
+import { type Column, fetchSparkApi } from "$lib/clientApi";
+import {
+  actionState,
+  requestAction,
+  finishAction,
+} from "$lib/actionState.svelte";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 
-let {
-  nodesInAnalysis = $bindable(),
-  node,
-  analysiId,
-  analysisRandomSeed,
-} = $props();
-let dataFrameColumns = $state([{ name: "", dtype: "" }]);
+let { nodesInAnalysis = $bindable(), node, analysiId } = $props();
+
+let dataFrameColumns: Column[] = $state([]);
+let formFields: Map<string, any> = $state(new Map());
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
 let summarizePromise = $state(
@@ -60,21 +61,23 @@ function removeNode() {
 }
 
 function previewEvent() {
-  requestAction(analysiId, analysisRandomSeed, dataFrameColumns, node.uuid);
+  requestAction(analysiId, dataFrameColumns, node.uuid, "preview");
 }
 
 function summarizeEvent() {
-  if (!actionState.inProgress) {
+  requestAction(analysiId, dataFrameColumns, node.uuid, "sum");
+  if (actionState.confirmed) {
     summarizePromise = fetchSparkApi("summarize", {
       session_id: analysiId,
       node_id: node.uuid,
     });
+    finishAction();
   } else {
     console.log("summarize, rejected");
   }
 }
 
-$inspect("node", actionState);
+$inspect(`node: ${node.uuid}:`, dataFrameColumns, formFields);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -92,8 +95,9 @@ $inspect("node", actionState);
       <p>type: {node.nodeType}</p>
     </div>
     {#if node.title === "Load"}<LoadNode
-        bind:dataFrameColumns={dataFrameColumns}
         node={node}
+        bind:formFields={formFields}
+        bind:dataFrameColumns={dataFrameColumns}
         analysiId={analysiId} />{/if}
     <div class="mt-2">
       <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>

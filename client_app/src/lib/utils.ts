@@ -7,3 +7,7 @@ export function getUniqueAnalysesId(): string {
 export function sleepNow(delay: number) {
   new Promise((resolve) => setTimeout(resolve, delay * 1000));
 }
+
+export function concatMap(map: Map<string, any>): string {
+  return map.values().reduce((acc, item) => acc + String(item));
+}

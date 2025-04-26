@@ -4,50 +4,35 @@ const empty: Column[] = [];
 
 type ActionState = {
   analysiId: string;
+  nodeId: string;
   columns: Column[];
-  hidden: boolean;
-  inProgress: boolean;
-  currAnalysisSeed: number;
-  prevAnalysisSeed: number;
-  currNode: string;
-  prevNode: string;
+  confirmed: boolean;
+  previewTableHidden: boolean;
 };
 
 export const actionState: ActionState = $state({
   analysiId: "",
+  nodeId: "",
   columns: empty,
-  hidden: true,
-  inProgress: false,
-  currAnalysisSeed: 0,
-  prevAnalysisSeed: -1,
-  currNode: "0",
-  prevNode: "-1",
+  confirmed: false,
+  previewTableHidden: true,
 });
 
 export function requestAction(
   analysiId: string,
-  analysisRandomSeed: number,
-  columnHeader: Column[],
+  columns: Column[],
   nodeId: string,
+  action: string,
 ): void {
-  if (
-    !(
-      actionState.inProgress ||
-      (actionState.currAnalysisSeed === actionState.prevAnalysisSeed &&
-        nodeId === actionState.prevNode)
-    )
-  ) {
-    actionState.inProgress = true;
-    actionState.analysiId = analysiId;
-    actionState.columns = columnHeader;
-    actionState.currAnalysisSeed = analysisRandomSeed;
-    actionState.currNode = nodeId;
+  actionState.analysiId = analysiId;
+  actionState.columns = columns;
+  actionState.nodeId = nodeId;
+  actionState.confirmed = true;
+  if (action === "preview") {
+    actionState.previewTableHidden = false;
   }
-  actionState.hidden = false;
 }
 
-export function finishAction() {
-  actionState.inProgress = false;
-  actionState.prevAnalysisSeed = actionState.currAnalysisSeed;
-  actionState.prevNode = actionState.currNode;
+export function finishAction(): void {
+  actionState.confirmed = false;
 }
