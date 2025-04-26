@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+import time
 
 import sparkapi_pb2
 from sparkapi_pb2_grpc import SparkApiServicer
@@ -188,4 +188,5 @@ class SparkApiServicer(SparkApiServicer):
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
         rows = session.preview(node, req.limit)
+        time.sleep(10)
         return sparkapi_pb2.RowsResponse(row_json=rows)

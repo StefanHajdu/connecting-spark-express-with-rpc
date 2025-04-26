@@ -37,13 +37,13 @@ export function requestAction(
         nodeId === actionState.prevNode)
     )
   ) {
-    actionState.hidden = false;
     actionState.inProgress = true;
     actionState.analysiId = analysiId;
     actionState.columns = columnHeader;
     actionState.currAnalysisSeed = analysisRandomSeed;
     actionState.currNode = nodeId;
   }
+  actionState.hidden = false;
 }
 
 export function finishAction() {
