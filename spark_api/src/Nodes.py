@@ -1,4 +1,5 @@
 import json
+import os
 from abc import abstractmethod
 
 import sparkapi_pb2
@@ -6,9 +7,10 @@ from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
 from constants import PLAN_NODE_ROOT_ID
+from custom_exceptions import InvalidPathException
 from NodeExtensions import OtherDataframe
 from spark_session_init import spark
-from utils import spark_read_from_path
+from utils import get_dir_size, spark_read_from_path
 
 
 class SparkNode:
@@ -53,6 +55,13 @@ class SparkNode:
         self._operation = val
 
     @property
+    def columns(self):
+        return [
+            sparkapi_pb2.Column(name=field.get('name', ''), dtype=field.get('type', ''))
+            for field in json.loads(self.df.schema.json()).get('fields', [])
+        ]
+
+    @property
     def query(self):
         return self._query
 
@@ -68,12 +77,10 @@ class SparkNode:
         }
 
     def preview(self, limit):
-        for item in self.df.take(limit):
-            yield item.asDict()
+        rows = self.df.take(limit)
+        return [json.dumps(row.asDict()) for row in rows]
 
     def run_transform(self, **kwargs) -> DataFrame:
-        print(self.query)
-
         spark = kwargs.pop('spark')
         df_result = spark.sql(
             self.query,
@@ -105,14 +112,14 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, path: str, data_type: str):
+    def __init__(self, session_id: str, path: str):
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
         self._operation = 'load_dataset'
         self._query = 'spark.read'
         self._path = path
-        self._data_type = data_type
+        self.path_valid = self.validate_path()
         self.df = self.run_transform()
 
     @property
@@ -123,19 +130,20 @@ class LoadNode(TransformNode):
     def path(self, val: str):
         self._path = val
 
-    @property
-    def data_type(self):
-        return self._data_type
-
-    @data_type.setter
-    def data_type(self, val: str):
-        self._data_type = val
-
     def __str__(self):
         return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
 
+    def validate_path(self):
+        if os.path.exists(self.path):
+            if not os.path.isdir(self.path):
+                self.input_size = os.path.getsize(self.path)
+            else:
+                self.input_size = get_dir_size(self.path)
+        else:
+            raise InvalidPathException()
+
     def run_transform(self, **kwargs):
-        return spark_read_from_path(data_type=self.data_type, path=self.path)
+        return spark_read_from_path(path=self.path)
 
 
 class LoadFromSessionNode(TransformNode):

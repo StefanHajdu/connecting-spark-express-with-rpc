@@ -39,10 +39,10 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NewSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.NewSessionResponse.FromString,
                 _registered_method=True)
-        self.previewDataset = channel.unary_stream(
+        self.previewDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/previewDataset',
                 request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.RowStreamResponse.FromString,
+                response_deserializer=sparkapi__pb2.RowsResponse.FromString,
                 _registered_method=True)
         self.summarizeDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/summarizeDataset',
@@ -62,7 +62,7 @@ class SparkApiStub(object):
         self.submit_LoadDatasetNode = channel.unary_unary(
                 '/sparkapi.SparkApi/submit_LoadDatasetNode',
                 request_serializer=sparkapi__pb2.LoadDatasetNodeRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                response_deserializer=sparkapi__pb2.SparkLoadFileResponse.FromString,
                 _registered_method=True)
         self.submit_LoadFromSessionNode = channel.unary_unary(
                 '/sparkapi.SparkApi/submit_LoadFromSessionNode',
@@ -196,10 +196,10 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.NewSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.NewSessionResponse.SerializeToString,
             ),
-            'previewDataset': grpc.unary_stream_rpc_method_handler(
+            'previewDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.previewDataset,
                     request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.RowStreamResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.RowsResponse.SerializeToString,
             ),
             'summarizeDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.summarizeDataset,
@@ -219,7 +219,7 @@ def add_SparkApiServicer_to_server(servicer, server):
             'submit_LoadDatasetNode': grpc.unary_unary_rpc_method_handler(
                     servicer.submit_LoadDatasetNode,
                     request_deserializer=sparkapi__pb2.LoadDatasetNodeRequest.FromString,
-                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.SparkLoadFileResponse.SerializeToString,
             ),
             'submit_LoadFromSessionNode': grpc.unary_unary_rpc_method_handler(
                     servicer.submit_LoadFromSessionNode,
@@ -305,12 +305,12 @@ class SparkApi(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(
+        return grpc.experimental.unary_unary(
             request,
             target,
             '/sparkapi.SparkApi/previewDataset',
             sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-            sparkapi__pb2.RowStreamResponse.FromString,
+            sparkapi__pb2.RowsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -418,7 +418,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/submit_LoadDatasetNode',
             sparkapi__pb2.LoadDatasetNodeRequest.SerializeToString,
-            sparkapi__pb2.SparkTransformResponse.FromString,
+            sparkapi__pb2.SparkLoadFileResponse.FromString,
             options,
             channel_credentials,
             insecure,

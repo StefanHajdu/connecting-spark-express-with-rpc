@@ -1,3 +1,4 @@
+import datetime
 import json
 from collections.abc import Iterable
 from functools import wraps
@@ -25,8 +26,9 @@ class UpdateStatus:
 
 
 class ClientSession:
-    def __init__(self, id):
+    def __init__(self, id, name):
         self.id = id
+        self.name = name
         self.child_sessions = set()
         self.update_status = UpdateStatus()
 
@@ -51,17 +53,23 @@ class ClientSession:
         for child_session in self.child_sessions:
             child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
 
-    def log_plan_execution(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            res = func(self, *args, **kwargs)
-            print(f'>>> PLAN TO APPLY for session: {self.id} >>>')
-            for idx, node in enumerate(self.plan.nodes):
-                print(f'    {idx}. {node}')
-            print(f'>>> PLAN TO APPLY for session: {self.id} >>>\n')
-            return res
+    def log_plan_execution(route):
+        def inner_func(func):
+            @wraps(func)
+            def wrapper(self, *args, **kwargs):
+                start = datetime.datetime.now()
+                print(f'\n>[start: {start}] PLAN TO APPLY for session: {self.id} <')
+                res = func(self, *args, **kwargs)
+                for idx, node in enumerate(self.plan.nodes):
+                    print(f'    {idx}. {node}')
+                end = datetime.datetime.now()
+                print(f'>[end: {end} | diff: {end - start}] PLAN EXECUTED for session: {self.id} <')
+                print(f'{route} {args}')
+                return res
 
-        return wrapper
+            return wrapper
+
+        return inner_func
 
     def submit_node(self, node_class: str, **kwargs):
         self._log(f'/addNode/{node_class}')
@@ -75,24 +83,21 @@ class ClientSession:
             self.notify_transformation_change()
         self.plan.remove_node(spark, node.node_id)
 
-    @log_plan_execution
+    @log_plan_execution('/rebuildSession')
     def rebuild(self):
-        self._log(f'/rebuildSession: {self.id}')
         self.plan.reapply_plan(spark, start=0)
         self.update_status.reset()
 
-    @log_plan_execution
+    @log_plan_execution('/summarize')
     def summarize(self, node_id: str):
-        self._log(f'/summarize: {node_id}')
         node = self.plan.get_node_by_id(node_id)
         if node:
             return node.summarize()
         else:
             raise NodeMissingException()
 
-    @log_plan_execution
+    @log_plan_execution('/preview')
     def preview(self, node: Nodes.SparkNode, limit: int) -> Iterable[str]:
-        self._log(f'/preview {node.node_id}, {limit}')
         if isinstance(node, Nodes.TransformNode):
             rows = node.preview(limit)
         else:

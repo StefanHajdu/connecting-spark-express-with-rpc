@@ -5,13 +5,13 @@ package sparkapi;
 service SparkApi {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     
-    rpc previewDataset(PreviewDatasetRequest) returns (stream RowStreamResponse) {}
+    rpc previewDataset(PreviewDatasetRequest) returns (RowsResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkLoadFileResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node
@@ -35,17 +35,8 @@ service SparkApi {
 // --- Responses ---
 
 message NewSessionResponse {
-    string id = 1;
-    string session_server_pid = 2;
-    string msg = 3;
-}
-
-message PysparkGeneralResponse {
     string session_id = 1;
     string msg = 2;
-    string columns_json = 3;
-    string schema_tree = 4;
-    int32 num_rows = 5;
 }
 
 message SparkActionlResponse {
@@ -56,18 +47,24 @@ message SparkActionlResponse {
     int32 count = 5;
 }
 
-message PysparkTransformResponse {
-    string session_id = 1;
-    string msg = 2;
+message Column {
+    string name = 1;
+    string dtype = 2;
 }
 
 message SparkTransformResponse {
     string session_id = 1;
     string msg = 2;
+    repeated Column columns = 3;
 }
 
-message RowStreamResponse {
-    string row_json = 1;
+message SparkLoadFileResponse {
+    SparkTransformResponse transformResponse = 1;
+    int64 size = 2;
+}
+
+message RowsResponse {
+    repeated string row_json = 1;
 }
 
 message StatusResponse {
@@ -81,12 +78,12 @@ message StatusResponse {
 
 message NewSessionRequest {
     string id = 1;
+    string name = 2;
 }
 
 message LoadDatasetNodeRequest {
     string session_id = 1;
-    string df_path = 2;
-    string df_type = 3;
+    string path = 2;
 }
 
 message PreviewDatasetRequest {
