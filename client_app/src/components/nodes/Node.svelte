@@ -5,26 +5,36 @@ import {
   DropdownItem,
   DropdownDivider,
   Button,
+  Spinner,
 } from "flowbite-svelte";
 import {
   DotsHorizontalOutline,
   ChevronDownOutline,
 } from "flowbite-svelte-icons";
+import { type Column, fetchSparkApi } from "$lib/clientApi";
+import {
+  actionState,
+  requestAction,
+  finishAction,
+} from "$lib/actionState.svelte";
 import { nodeFactoryMethod } from "./NodeInstance";
-import { type SparkActionlResponse, fetchSparkApi } from "$lib/clientApi";
 import LoadNode from "./LoadNode.svelte";
 
-let { nodesInAnalysis = $bindable(), node, analysis_id } = $props();
-let dataFrameColumns = $state([{ name: "", dtype: "" }]);
+let { nodesInAnalysis = $bindable(), node, analysiId } = $props();
+
+let dataFrameColumns: Column[] = $state([]);
+let formFields: Map<string, any> = $state(new Map());
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
-let summarizeState = $state({
-  session_id: analysis_id,
-  msg: "",
-  columns: "",
-  schema: "",
-  count: -1,
-});
+let summarizePromise = $state(
+  Promise.resolve({
+    session_id: analysiId,
+    msg: "",
+    columns: "",
+    schema: "",
+    count: -1,
+  }),
+);
 
 $effect(() => {
   if (nextNodeId !== "") {
@@ -50,20 +60,24 @@ function removeNode() {
   nodesInAnalysis.splice(itemIdx, 1);
 }
 
-async function preview() {}
+function previewEvent() {
+  requestAction(analysiId, dataFrameColumns, node.uuid, "preview");
+}
 
-async function summarize() {
-  let countResponse: SparkActionlResponse = await fetchSparkApi("summarize", {
-    session_id: analysis_id,
-    node_id: node.uuid,
-  });
-
-  if (countResponse) {
-    summarizeState = { ...countResponse };
+function summarizeEvent() {
+  requestAction(analysiId, dataFrameColumns, node.uuid, "sum");
+  if (actionState.confirmed) {
+    summarizePromise = fetchSparkApi("summarize", {
+      session_id: analysiId,
+      node_id: node.uuid,
+    });
+    finishAction();
+  } else {
+    console.log("summarize, rejected");
   }
 }
 
-$inspect(dataFrameColumns);
+$inspect(`node: ${node.uuid}:`, dataFrameColumns, formFields);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -81,16 +95,22 @@ $inspect(dataFrameColumns);
       <p>type: {node.nodeType}</p>
     </div>
     {#if node.title === "Load"}<LoadNode
-        bind:dataFrameColumns={dataFrameColumns}
         node={node}
-        analysis_id={analysis_id} />{/if}
+        bind:formFields={formFields}
+        bind:dataFrameColumns={dataFrameColumns}
+        analysiId={analysiId} />{/if}
     <div class="mt-2">
-      <Button size="xs" color="light" on:click={preview}>Preview</Button>
-      <Button size="xs" color="light" on:click={summarize}>Summarize</Button>
-      {#if summarizeState.count > -1}
-        <p>{summarizeState.count}</p>
-      {/if}
+      <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>
+      <Button size="xs" color="light" on:click={summarizeEvent}
+        >Summarize</Button>
     </div>
+    {#await summarizePromise}
+      <Spinner size={6} />
+    {:then summarizeResponse}
+      {#if summarizeResponse.count > 0}
+        <p>{summarizeResponse.count}</p>
+      {/if}
+    {/await}
   </Card>
 </div>
 <div class="flex justify-center">

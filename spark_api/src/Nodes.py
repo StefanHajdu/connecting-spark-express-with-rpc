@@ -77,8 +77,8 @@ class SparkNode:
         }
 
     def preview(self, limit):
-        for item in self.df.take(limit):
-            yield item.asDict()
+        rows = self.df.take(limit)
+        return [json.dumps(row.asDict()) for row in rows]
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')

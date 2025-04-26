@@ -5,7 +5,7 @@ import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load")]);
-$inspect(nodesInAnalysis);
+$inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
 </script>
 
 <TabItem open title={name}>
@@ -14,10 +14,7 @@ $inspect(nodesInAnalysis);
       <b>{name}</b>
     </p>
     {#each nodesInAnalysis as node}
-      <Node
-        bind:nodesInAnalysis={nodesInAnalysis}
-        node={node}
-        analysis_id={id} />
+      <Node bind:nodesInAnalysis={nodesInAnalysis} node={node} analysiId={id} />
     {/each}
   </div>
 </TabItem>

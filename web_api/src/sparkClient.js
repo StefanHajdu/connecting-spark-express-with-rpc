@@ -21,8 +21,22 @@ export class SparkClient {
     );
   }
 
-  _previewDataset(previewDatasetRequestBody) {
-    return this.client.previewDataset(previewDatasetRequestBody);
+  _previewDataset(previewDatasetRequest, expressResponse, next) {
+    return this.client.previewDataset(
+      previewDatasetRequest,
+      (err, pysparkResponse) => {
+        if (err) {
+          return next(
+            new ApplicationError({
+              message: err.message,
+              code: 500,
+            })
+          );
+        } else {
+          expressResponse.json(pysparkResponse);
+        }
+      }
+    );
   }
 
   _summarizeDataset(summarizeDatasetRequest, expressResponse, next) {
