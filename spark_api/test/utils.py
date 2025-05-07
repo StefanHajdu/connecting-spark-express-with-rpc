@@ -23,11 +23,10 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def submit_loadNode(session_id: str, src_path: str, src_type: str) -> None:
+def submit_loadNode(session_id: str, src_path: str) -> None:
     json_data = {
         'session_id': session_id,
-        'df_path': src_path,
-        'df_type': src_type,
+        'path': src_path,
     }
     res = requests.post('http://localhost:4444/submitNode/LoadDatasetNode', json=json_data)
 

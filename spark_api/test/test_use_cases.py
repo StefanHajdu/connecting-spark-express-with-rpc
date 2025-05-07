@@ -21,14 +21,14 @@ s = TestState()
 
 def test_01_submit_loadNode_and_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    _ = u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    _ = u.submit_loadNode(session_id=session_0, src_path=s.path)
     df_meta = u.summarize(session_id=session_0, node_id=s.root_node_id)
     assert df_meta['count'] == s.total_rows
 
 
 def test_02_submit_loadFromSessionNode():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -49,7 +49,7 @@ def test_02_submit_loadFromSessionNode():
 
 def test_03_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -91,7 +91,7 @@ def test_03_filter():
 def test_04_1_parent_session_changed():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_01 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -157,7 +157,7 @@ def test_04_1_parent_session_changed():
 def test_04_2_parent_session_changed_multi_level():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_01 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -228,7 +228,7 @@ def test_04_2_parent_session_changed_multi_level():
 
 def test_05_append_sql():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -268,7 +268,7 @@ def test_05_append_sql():
 
 def test_05_submit_filterNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -308,7 +308,7 @@ def test_05_submit_filterNode_before_summarize():
 
 def test_06_unordered_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -350,7 +350,7 @@ def test_06_unordered_summarize():
 
 def test_07_submit_filterNode_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -390,7 +390,7 @@ def test_07_submit_filterNode_after_summarize():
 
 def test_07_submit_filterNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -424,7 +424,7 @@ def test_07_submit_filterNode_before_summarize():
 
 def test_08_removeNode_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -468,7 +468,7 @@ def test_08_removeNode_after_summarize():
 
 def test_08_removeNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -516,7 +516,7 @@ def test_08_removeNode_before_summarize():
 
 def test_12_toggle():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+    u.submit_loadNode(session_id=session_0, src_path=s.path)
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -588,7 +588,7 @@ def test_12_toggle():
 def test_13_text_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for filter_function in filter_functions:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
         # add numerical col
         node_1 = u.submit_newColumnNode(
             **{
@@ -626,7 +626,7 @@ def test_13_text_filter():
 def test_14_addColumn_math_numerical_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for math_numerical_function in math_numerical_functions:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
         node_1 = u.submit_newColumnNode(
             **{
                 **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
@@ -652,7 +652,7 @@ def test_14_addColumn_math_numerical_functions():
 def test_15_addColumn_string_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for string_function in string_functions:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
         node_1 = u.submit_newColumnNode(
             **{
                 **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
@@ -672,7 +672,7 @@ def test_15_addColumn_string_functions():
 def test_16_addColumn_array_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for array_function in array_functions[1:]:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
 
         node_1 = u.submit_newColumnNode(
             **{
@@ -700,7 +700,7 @@ def test_16_addColumn_array_functions():
 def test_17_addColumn_date_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for date_function in date_functions[1:]:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
 
         node_1 = u.submit_newColumnNode(
             **{
@@ -728,7 +728,7 @@ def test_17_addColumn_date_functions():
 def test_18_misc_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for misc_function in misc_functions:
-        u.submit_loadNode(session_id=session_0, src_path=s.path, src_type=s.type)
+        u.submit_loadNode(session_id=session_0, src_path=s.path)
 
         node_1 = u.submit_newColumnNode(
             **{
@@ -749,7 +749,7 @@ def test_18_misc_functions():
 def test_19_join_relations():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for join_relation in join_relations:
-        u.submit_loadNode(session_id=session_0, src_path='../data/df1.json', src_type='json')
+        u.submit_loadNode(session_id=session_0, src_path='../data/df1.json')
         node_1 = u.submit_joinNode(
             **{
                 'session_id': session_0,

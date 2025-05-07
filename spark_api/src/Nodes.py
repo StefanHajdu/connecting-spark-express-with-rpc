@@ -56,10 +56,14 @@ class SparkNode:
 
     @property
     def columns(self):
-        return [
-            sparkapi_pb2.Column(name=field.get('name', ''), dtype=field.get('type', ''))
-            for field in json.loads(self.df.schema.json()).get('fields', [])
-        ]
+        types = []
+        for field in json.loads(self.df.schema.json()).get('fields', []):
+            field_type = field.get('type', '')
+            if isinstance(field_type, dict):
+                field_type = f'{field_type["type"]}<{field_type["elementType"]}>'
+            types.append(sparkapi_pb2.Column(name=field.get('name', ''), dtype=field_type))
+
+        return types
 
     @property
     def query(self):
@@ -82,9 +86,10 @@ class SparkNode:
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
+        _query_kwargs = {**kwargs, **self.query_kwargs}
         df_result = spark.sql(
             self.query,
-            **{**kwargs, **self.query_kwargs},
+            **_query_kwargs,
         )
         return df_result
 
@@ -248,7 +253,6 @@ class JoinNode(TransformNode):
 
     @property
     def query(self) -> str:
-        print(f'joinParam: {self.joinParams}')
         if len(self.joinParams) > 0:
             columns_to_add = [
                 ' as '.join(('{other_df}.' + col_name, self.joinParams.get('prefixForAddedColumns', '') + col_name))
