@@ -10,7 +10,7 @@ let filePath: string = $state("");
 let msg = $state("");
 let fileSize = $state(0);
 
-async function submitLoad() {
+async function submit() {
   let loadResponse: SparkLoadFileResponse = await fetchSparkApi("submitNode/LoadDatasetNode", {
     session_id: analysiId,
     path: filePath,
@@ -35,5 +35,5 @@ async function submitLoad() {
 </div>
 
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-  <Button on:click={submitLoad}>Submit</Button>
+  <Button on:click={submit}>Submit</Button>
 </div>

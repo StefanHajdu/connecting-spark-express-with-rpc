@@ -2,6 +2,7 @@
 import { Dropdown, DropdownItem, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { Node } from "../NodeInstance";
+import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
@@ -12,18 +13,29 @@ let exprSelectionOpen = $state(false);
 function addExpression(category: string, fname: string) {
   // @ts-ignore
   let expr = sparkColumnFunctions[category][fname];
-  expressions.push(expr);
+  expressions.push({
+    fname: fname,
+    params: expr["params"].map((param: any) => {
+      return { ...param, value: "" };
+    }),
+    rename: "",
+  });
   exprSelectionOpen = false;
 }
 
-$inspect(expressions, exprSelectionOpen);
+async function submit() {}
+
+$inspect(expressions);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
   {node.title}
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
-<div class="flex justify-center">
+{#each expressions as _, i}
+  <ExpressionFrom bind:exprs={expressions} idx={i} />
+{/each}
+<div class="mt-4 flex justify-center">
   <Button size="xs" color="blue"
     >Add expression<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
   <Dropdown bind:open={exprSelectionOpen}>
@@ -48,4 +60,7 @@ $inspect(expressions, exprSelectionOpen);
     {/each}
     <DropdownDivider />
   </Dropdown>
+</div>
+<div class="flex space-x-3 mt-2 rtl:space-x-reverse">
+  <Button on:click={submit}>Submit</Button>
 </div>

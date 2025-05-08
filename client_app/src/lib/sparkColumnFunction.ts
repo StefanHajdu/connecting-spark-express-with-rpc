@@ -1,3 +1,13 @@
+export type Param = {
+  name: string;
+  desc: string;
+};
+
+export type Expression = {
+  decs: string;
+  params: Param[];
+};
+
 export const sparkColumnFunctions = {
   numerical: {
     abs: {
