@@ -8,7 +8,7 @@ import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
-let node: Node = nodesInAnalysis[nodeIndex];
+let node: Node = $state(nodesInAnalysis[nodeIndex]);
 
 let formFields: Map<string, any> = $state(new Map());
 let nextNodeId = $state("");
@@ -58,7 +58,7 @@ function summarizeEvent() {
   }
 }
 
-$inspect(`node: ${node.uuid.slice(-5)}:`, formFields);
+$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, formFields);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
