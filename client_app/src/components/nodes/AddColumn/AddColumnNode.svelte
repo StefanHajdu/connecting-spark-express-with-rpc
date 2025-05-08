@@ -33,7 +33,7 @@ $inspect(expressions);
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as _, i}
-  <ExpressionFrom bind:exprs={expressions} idx={i} />
+  <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
 {/each}
 <div class="mt-4 flex justify-center">
   <Button size="xs" color="blue"
