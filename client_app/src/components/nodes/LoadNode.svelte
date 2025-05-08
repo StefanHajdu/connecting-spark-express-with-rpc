@@ -1,14 +1,15 @@
 <script lang="ts">
 import { Input, Button } from "flowbite-svelte";
 import { type SparkLoadFileResponse, fetchSparkApi } from "$lib/clientApi";
+import { Node } from "./NodeInstance";
 
-let { analysiId, node, dataFrameColumns = $bindable(), formFields = $bindable() } = $props();
+let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
+let node: Node = nodesInAnalysis[nodeIndex];
+
 let filePath: string = $state("");
-
 let msg = $state("");
 let fileSize = $state(0);
 
-// /home/stephenx/Documents/Programming/01_Blogs/contour-app/data/domains_small.parquet
 async function submitLoad() {
   let loadResponse: SparkLoadFileResponse = await fetchSparkApi("submitNode/LoadDatasetNode", {
     session_id: analysiId,
@@ -18,7 +19,7 @@ async function submitLoad() {
   if (loadResponse) {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
-    dataFrameColumns = loadResponse.transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
     formFields = new Map([["path", filePath]]);
   }
 }
