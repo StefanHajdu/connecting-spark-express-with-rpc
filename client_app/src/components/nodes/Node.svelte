@@ -1,24 +1,11 @@
 <script lang="ts">
-import {
-  Card,
-  Dropdown,
-  DropdownItem,
-  DropdownDivider,
-  Button,
-  Spinner,
-} from "flowbite-svelte";
-import {
-  DotsHorizontalOutline,
-  ChevronDownOutline,
-} from "flowbite-svelte-icons";
+import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner } from "flowbite-svelte";
+import { DotsHorizontalOutline, ChevronDownOutline } from "flowbite-svelte-icons";
 import { type Column, fetchSparkApi } from "$lib/clientApi";
-import {
-  actionState,
-  requestAction,
-  finishAction,
-} from "$lib/actionState.svelte";
+import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
+import AddColumnNode from "./AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), node, analysiId } = $props();
 
@@ -77,7 +64,7 @@ function summarizeEvent() {
   }
 }
 
-$inspect(`node: ${node.uuid}:`, dataFrameColumns, formFields);
+$inspect(`node: ${node.uuid.slice(-5)}:`, dataFrameColumns, formFields);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -98,11 +85,16 @@ $inspect(`node: ${node.uuid}:`, dataFrameColumns, formFields);
         node={node}
         bind:formFields={formFields}
         bind:dataFrameColumns={dataFrameColumns}
-        analysiId={analysiId} />{/if}
+        analysiId={analysiId} />
+    {:else if node.title === "Add Column"}<AddColumnNode
+        node={node}
+        bind:formFields={formFields}
+        bind:dataFrameColumns={dataFrameColumns}
+        analysiId={analysiId} />
+    {/if}
     <div class="mt-2">
       <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>
-      <Button size="xs" color="light" on:click={summarizeEvent}
-        >Summarize</Button>
+      <Button size="xs" color="light" on:click={summarizeEvent}>Summarize</Button>
     </div>
     {#await summarizePromise}
       <Spinner size={6} />
@@ -115,12 +107,10 @@ $inspect(`node: ${node.uuid}:`, dataFrameColumns, formFields);
 </div>
 <div class="flex justify-center">
   <Button size="xs" color="dark"
-    >Dropdown button<ChevronDownOutline
-      class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
+    >Dropdown button<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
   <Dropdown bind:open={dropdownOpen}>
     <DropdownItem onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
-    <DropdownItem onclick={() => insertNextNode("Add Column")}
-      >Add Column</DropdownItem>
+    <DropdownItem onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
     <DropdownItem onclick={() => insertNextNode("Join")}>Join</DropdownItem>
     <DropdownDivider />
     <DropdownItem onclick={() => insertNextNode("Table")}>Table</DropdownItem>
