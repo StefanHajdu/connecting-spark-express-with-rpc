@@ -5,7 +5,7 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod, Node } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
-import AddColumnNode from "./AddColumnNode.svelte";
+import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
 let node: Node = $state(nodesInAnalysis[nodeIndex]);
