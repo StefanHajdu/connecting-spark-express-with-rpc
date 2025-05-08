@@ -4,6 +4,7 @@ import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
+import { compileExpr } from "$lib/utils";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
@@ -34,6 +35,7 @@ $inspect(expressions);
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as _, i}
   <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
+  <span>{compileExpr(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</span>
 {/each}
 <div class="mt-4 flex justify-center">
   <Button size="xs" color="blue"

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Input, Button } from "flowbite-svelte";
-import { type SparkLoadFileResponse, fetchSparkApi } from "$lib/clientApi";
+import { fetchSparkApi } from "$lib/clientApi";
+import { type SparkLoadFileResponse } from "$lib/dtype";
 import { Node } from "./NodeInstance";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
