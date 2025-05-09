@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
-import { ChevronDownOutline } from "flowbite-svelte-icons";
+import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
@@ -25,6 +25,16 @@ function addExpression(category: string, fname: string) {
   exprSelectionOpen = false;
 }
 
+function duplicateExpr(exprId: number) {
+  const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
+  exprToDuplicate.rename = "new_" + exprToDuplicate.rename;
+  expressions.splice(exprId + 1, 0, exprToDuplicate);
+}
+
+function removeExpr(exprId: number) {
+  expressions.splice(exprId, 1);
+}
+
 async function submit() {}
 
 $inspect(expressions);
@@ -36,7 +46,23 @@ $inspect(expressions);
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as _, i}
   <div class="mb-4">
-    <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
+    <div class="flex items-stretch">
+      <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
+      <div class="mt-6 ml-4">
+        <Button
+          color="alternative"
+          class="px-0.25 py-0.25"
+          onclick={() => {
+            removeExpr(i);
+          }}><CloseOutline /></Button>
+        <Button
+          color="alternative"
+          class="px-0.25 py-0.25"
+          onclick={() => {
+            duplicateExpr(i);
+          }}><FileCopyOutline /></Button>
+      </div>
+    </div>
     <p class="mt-2 font-mono text-xs">{compileExpr(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</p>
   </div>
 {/each}
