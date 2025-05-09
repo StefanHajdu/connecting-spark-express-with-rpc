@@ -14,13 +14,15 @@ let exprSelectionOpen = $state(false);
 
 function addExpression(category: string, fname: string) {
   // @ts-ignore
-  let expr = sparkColumnFunctions[category][fname];
+  let expr = sparkColumnFunctions[category].exprs[fname];
   expressions.push({
     fname: fname,
     params: expr["params"].map((param: any) => {
       return { ...param, value: "" };
     }),
     rename: "",
+    // @ts-ignore
+    sparkTypes: new Set(sparkColumnFunctions[category].sparkTypes),
   });
   exprSelectionOpen = false;
 }
@@ -37,7 +39,7 @@ function removeExpr(exprId: number) {
 
 async function submit() {}
 
-$inspect(expressions);
+$inspect(expressions, nodesInAnalysis[nodeIndex].colsInDf);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -77,8 +79,8 @@ $inspect(expressions);
         <p class="dark:text-white ml-2">Numeric</p>
       </div>
     </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["numerical"]) as fname}
-      <DropdownItem onclick={() => addExpression("numerical", fname)}>{fname}</DropdownItem>
+    {#each Object.keys(sparkColumnFunctions["numeric"].exprs) as fname}
+      <DropdownItem onclick={() => addExpression("numeric", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
 
@@ -88,7 +90,7 @@ $inspect(expressions);
         <p class="dark:text-white ml-2">Text</p>
       </div>
     </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["string"]) as fname}
+    {#each Object.keys(sparkColumnFunctions["string"].exprs) as fname}
       <DropdownItem onclick={() => addExpression("string", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
@@ -99,7 +101,7 @@ $inspect(expressions);
         <p class="dark:text-white ml-2">Date/Time</p>
       </div>
     </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["date"]) as fname}
+    {#each Object.keys(sparkColumnFunctions["date"].exprs) as fname}
       <DropdownItem onclick={() => addExpression("date", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
@@ -110,7 +112,7 @@ $inspect(expressions);
         <p class="dark:text-white ml-2">Array</p>
       </div>
     </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["array"]) as fname}
+    {#each Object.keys(sparkColumnFunctions["array"].exprs) as fname}
       <DropdownItem onclick={() => addExpression("array", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
@@ -121,7 +123,7 @@ $inspect(expressions);
         <p class="dark:text-white">Miscellaneous</p>
       </div>
     </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["misc"]) as fname}
+    {#each Object.keys(sparkColumnFunctions["misc"].exprs) as fname}
       <DropdownItem onclick={() => addExpression("misc", fname)}>{fname}</DropdownItem>
     {/each}
   </Dropdown>

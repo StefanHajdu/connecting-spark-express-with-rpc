@@ -7,7 +7,7 @@ from spark_session_init import spark
 def spark_read_from_path(path: str):
     _, file_extension = os.path.splitext(path)
     if file_extension == '.csv':
-        return spark.read.option('delimiter', ';').option('header', True).csv(path)
+        return spark.read.option('delimiter', ';').option('header', True).option('inferSchema', True).csv(path)
     elif file_extension == '.json':
         return spark.read.option('multiline', 'true').json(path)
     elif file_extension == '.parquet':

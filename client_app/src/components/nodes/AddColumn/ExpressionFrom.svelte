@@ -16,9 +16,13 @@ let multiColSelection = $state([]);
         {#if param.ptype === "single_col"}
           <Select
             size="sm"
-            items={colsInDf.map((col: any) => {
-              return { value: col.name, name: col.name };
-            })}
+            items={colsInDf
+              .filter((col: any) => {
+                return exprs[idx].sparkTypes.has(col.dtype);
+              })
+              .map((col: any) => {
+                return { value: col.name, name: col.name };
+              })}
             bind:value={exprs[idx].params[jdx].value} />
         {:else if param.ptype === "multi_col"}
           <MultiSelect
