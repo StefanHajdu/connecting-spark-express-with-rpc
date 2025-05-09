@@ -1,16 +1,19 @@
 <script lang="ts">
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
+import Icon from "@iconify/svelte";
 import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import { compileExpr } from "$lib/utils";
-import Icon from "@iconify/svelte";
+import { fetchSparkApi } from "$lib/clientApi";
+import { type SparkTransformResponse } from "$lib/dtype";
+import { compileExprString, compileExprObj } from "$lib/utils";
 
-let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
+let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
 let expressions: any[] = $state([]);
 let exprSelectionOpen = $state(false);
+let msg = $state("");
 
 function addExpression(category: string, fname: string) {
   // @ts-ignore
@@ -37,9 +40,23 @@ function removeExpr(exprId: number) {
   expressions.splice(exprId, 1);
 }
 
-async function submit() {}
+async function submit() {
+  let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
+    session_id: analysiId,
+    node_id: nodesInAnalysis[nodeIndex].uuid,
+    prev_node_id: nodesInAnalysis[nodeIndex - 1].uuid,
+    expressions: expressions.map((expr: any) => {
+      return compileExprObj(expr, nodesInAnalysis[nodeIndex].colsInDf);
+    }),
+  });
 
-$inspect(expressions, nodesInAnalysis[nodeIndex].colsInDf);
+  if (transformResponse) {
+    msg = transformResponse.msg;
+    nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
+  }
+}
+
+$inspect(expressions);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -65,7 +82,7 @@ $inspect(expressions, nodesInAnalysis[nodeIndex].colsInDf);
           }}><FileCopyOutline /></Button>
       </div>
     </div>
-    <p class="mt-2 font-mono text-xs">{compileExpr(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</p>
+    <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</p>
   </div>
 {/each}
 <div class="mt-4 flex justify-center">

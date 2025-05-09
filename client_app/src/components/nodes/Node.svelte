@@ -4,14 +4,12 @@ import { DotsHorizontalOutline, ChevronDownOutline } from "flowbite-svelte-icons
 import { fetchSparkApi } from "$lib/clientApi";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod, Node } from "./NodeInstance";
-import Icon from "@iconify/svelte";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
 let node: Node = $state(nodesInAnalysis[nodeIndex]);
 
-let formFields: Map<string, any> = $state(new Map());
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
 let summarizePromise = $state(
@@ -59,7 +57,7 @@ function summarizeEvent() {
   }
 }
 
-$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, formFields);
+$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -79,12 +77,10 @@ $inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, formFields);
     {#if node.title === "Load"}<LoadNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
-        bind:formFields={formFields}
         analysiId={analysiId} />
     {:else if node.title === "Add Column"}<AddColumnNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
-        bind:formFields={formFields}
         analysiId={analysiId} />
     {/if}
     <div class="mt-2">

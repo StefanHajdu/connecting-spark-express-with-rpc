@@ -4,7 +4,7 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { type SparkLoadFileResponse } from "$lib/dtype";
 import { Node } from "./NodeInstance";
 
-let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
+let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
 
 let filePath: string = $state("");
@@ -21,7 +21,6 @@ async function submit() {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
     nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
-    formFields = new Map([["path", filePath]]);
   }
 }
 </script>
