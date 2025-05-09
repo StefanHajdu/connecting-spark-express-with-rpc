@@ -26,6 +26,8 @@ function addExpression(category: string, fname: string) {
     rename: "",
     // @ts-ignore
     sparkTypes: new Set(sparkColumnFunctions[category].sparkTypes),
+    // @ts-ignore
+    customInput: sparkColumnFunctions[category].customInput,
   });
   exprSelectionOpen = false;
 }

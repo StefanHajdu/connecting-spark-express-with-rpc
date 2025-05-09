@@ -7,6 +7,7 @@ export const sparkColumnFunctions = {
       },
     },
     sparkTypes: ["short", "integer", "long", "float", "double", "decimal"],
+    customInput: "number",
   },
   string: {
     exprs: {
@@ -20,6 +21,7 @@ export const sparkColumnFunctions = {
       },
     },
     sparkTypes: ["string"],
+    customInput: "text",
   },
   date: {
     exprs: {
@@ -29,6 +31,7 @@ export const sparkColumnFunctions = {
       },
     },
     sparkTypes: ["date", "timestamp"],
+    customInput: "text",
   },
   array: {
     exprs: {

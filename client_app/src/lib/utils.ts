@@ -23,9 +23,9 @@ export function compileExpr(expr: Expression, colsInDf: Column[]): string[] {
         }) < 0
       ) {
         if (typeof param.value === "string") {
-          params.push(`lit('${param.value}')`);
+          params.push(`'${param.value}'`);
         } else {
-          params.push(`lit(${param.value})`);
+          params.push(`${param.value}`);
         }
       } else {
         params.push(`${param.value}`);
