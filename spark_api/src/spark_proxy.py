@@ -188,5 +188,4 @@ class SparkApiServicer(SparkApiServicer):
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
         rows = session.preview(node, req.limit)
-        time.sleep(5)
         return sparkapi_pb2.RowsResponse(row_json=rows)
