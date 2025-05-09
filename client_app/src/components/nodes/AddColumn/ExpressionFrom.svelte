@@ -5,9 +5,11 @@ let { exprs = $bindable(), idx, colsInDf } = $props();
 let multiColSelection = $state([]);
 </script>
 
-<div class="mt-4 grid gap-6 md:grid-cols-3">
-  <Label>{exprs[idx]["fname"]}</Label>
-  <div class="grid gap-3 md:grid-cols-3">
+<div class="mt-4 grid gap-3 md:grid-cols-12">
+  <div class="mt-7 col-span-2">
+    <p class="font-mono text-sm">{exprs[idx]["fname"]}()</p>
+  </div>
+  <div class="col-span-7 col-start-3 grid gap-2 md:grid-cols-3">
     {#each exprs[idx]["params"] as param, jdx}
       <Label
         >{param["name"]}
@@ -32,8 +34,10 @@ let multiColSelection = $state([]);
       </Label>
     {/each}
   </div>
-  <Label
-    >new column name
-    <Input type="text" size="sm" placeholder="..." bind:value={exprs[idx].rename} />
-  </Label>
+  <div class="col-span-2 col-start-11">
+    <Label
+      >new column name
+      <Input type="text" size="sm" placeholder="..." bind:value={exprs[idx].rename} />
+    </Label>
+  </div>
 </div>

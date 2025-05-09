@@ -62,7 +62,7 @@ $inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, formFields);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
-  <Card size="lg" padding="md">
+  <Card class="max-w-5xl">
     <div class="flex justify-end">
       <DotsHorizontalOutline />
       <Dropdown class="w-36">
@@ -99,9 +99,8 @@ $inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, formFields);
     {/await}
   </Card>
 </div>
-<div class="flex justify-center">
-  <Button size="xs" color="dark"
-    >Dropdown button<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
+<div class="p-1 mb-4 flex justify-center">
+  <Button size="xs" color="dark">New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
   <Dropdown bind:open={dropdownOpen}>
     <DropdownItem onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
     <DropdownItem onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
