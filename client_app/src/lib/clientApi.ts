@@ -1,47 +1,12 @@
 const BASE_URL = "http://localhost:4444";
 
-export type SparkActionlResponse = {
-  session_id: string;
-  msg: string;
-  columns: string;
-  schema: string;
-  count: number;
-};
-
-export type CreateSessionResponse = {
-  session_id: string;
-  msg: string;
-};
-
-export type Column = {
-  name: string;
-  dtype: string;
-};
-
-export type SparkTransformResponse = {
-  session_id: string;
-  msg: string;
-  columns: Column[];
-};
-
-export type SparkLoadFileResponse = {
-  transformResponse: SparkTransformResponse;
-  size: number;
-};
-
-export async function fetchSparkApi(
-  transformRoute: string,
-  body: any,
-): Promise<any> {
+export async function fetchSparkApi(transformRoute: string, body: any): Promise<any> {
   let url = new URL(transformRoute, BASE_URL);
   const response = await post(url, body);
   return response.json();
 }
 
-export async function fetchSparkStreamingApi(
-  transformRoute: string,
-  body: any,
-): Promise<Response> {
+export async function fetchSparkStreamingApi(transformRoute: string, body: any): Promise<Response> {
   let url = new URL(transformRoute, BASE_URL);
   const response = fetch(url, {
     method: "POST",
