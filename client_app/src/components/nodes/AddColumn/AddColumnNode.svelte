@@ -5,6 +5,7 @@ import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { compileExpr } from "$lib/utils";
+import Icon from "@iconify/svelte";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, formFields = $bindable() } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
@@ -40,43 +41,59 @@ $inspect(expressions);
   </div>
 {/each}
 <div class="mt-4 flex justify-center">
-  <Button size="xs" color="blue"
-    >Add expression<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
+  <Button outline color="dark" class="px-5 py-0.25"
+    >Add expression<ChevronDownOutline class="h-5 w-5 text-alternate dark:text-white" /></Button>
+
   <Dropdown bind:open={exprSelectionOpen}>
-    <DropdownHeader>
-      <span class="block text-sm text-gray-900 dark:text-white">Numeric Expressions:</span>
+    <DropdownHeader class="outline">
+      <div class="flex items-stretch">
+        <Icon icon="material-symbols-light:123-rounded" style="font-size: 24px" />
+        <p class="dark:text-white ml-2">Numeric</p>
+      </div>
     </DropdownHeader>
     {#each Object.keys(sparkColumnFunctions["numerical"]) as fname}
       <DropdownItem onclick={() => addExpression("numerical", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
 
-    <DropdownHeader>
-      <span class="block text-sm text-gray-900 dark:text-white">Text Expressions:</span>
+    <DropdownHeader class="outline">
+      <div class="flex items-stretch">
+        <Icon icon="material-symbols-light:text-fields" style="font-size: 24px" />
+        <p class="dark:text-white ml-2">Text</p>
+      </div>
     </DropdownHeader>
     {#each Object.keys(sparkColumnFunctions["string"]) as fname}
       <DropdownItem onclick={() => addExpression("string", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
 
-    <DropdownHeader>
-      <span class="block text-sm text-gray-900 dark:text-white">Datetime Expressions:</span>
+    <DropdownHeader class="outline">
+      <div class="flex items-stretch">
+        <Icon icon="material-symbols-light:calendar-clock-outline-rounded" style="font-size: 24px" />
+        <p class="dark:text-white ml-2">Date/Time</p>
+      </div>
     </DropdownHeader>
     {#each Object.keys(sparkColumnFunctions["date"]) as fname}
       <DropdownItem onclick={() => addExpression("date", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
 
-    <DropdownHeader>
-      <span class="block text-sm text-gray-900 dark:text-white">Array Expressions:</span>
+    <DropdownHeader class="outline">
+      <div class="flex items-stretch">
+        <Icon icon="material-symbols-light:data-array" style="font-size: 24px" />
+        <p class="dark:text-white ml-2">Array</p>
+      </div>
     </DropdownHeader>
     {#each Object.keys(sparkColumnFunctions["array"]) as fname}
       <DropdownItem onclick={() => addExpression("array", fname)}>{fname}</DropdownItem>
     {/each}
     <DropdownDivider />
 
-    <DropdownHeader>
-      <span class="block text-sm text-gray-900 dark:text-white">Miscellaneous Expressions:</span>
+    <DropdownHeader class="outline">
+      <div class="flex items-stretch">
+        <Icon icon="material-symbols-light:regular-expression-rounded" style="font-size: 24px" />
+        <p class="dark:text-white">Miscellaneous</p>
+      </div>
     </DropdownHeader>
     {#each Object.keys(sparkColumnFunctions["misc"]) as fname}
       <DropdownItem onclick={() => addExpression("misc", fname)}>{fname}</DropdownItem>

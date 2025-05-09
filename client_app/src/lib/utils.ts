@@ -19,9 +19,9 @@ export function compileExpr(expr: Expression, colsInDf: Column[]): string {
   for (let param of expr.params) {
     if (param.ptype === "single_col") {
       if (
-        !colsInDf.findIndex((i: Column) => {
+        colsInDf.findIndex((i: Column) => {
           return i.name === param.value;
-        })
+        }) < 0
       ) {
         if (typeof param.value === "string") {
           params.push(`lit('${param.value}')`);
@@ -31,10 +31,12 @@ export function compileExpr(expr: Expression, colsInDf: Column[]): string {
       } else {
         params.push(param.value);
       }
+    } else if (param.ptype === "multi_col") {
+      params.push(param.value);
     } else if (param.ptype === "text") {
       params.push(`'${param.value}'`);
     } else if (param.ptype === "number") {
-      params.push(`${param.value}`);
+      params.push(param.value);
     }
   }
 

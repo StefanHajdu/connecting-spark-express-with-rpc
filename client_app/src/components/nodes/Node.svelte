@@ -4,6 +4,7 @@ import { DotsHorizontalOutline, ChevronDownOutline } from "flowbite-svelte-icons
 import { fetchSparkApi } from "$lib/clientApi";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod, Node } from "./NodeInstance";
+import Icon from "@iconify/svelte";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 

@@ -11,7 +11,7 @@ let multiColSelection = $state([]);
   </div>
   <div class="col-span-7 col-start-3 grid gap-2 md:grid-cols-3">
     {#each exprs[idx]["params"] as param, jdx}
-      <Label
+      <Label class="text-black-600/75"
         >{param["name"]}
         {#if param.ptype === "single_col"}
           <Select
@@ -35,7 +35,7 @@ let multiColSelection = $state([]);
     {/each}
   </div>
   <div class="col-span-2 col-start-11">
-    <Label
+    <Label class="text-black-600/75"
       >new column name
       <Input type="text" size="sm" placeholder="..." bind:value={exprs[idx].rename} />
     </Label>
