@@ -8,7 +8,7 @@ import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
-let node: Node = $state(nodesInAnalysis[nodeIndex]);
+// let node: Node = $state(nodesInAnalysis[nodeIndex]);
 
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
@@ -41,45 +41,43 @@ function removeNode() {
 }
 
 function previewEvent() {
-  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, node.uuid, "preview");
+  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, nodesInAnalysis[nodeIndex].uuid, "preview");
 }
 
 function summarizeEvent() {
-  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, node.uuid, "sum");
+  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, nodesInAnalysis[nodeIndex].uuid, "sum");
   if (actionState.confirmed) {
     summarizePromise = fetchSparkApi("summarize", {
       session_id: analysiId,
-      node_id: node.uuid,
+      node_id: nodesInAnalysis[nodeIndex].uuid,
     });
     finishAction();
-  } else {
-    console.log("summarize, rejected");
   }
 }
 
-$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, nodeIndex);
+$inspect(`node: ${nodesInAnalysis[nodeIndex].uuid.slice(-5)}:`, nodesInAnalysis[nodeIndex].colsInDf, nodeIndex);
 </script>
 
-<div class="flex min-w-80 justify-center" id={node.uuid}>
+<div class="flex min-w-80 justify-center" id={nodesInAnalysis[nodeIndex].uuid}>
   <Card class="max-w-5xl">
     <div class="flex justify-end">
       <DotsHorizontalOutline />
       <Dropdown class="w-36">
-        {#if node.nodeType !== "load"}
+        {#if nodesInAnalysis[nodeIndex].nodeType !== "load"}
           <DropdownItem onclick={removeNode}>Remove</DropdownItem>
         {/if}
       </Dropdown>
     </div>
     <div class="mb-4 flex items-center justify-between">
-      <p>id: {node.uuid.slice(-5)}</p>
-      <p>type: {node.nodeType}</p>
+      <p>id: {nodesInAnalysis[nodeIndex].uuid.slice(-5)}</p>
+      <p>type: {nodesInAnalysis[nodeIndex].nodeType}</p>
     </div>
 
-    {#if node.title === "Load"}<LoadNode
+    {#if nodesInAnalysis[nodeIndex].title === "Load"}<LoadNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
         analysiId={analysiId} />
-    {:else if node.title === "Add Column"}<AddColumnNode
+    {:else if nodesInAnalysis[nodeIndex].title === "Add Column"}<AddColumnNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
         analysiId={analysiId} />

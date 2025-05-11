@@ -48,7 +48,7 @@ async function submit() {
     node_id: nodesInAnalysis[nodeIndex].uuid,
     prev_node_id: nodesInAnalysis[nodeIndex - 1].uuid,
     expressions: expressions.map((expr: any) => {
-      return compileExprObj(expr, nodesInAnalysis[nodeIndex].colsInDf);
+      return compileExprObj(expr, nodesInAnalysis[nodeIndex - 1].colsInDf);
     }),
   });
 
@@ -57,8 +57,6 @@ async function submit() {
     nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
   }
 }
-
-$inspect(expressions);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -68,7 +66,7 @@ $inspect(expressions);
 {#each expressions as _, i}
   <div class="mb-4">
     <div class="flex items-stretch">
-      <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
+      <ExpressionFrom bind:exprs={expressions} idx={i} colsInPrevDf={nodesInAnalysis[nodeIndex - 1].colsInDf} />
       <div class="mt-6 ml-4">
         <Button
           color="alternative"
@@ -84,7 +82,7 @@ $inspect(expressions);
           }}><FileCopyOutline /></Button>
       </div>
     </div>
-    <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</p>
+    <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i], nodesInAnalysis[nodeIndex - 1].colsInDf)}</p>
   </div>
 {/each}
 <div class="mt-4 flex justify-center">

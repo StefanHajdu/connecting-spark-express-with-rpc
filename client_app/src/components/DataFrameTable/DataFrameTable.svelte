@@ -1,13 +1,5 @@
 <script lang="ts">
-import {
-  Table,
-  TableBody,
-  TableBodyRow,
-  TableHead,
-  TableBodyCell,
-  TableHeadCell,
-  Spinner,
-} from "flowbite-svelte";
+import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell, Spinner } from "flowbite-svelte";
 import { lastPreviewedRows } from "$lib/stores";
 import { actionState, finishAction } from "$lib/actionState.svelte";
 import { fetchSparkApi } from "$lib/clientApi";
@@ -30,8 +22,6 @@ let previewPromise = $derived.by(() => {
         return parsed;
       });
     });
-  } else {
-    console.log("preview, rejected");
   }
   return "preview";
 });
@@ -43,21 +33,15 @@ let previewPromise = $derived.by(() => {
   <div class="h-80 overflow-y-auto">
     <Table>
       <TableHead>
-        <TableHeadCell
-          class="text- normal border border-black px-3 py-2 text-xs"
-        ></TableHeadCell>
+        <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs"></TableHeadCell>
         {#each actionState.columns as column}
-          <DataFrameTableHeadCell
-            columnName={column.name}
-            dType={column.dtype} />
+          <DataFrameTableHeadCell columnName={column.name} dType={column.dtype} />
         {/each}
       </TableHead>
       <TableBody>
         {#each $lastPreviewedRows as row, id}
           <TableBodyRow>
-            <TableBodyCell
-              class="text- normal border border-black px-3 py-2 text-xs"
-              >{id + 1}</TableBodyCell>
+            <TableBodyCell class="text- normal border border-black px-3 py-2 text-xs">{id + 1}</TableBodyCell>
             {#each Object.values(row) as rowValue}
               <DataFrameTableCell value={rowValue} />
             {/each}

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Label, Select, MultiSelect, Input, Toggle } from "flowbite-svelte";
 
-let { exprs = $bindable(), idx, colsInDf } = $props();
+let { exprs = $bindable(), idx, colsInPrevDf } = $props();
 let multiColSelection = $state([]);
 let customInputChecked = $state(false);
 </script>
@@ -28,7 +28,7 @@ let customInputChecked = $state(false);
               >{param["name"]}
               <Select
                 size="sm"
-                items={colsInDf
+                items={colsInPrevDf
                   .filter((col: any) => {
                     return exprs[idx].sparkTypes.has(col.dtype);
                   })
@@ -45,7 +45,7 @@ let customInputChecked = $state(false);
           >{param["name"]}
           <MultiSelect
             size="sm"
-            items={colsInDf.map((col: any) => {
+            items={colsInPrevDf.map((col: any) => {
               return { value: col.name, name: col.name };
             })}
             bind:value={multiColSelection}
