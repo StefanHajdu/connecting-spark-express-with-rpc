@@ -57,7 +57,7 @@ function summarizeEvent() {
   }
 }
 
-$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf);
+$inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf, nodeIndex);
 </script>
 
 <div class="flex min-w-80 justify-center" id={node.uuid}>
@@ -74,6 +74,7 @@ $inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf);
       <p>id: {node.uuid.slice(-5)}</p>
       <p>type: {node.nodeType}</p>
     </div>
+
     {#if node.title === "Load"}<LoadNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
@@ -83,10 +84,12 @@ $inspect(`node: ${node.uuid.slice(-5)}:`, node.colsInDf);
         nodeIndex={nodeIndex}
         analysiId={analysiId} />
     {/if}
+
     <div class="mt-2">
       <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>
       <Button size="xs" color="light" on:click={summarizeEvent}>Summarize</Button>
     </div>
+
     {#await summarizePromise}
       <Spinner size={6} />
     {:then summarizeResponse}
