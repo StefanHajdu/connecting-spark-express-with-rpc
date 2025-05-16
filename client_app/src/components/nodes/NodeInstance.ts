@@ -23,15 +23,15 @@ export abstract class Node {
   uuid: string;
   title: string;
   nodeType: string;
-  colsAdded: Column[];
-  colsUsed: Column[];
+  colsAdded: string[];
+  colsUsed: Set<string | undefined>;
   colsInDf: Column[];
 
   constructor(title: string, colsInDf: Column[]) {
     this.uuid = "node-" + uuidv4();
     this.title = title;
     this.colsAdded = [];
-    this.colsUsed = [];
+    this.colsUsed = new Set([]);
     this.colsInDf = colsInDf;
     this.nodeType = "";
   }
