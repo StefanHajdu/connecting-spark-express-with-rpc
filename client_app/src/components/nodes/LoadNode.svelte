@@ -21,6 +21,8 @@ async function submit() {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
     nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsAdded = loadResponse.transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsUsed = [];
   }
 }
 </script>

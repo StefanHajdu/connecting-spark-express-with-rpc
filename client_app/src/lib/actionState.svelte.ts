@@ -1,4 +1,4 @@
-import { type Column } from "./clientApi";
+import { type Column } from "./dtype";
 
 const empty: Column[] = [];
 
@@ -18,12 +18,7 @@ export const actionState: ActionState = $state({
   previewTableHidden: true,
 });
 
-export function requestAction(
-  analysiId: string,
-  columns: Column[],
-  nodeId: string,
-  action: string,
-): void {
+export function requestAction(analysiId: string, columns: Column[], nodeId: string, action: string): void {
   actionState.analysiId = analysiId;
   actionState.columns = columns;
   actionState.nodeId = nodeId;

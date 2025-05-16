@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { type Column } from "$lib/clientApi";
+import { type Column } from "$lib/dtype";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -23,15 +23,15 @@ export abstract class Node {
   uuid: string;
   title: string;
   nodeType: string;
-  colsAddedByNode: Column[];
-  colsUsedByNode: Column[];
+  colsAdded: Column[];
+  colsUsed: Column[];
   colsInDf: Column[];
 
   constructor(title: string, colsInDf: Column[]) {
     this.uuid = "node-" + uuidv4();
     this.title = title;
-    this.colsAddedByNode = [];
-    this.colsUsedByNode = [];
+    this.colsAdded = [];
+    this.colsUsed = [];
     this.colsInDf = colsInDf;
     this.nodeType = "";
   }
