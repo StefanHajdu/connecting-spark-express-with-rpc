@@ -6,8 +6,8 @@ import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { fetchSparkApi } from "$lib/clientApi";
-import { type SparkTransformResponse, type Expression, type Param } from "$lib/dtype";
-import { compileExprString, compileExprObj } from "$lib/utils";
+import { type SparkTransformResponse, type Expression, type Param, type Column } from "$lib/dtype";
+import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
@@ -43,11 +43,7 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-  console.log(expressions);
-
-  const colsAdded = expressions.map((expr: Expression) => expr.newColumnName);
-  console.log(colsAdded);
-
+  const colsAdded = new Set(expressions.map((expr: Expression) => expr.newColumnName));
   const colsUsed = new Set(
     expressions
       .flatMap((expr: Expression) => {
@@ -65,7 +61,6 @@ async function submit() {
       })
       .flat(),
   );
-  console.log(colsUsed);
 
   let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
     session_id: analysiId,
@@ -77,6 +72,13 @@ async function submit() {
   if (transformResponse) {
     msg = transformResponse.msg;
     nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
+    nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
+    syncNodeColsOnAdded(
+      nodesInAnalysis,
+      nodeIndex,
+      transformResponse.columns.filter((col: Column) => colsAdded.has(col.name)),
+    );
   }
 }
 </script>

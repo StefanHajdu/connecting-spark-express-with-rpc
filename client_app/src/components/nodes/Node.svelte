@@ -55,7 +55,7 @@ function summarizeEvent() {
   }
 }
 
-$inspect(`node: ${nodesInAnalysis[nodeIndex].uuid.slice(-5)}:`, nodesInAnalysis[nodeIndex].colsInDf, nodeIndex);
+// $inspect(`node: ${nodesInAnalysis[nodeIndex].uuid.slice(-5)}:`, nodesInAnalysis[nodeIndex].colsInDf, nodeIndex);
 </script>
 
 <div class="flex min-w-80 justify-center" id={nodesInAnalysis[nodeIndex].uuid}>

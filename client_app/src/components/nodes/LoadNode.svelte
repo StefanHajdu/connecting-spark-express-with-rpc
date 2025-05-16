@@ -21,9 +21,9 @@ async function submit() {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
     nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
-    nodesInAnalysis[nodeIndex].colsAdded = loadResponse.transformResponse.columns.map((col: Column) => {
-      return col.name;
-    });
+    nodesInAnalysis[nodeIndex].colsAdded = new Set(
+      loadResponse.transformResponse.columns.map((col: Column) => col.name),
+    );
   }
 }
 </script>

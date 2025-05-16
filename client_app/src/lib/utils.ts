@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { Node } from "../components/nodes/NodeInstance";
 import { type Expression, type Column } from "./dtype";
 
 export function getUniqueAnalysesId(): string {
@@ -41,4 +42,11 @@ export function compileExprString(expr: Expression): string {
 export function compileExprObj(expr: Expression): { expression: string; col_name: string } {
   const params = compileExpr(expr);
   return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
+}
+
+export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number, colsAdded: Column[]): void {
+  let colsInDfSnapshot = nodesInAnalysis[nodeIndex].colsInDf;
+  for (let i = nodeIndex + 2; i < nodesInAnalysis.length; i++) {
+    nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: [...colsInDfSnapshot, ...colsAdded] };
+  }
 }
