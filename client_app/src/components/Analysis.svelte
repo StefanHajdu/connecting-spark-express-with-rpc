@@ -5,7 +5,7 @@ import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
-$inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
+// $inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
 </script>
 
 <TabItem open title={name}>

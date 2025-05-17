@@ -45,8 +45,8 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
 }
 
 export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number, colsAdded: Column[]): void {
-  let colsInDfSnapshot = nodesInAnalysis[nodeIndex].colsInDf;
-  for (let i = nodeIndex + 2; i < nodesInAnalysis.length; i++) {
+  for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
+    let colsInDfSnapshot = nodesInAnalysis[i].colsInDf;
     nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: [...colsInDfSnapshot, ...colsAdded] };
   }
 }
