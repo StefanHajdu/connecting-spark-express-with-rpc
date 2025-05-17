@@ -44,9 +44,22 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
   return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
 }
 
-export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number, colsAdded: Column[]): void {
+export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number): void {
+  let colsAdded = nodesInAnalysis[nodeIndex].colsInDf.filter((col: Column) =>
+    nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
+  );
   for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
     let colsInDfSnapshot = nodesInAnalysis[i].colsInDf;
     nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: [...colsInDfSnapshot, ...colsAdded] };
+  }
+}
+
+export function syncNodeColsOnRemove(nodesInAnalysis: Node[], nodeIndex: number): void {
+  let colsToRemove = nodesInAnalysis[nodeIndex].colsAdded;
+  if (colsToRemove.size > 0) {
+    for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
+      let colsReduced = nodesInAnalysis[i].colsInDf.filter((col: Column) => !colsToRemove.has(col.name));
+      nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: colsReduced };
+    }
   }
 }

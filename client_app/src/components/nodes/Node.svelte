@@ -1,14 +1,15 @@
 <script lang="ts">
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner } from "flowbite-svelte";
-import { DotsHorizontalOutline, ChevronDownOutline } from "flowbite-svelte-icons";
+import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
+import { syncNodeColsOnRemove } from "$lib/utils";
+import { type SparkTransformResponse } from "$lib/dtype";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
-import { nodeFactoryMethod, Node } from "./NodeInstance";
+import { nodeFactoryMethod } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
-// let node: Node = $state(nodesInAnalysis[nodeIndex]);
 
 let nextNodeId = $state("");
 let dropdownOpen = $state(false);
@@ -36,8 +37,15 @@ function insertNextNode(nodeType: string) {
   dropdownOpen = false;
 }
 
-function removeNode() {
-  nodesInAnalysis.splice(nodeIndex, 1);
+async function removeNode() {
+  let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
+    session_id: analysiId,
+    node_id: nodesInAnalysis[nodeIndex].uuid,
+  });
+  if (transformResponse) {
+    syncNodeColsOnRemove(nodesInAnalysis, nodeIndex);
+    nodesInAnalysis.splice(nodeIndex, 1);
+  }
 }
 
 function previewEvent() {
@@ -64,7 +72,12 @@ function summarizeEvent() {
       <DotsHorizontalOutline />
       <Dropdown class="w-36">
         {#if nodesInAnalysis[nodeIndex].nodeType !== "load"}
-          <DropdownItem onclick={removeNode}>Remove</DropdownItem>
+          <div class="flex items-stretch">
+            <DropdownItem onclick={removeNode} class="flex items-center">
+              <TrashBinOutline class="mr-2" />
+              Remove
+            </DropdownItem>
+          </div>
         {/if}
       </Dropdown>
     </div>

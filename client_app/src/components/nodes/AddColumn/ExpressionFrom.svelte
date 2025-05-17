@@ -6,8 +6,6 @@ let multiColSelection = $state([]);
 let customInputChecked = $state(false);
 </script>
 
-<!-- bind:value={exprs[idx].params[jdx].valueField.value} -->
-
 <div class="mt-4 grid gap-3 md:grid-cols-12">
   <div class="mt-7 col-span-2">
     <p class="font-mono text-sm">{exprs[idx]["fname"]}()</p>

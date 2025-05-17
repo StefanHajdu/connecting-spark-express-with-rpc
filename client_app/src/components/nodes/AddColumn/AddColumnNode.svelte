@@ -6,7 +6,7 @@ import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { fetchSparkApi } from "$lib/clientApi";
-import { type SparkTransformResponse, type Expression, type Param, type Column } from "$lib/dtype";
+import { type SparkTransformResponse, type Expression, type Param } from "$lib/dtype";
 import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
@@ -74,11 +74,7 @@ async function submit() {
     nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
     nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
     nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
-    syncNodeColsOnAdded(
-      nodesInAnalysis,
-      nodeIndex,
-      transformResponse.columns.filter((col: Column) => colsAdded.has(col.name)),
-    );
+    syncNodeColsOnAdded(nodesInAnalysis, nodeIndex);
   }
 }
 </script>
