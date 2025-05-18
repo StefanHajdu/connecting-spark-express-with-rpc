@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Input, Button } from "flowbite-svelte";
 import { fetchSparkApi } from "$lib/clientApi";
-import { type SparkLoadFileResponse } from "$lib/dtype";
+import { type SparkLoadFileResponse, type Column } from "$lib/dtype";
 import { Node } from "./NodeInstance";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
@@ -21,6 +21,9 @@ async function submit() {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
     nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsAdded = new Set(
+      loadResponse.transformResponse.columns.map((col: Column) => col.name),
+    );
   }
 }
 </script>

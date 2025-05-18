@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Label, Select, MultiSelect, Input, Toggle } from "flowbite-svelte";
 
-let { exprs = $bindable(), idx, colsInDf } = $props();
+let { exprs = $bindable(), idx, colsInPrevDf } = $props();
 let multiColSelection = $state([]);
 let customInputChecked = $state(false);
 </script>
@@ -21,21 +21,27 @@ let customInputChecked = $state(false);
                 type={exprs[idx].customInput}
                 size="md"
                 placeholder="..."
-                bind:value={exprs[idx].params[jdx].value} />
+                oninput={(event) => {
+                  exprs[idx].params[jdx].valueField.value = event.currentTarget.value;
+                  exprs[idx].params[jdx].valueField.source = "input";
+                }} />
             </Label>
           {:else}
             <Label class="text-black-600/75"
               >{param["name"]}
               <Select
                 size="sm"
-                items={colsInDf
+                items={colsInPrevDf
                   .filter((col: any) => {
                     return exprs[idx].sparkTypes.has(col.dtype);
                   })
                   .map((col: any) => {
                     return { value: col.name, name: col.name };
                   })}
-                bind:value={exprs[idx].params[jdx].value} />
+                oninput={(event) => {
+                  exprs[idx].params[jdx].valueField.value = event.currentTarget.value;
+                  exprs[idx].params[jdx].valueField.source = "col";
+                }} />
             </Label>
           {/if}
           <Toggle size="small" class="pt-1" bind:checked={customInputChecked} />
@@ -45,16 +51,19 @@ let customInputChecked = $state(false);
           >{param["name"]}
           <MultiSelect
             size="sm"
-            items={colsInDf.map((col: any) => {
+            items={colsInPrevDf.map((col: any) => {
               return { value: col.name, name: col.name };
             })}
             bind:value={multiColSelection}
-            on:change={(event) => (exprs[idx].params[jdx].value = multiColSelection.join(", "))} />
+            on:change={(event) => {
+              exprs[idx].params[jdx].valueField.value = multiColSelection.join(", ");
+              exprs[idx].params[jdx].valueField.source = "cols";
+            }} />
         </Label>
       {:else}
         <Label class="text-black-600/75"
           >{param["name"]}
-          <Input type={param.ptype} size="sm" placeholder="..." bind:value={exprs[idx].params[jdx].value} />
+          <Input type={param.ptype} size="sm" placeholder="..." bind:value={exprs[idx].params[jdx].valueField.value} />
         </Label>
       {/if}
     {/each}
@@ -62,7 +71,7 @@ let customInputChecked = $state(false);
   <div class="col-span-2 col-start-11">
     <Label class="text-black-600/75"
       >new column name
-      <Input type="text" size="md" placeholder="..." bind:value={exprs[idx].rename} />
+      <Input type="text" size="md" placeholder="..." bind:value={exprs[idx].newColumnName} />
     </Label>
   </div>
 </div>

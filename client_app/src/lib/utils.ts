@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { Node } from "../components/nodes/NodeInstance";
 import { type Expression, type Column } from "./dtype";
 
 export function getUniqueAnalysesId(): string {
@@ -13,40 +14,52 @@ export function concatMap(map: Map<string, any>): string {
   return map.values().reduce((acc, item) => acc + String(item));
 }
 
-export function compileExpr(expr: Expression, colsInDf: Column[]): string[] {
+export function compileExpr(expr: Expression): string[] {
   let params: string[] = [];
   for (let param of expr.params) {
     if (param.ptype === "single_col") {
-      if (
-        colsInDf.findIndex((i: Column) => {
-          return i.name === param.value;
-        }) < 0
-      ) {
-        if (typeof param.value === "string") {
-          params.push(`'${param.value}'`);
-        } else {
-          params.push(`${param.value}`);
-        }
+      if (param.valueField.source === "input" && typeof param.valueField.value === "string") {
+        params.push(`'${param.valueField.value}'`);
       } else {
-        params.push(`${param.value}`);
+        params.push(`${param.valueField.value}`);
       }
     } else if (param.ptype === "multi_col") {
-      params.push(`${param.value}`);
+      params.push(`${param.valueField.value}`);
     } else if (param.ptype === "text") {
-      params.push(`'${param.value}'`);
+      params.push(`'${param.valueField.value}'`);
     } else if (param.ptype === "number") {
-      params.push(`${param.value}`);
+      params.push(`${param.valueField.value}`);
     }
   }
   return params;
 }
 
-export function compileExprString(expr: Expression, colsInDf: Column[]): string {
-  const params = compileExpr(expr, colsInDf);
-  return `${expr.fname}(${params.join(", ")}) as ${expr.rename}`;
+export function compileExprString(expr: Expression): string {
+  const params = compileExpr(expr);
+  return `${expr.fname}(${params.join(", ")}) as ${expr.newColumnName}`;
 }
 
-export function compileExprObj(expr: Expression, colsInDf: Column[]): { expression: string; col_name: string } {
-  const params = compileExpr(expr, colsInDf);
-  return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.rename };
+export function compileExprObj(expr: Expression): { expression: string; col_name: string } {
+  const params = compileExpr(expr);
+  return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
+}
+
+export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number): void {
+  let colsAdded = nodesInAnalysis[nodeIndex].colsInDf.filter((col: Column) =>
+    nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
+  );
+  for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
+    let colsInDfSnapshot = nodesInAnalysis[i].colsInDf;
+    nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: [...colsInDfSnapshot, ...colsAdded] };
+  }
+}
+
+export function syncNodeColsOnRemove(nodesInAnalysis: Node[], nodeIndex: number): void {
+  let colsToRemove = nodesInAnalysis[nodeIndex].colsAdded;
+  if (colsToRemove.size > 0) {
+    for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
+      let colsReduced = nodesInAnalysis[i].colsInDf.filter((col: Column) => !colsToRemove.has(col.name));
+      nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: colsReduced };
+    }
+  }
 }

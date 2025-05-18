@@ -6,12 +6,12 @@ import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { fetchSparkApi } from "$lib/clientApi";
-import { type SparkTransformResponse } from "$lib/dtype";
-import { compileExprString, compileExprObj } from "$lib/utils";
+import { type SparkTransformResponse, type Expression, type Param } from "$lib/dtype";
+import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
 
 let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
-let expressions: any[] = $state([]);
+let expressions: Expression[] = $state([]);
 let exprSelectionOpen = $state(false);
 let msg = $state("");
 
@@ -21,9 +21,9 @@ function addExpression(category: string, fname: string) {
   expressions.push({
     fname: fname,
     params: expr["params"].map((param: any) => {
-      return { ...param, value: "" };
+      return { ...param, valueField: { value: "", source: "input" } };
     }),
-    rename: "",
+    newColumnName: "",
     // @ts-ignore
     sparkTypes: new Set(sparkColumnFunctions[category].sparkTypes),
     // @ts-ignore
@@ -34,7 +34,7 @@ function addExpression(category: string, fname: string) {
 
 function duplicateExpr(exprId: number) {
   const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
-  exprToDuplicate.rename = "new_" + exprToDuplicate.rename;
+  exprToDuplicate.newColumnName = "new_" + exprToDuplicate.newColumnName;
   expressions.splice(exprId + 1, 0, exprToDuplicate);
 }
 
@@ -43,22 +43,40 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
+  const colsAdded = new Set(expressions.map((expr: Expression) => expr.newColumnName));
+  const colsUsed = new Set(
+    expressions
+      .flatMap((expr: Expression) => {
+        return expr.params
+          .filter((param: Param) => {
+            return param.valueField.source === "col" || param.valueField.source === "cols";
+          })
+          .map((param: Param) => {
+            if (param.valueField.source === "cols") {
+              return typeof param.valueField.value === "string" ? param.valueField.value.split(",") : undefined;
+            } else {
+              return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
+            }
+          });
+      })
+      .flat(),
+  );
+
   let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
     session_id: analysiId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
     prev_node_id: nodesInAnalysis[nodeIndex - 1].uuid,
-    expressions: expressions.map((expr: any) => {
-      return compileExprObj(expr, nodesInAnalysis[nodeIndex].colsInDf);
-    }),
+    expressions: expressions.map((expr: any) => compileExprObj(expr)),
   });
 
   if (transformResponse) {
     msg = transformResponse.msg;
     nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
+    nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
+    syncNodeColsOnAdded(nodesInAnalysis, nodeIndex);
   }
 }
-
-$inspect(expressions);
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
@@ -68,7 +86,7 @@ $inspect(expressions);
 {#each expressions as _, i}
   <div class="mb-4">
     <div class="flex items-stretch">
-      <ExpressionFrom bind:exprs={expressions} idx={i} colsInDf={nodesInAnalysis[nodeIndex].colsInDf} />
+      <ExpressionFrom bind:exprs={expressions} idx={i} colsInPrevDf={nodesInAnalysis[nodeIndex - 1].colsInDf} />
       <div class="mt-6 ml-4">
         <Button
           color="alternative"
@@ -84,7 +102,7 @@ $inspect(expressions);
           }}><FileCopyOutline /></Button>
       </div>
     </div>
-    <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i], nodesInAnalysis[nodeIndex].colsInDf)}</p>
+    <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i])}</p>
   </div>
 {/each}
 <div class="mt-4 flex justify-center">

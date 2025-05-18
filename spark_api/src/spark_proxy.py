@@ -1,5 +1,3 @@
-import time
-
 import sparkapi_pb2
 from sparkapi_pb2_grpc import SparkApiServicer
 
