@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner } from "flowbite-svelte";
+import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
 import { syncNodeColsOnRemove } from "$lib/utils";
@@ -12,7 +12,8 @@ import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
 
 let nextNodeId = $state("");
-let dropdownOpen = $state(false);
+let newNodeDropdownOpen = $state(false);
+let optionsOpen = $state(false);
 let summarizePromise = $state(
   Promise.resolve({
     session_id: analysiId,
@@ -22,6 +23,10 @@ let summarizePromise = $state(
     count: -1,
   }),
 );
+let activeNode = $state(true);
+let opacity = $derived.by(() => {
+  return activeNode ? "opacity-100" : "opacity-40";
+});
 
 $effect(() => {
   if (nextNodeId !== "") {
@@ -34,7 +39,7 @@ function insertNextNode(nodeType: string) {
   let nextNode = nodeFactoryMethod(nodeType, nodesInAnalysis[nodeIndex].colsInDf);
   nodesInAnalysis = nodesInAnalysis.toSpliced(nodeIndex + 1, 0, nextNode);
   nextNodeId = nextNode.uuid;
-  dropdownOpen = false;
+  newNodeDropdownOpen = false;
 }
 
 async function removeNode() {
@@ -46,6 +51,7 @@ async function removeNode() {
     syncNodeColsOnRemove(nodesInAnalysis, nodeIndex);
     nodesInAnalysis.splice(nodeIndex, 1);
   }
+  optionsOpen = false;
 }
 
 function previewEvent() {
@@ -66,14 +72,14 @@ function summarizeEvent() {
 // $inspect(`node: ${nodesInAnalysis[nodeIndex].uuid.slice(-5)}:`, nodesInAnalysis[nodeIndex].colsInDf, nodeIndex);
 </script>
 
-<div class="flex min-w-80 justify-center" id={nodesInAnalysis[nodeIndex].uuid}>
+<div class={"flex min-w-80 justify-center " + opacity} id={nodesInAnalysis[nodeIndex].uuid}>
   <Card class="max-w-5xl">
     <div class="flex justify-end">
       <DotsHorizontalOutline />
-      <Dropdown class="w-36">
+      <Dropdown class="w-36" bind:open={optionsOpen}>
         {#if nodesInAnalysis[nodeIndex].nodeType !== "load"}
           <div class="flex items-stretch">
-            <DropdownItem onclick={removeNode} class="flex items-center">
+            <DropdownItem class="flex items-center" disabled={!activeNode} onclick={removeNode}>
               <TrashBinOutline class="mr-2" />
               Remove
             </DropdownItem>
@@ -93,12 +99,16 @@ function summarizeEvent() {
     {:else if nodesInAnalysis[nodeIndex].title === "Add Column"}<AddColumnNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
-        analysiId={analysiId} />
+        analysiId={analysiId}
+        activeNode={activeNode} />
     {/if}
 
     <div class="mt-2">
-      <Button size="xs" color="light" on:click={previewEvent}>Preview</Button>
-      <Button size="xs" color="light" on:click={summarizeEvent}>Summarize</Button>
+      <Button size="xs" color="light" disabled={!activeNode} on:click={previewEvent}>Preview</Button>
+      <Button size="xs" color="light" disabled={!activeNode} on:click={summarizeEvent}>Summarize</Button>
+      {#if nodesInAnalysis[nodeIndex].title !== "Load"}
+        <Toggle size="small" class="pt-1" bind:checked={activeNode} />
+      {/if}
     </div>
 
     {#await summarizePromise}
@@ -111,12 +121,13 @@ function summarizeEvent() {
   </Card>
 </div>
 <div class="p-1 mb-4 flex justify-center">
-  <Button size="xs" color="dark">New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
-  <Dropdown bind:open={dropdownOpen}>
-    <DropdownItem onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
-    <DropdownItem onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
-    <DropdownItem onclick={() => insertNextNode("Join")}>Join</DropdownItem>
+  <Button size="xs" color="dark" disabled={!activeNode}
+    >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
+  <Dropdown bind:open={newNodeDropdownOpen}>
+    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
+    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
+    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Join")}>Join</DropdownItem>
     <DropdownDivider />
-    <DropdownItem onclick={() => insertNextNode("Table")}>Table</DropdownItem>
+    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Table")}>Table</DropdownItem>
   </Dropdown>
 </div>

@@ -9,7 +9,7 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { type SparkTransformResponse, type Expression, type Param } from "$lib/dtype";
 import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
 
-let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
+let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, activeNode } = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
 let expressions: Expression[] = $state([]);
 let exprSelectionOpen = $state(false);
@@ -166,5 +166,5 @@ async function submit() {
   </Dropdown>
 </div>
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-  <Button on:click={submit}>Submit</Button>
+  <Button disabled={!activeNode} onclick={submit}>Submit</Button>
 </div>
