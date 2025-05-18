@@ -1,8 +1,9 @@
 from collections import deque
 
+from pyspark.errors import PySparkException
 from pyspark.sql import SparkSession
 
-from custom_exceptions import LoadNodeRemovalException
+from custom_exceptions import EmptyException, InvalidRemovalException, LoadNodeRemovalException
 from Nodes import SparkNode
 
 
@@ -72,10 +73,13 @@ class SessionPlanner:
         elif del_position == -1:
             self._delete_node(del_position)
         else:
-            self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
-            self._delete_node(del_position)
-            # rerun from removed
-            self.reapply_plan(spark, del_position)
+            if not isinstance(ex := self.is_removal_safe(spark, del_position), InvalidRemovalException):
+                self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
+                self._delete_node(del_position)
+                # rerun from removed
+                self.reapply_plan(spark, del_position)
+            else:
+                raise ex
 
     def _delete_node(self, position: int):
         del self.nodes[position]
@@ -87,3 +91,17 @@ class SessionPlanner:
                 spark=spark,
                 df=self.nodes[node_position - 1].df,
             )
+
+    def is_removal_safe(self, spark: SparkSession, to_remove_idx: int) -> Exception:
+        node_positions = [to_remove_idx - 1] + list(range(to_remove_idx + 1, len(self.nodes)))
+        try:
+            for idx in range(1, len(node_positions)):
+                node = self.nodes[node_positions[idx]]
+                node.df = node.run_transform(
+                    spark=spark,
+                    df=self.nodes[node_positions[idx - 1]].df,
+                )
+            return EmptyException()
+        except PySparkException as ex:
+            msg = f'Error: {ex.getErrorClass()}, params: {ex.getMessageParameters()}, recorded on node: {self.nodes[node_positions[idx]].node_id}'
+            return InvalidRemovalException(msg)
