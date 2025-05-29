@@ -42,7 +42,7 @@ class SparkApiStub(object):
         self.previewDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/previewDataset',
                 request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-                response_deserializer=sparkapi__pb2.RowsResponse.FromString,
+                response_deserializer=sparkapi__pb2.DatasetResponse.FromString,
                 _registered_method=True)
         self.summarizeDataset = channel.unary_unary(
                 '/sparkapi.SparkApi/summarizeDataset',
@@ -199,7 +199,7 @@ def add_SparkApiServicer_to_server(servicer, server):
             'previewDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.previewDataset,
                     request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
-                    response_serializer=sparkapi__pb2.RowsResponse.SerializeToString,
+                    response_serializer=sparkapi__pb2.DatasetResponse.SerializeToString,
             ),
             'summarizeDataset': grpc.unary_unary_rpc_method_handler(
                     servicer.summarizeDataset,
@@ -310,7 +310,7 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/previewDataset',
             sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
-            sparkapi__pb2.RowsResponse.FromString,
+            sparkapi__pb2.DatasetResponse.FromString,
             options,
             channel_credentials,
             insecure,

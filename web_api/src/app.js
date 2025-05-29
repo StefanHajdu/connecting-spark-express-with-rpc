@@ -6,6 +6,7 @@ import { errorHandler } from "./errors/errorHandler.js";
 const app = express();
 
 app.use(express.json());
+app.use(express.raw());
 app.use(cors());
 
 let sp = new SparkClient();
@@ -60,11 +61,17 @@ app.post("/rebuildSession/:session_id", (req, res, next) => {
 
 // ACTIONS
 app.post("/summarize", (req, res, next) => {
+  console.log("summarize");
   sp._summarizeDataset(req.body, res, next);
 });
 
 app.post("/preview", (req, res, next) => {
-  sp._previewDataset(req.body, res, next);
+  console.log("preview");
+  sp.client.previewDataset(req.body, (err, fromSpark) => {
+    console.log(fromSpark);
+    res.set("Content-Type", "application/octet-stream");
+    res.send(fromSpark.data);
+  });
 });
 
 app.use(errorHandler);
