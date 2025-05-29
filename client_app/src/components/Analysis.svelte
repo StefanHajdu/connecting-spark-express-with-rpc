@@ -1,10 +1,11 @@
 <script lang="ts">
 import { TabItem } from "flowbite-svelte";
-import { nodeFactoryMethod } from "./nodes/NodeInstance";
+import { nodeFactoryMethod } from "./nodes/NodeInstance.svelte";
 import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
+
 // $inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
 </script>
 
@@ -15,7 +16,7 @@ let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
     </p>
 
     {#each nodesInAnalysis as node, i (node.uuid)}
-      <Node bind:nodesInAnalysis={nodesInAnalysis} nodeIndex={i} analysiId={id} />
+      <Node bind:nodesInAnalysis={nodesInAnalysis} nodeIndex={i} analysisId={id} />
     {/each}
   </div>
 </TabItem>

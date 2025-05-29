@@ -2,9 +2,15 @@
 import { Input, Button } from "flowbite-svelte";
 import { fetchSparkApi } from "$lib/clientApi";
 import { type SparkLoadFileResponse, type Column } from "$lib/dtype";
-import { Node } from "./NodeInstance";
+import { Node } from "./NodeInstance.svelte";
 
-let { analysiId, nodesInAnalysis = $bindable(), nodeIndex } = $props();
+interface Props {
+  nodesInAnalysis: Node[];
+  nodeIndex: number;
+  analysisId: string;
+}
+
+let { analysisId, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
 
 let filePath: string = $state("");
@@ -13,14 +19,15 @@ let fileSize = $state(0);
 
 async function submit() {
   let loadResponse: SparkLoadFileResponse = await fetchSparkApi("submitNode/LoadDatasetNode", {
-    session_id: analysiId,
+    session_id: analysisId,
     path: filePath,
   });
 
   if (loadResponse) {
     msg = loadResponse.transformResponse.msg;
     fileSize = loadResponse.size;
-    nodesInAnalysis[nodeIndex].colsInDf = loadResponse.transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode =
+      loadResponse.transformResponse.columns;
     nodesInAnalysis[nodeIndex].colsAdded = new Set(
       loadResponse.transformResponse.columns.map((col: Column) => col.name),
     );

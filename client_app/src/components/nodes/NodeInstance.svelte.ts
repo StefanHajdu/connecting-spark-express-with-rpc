@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { type Column } from "$lib/dtype";
+import { type SparkTransformResponse } from "$lib/dtype";
+import { fetchSparkApi } from "$lib/clientApi";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -20,20 +22,20 @@ export function nodeFactoryMethod(title: string, colsInDf: Column[]): Node {
 }
 
 export abstract class Node {
-  uuid: string;
-  title: string;
-  nodeType: string;
-  colsAdded: Set<string>;
-  colsUsed: Set<string | undefined>;
-  colsInDf: Column[];
+  uuid: string = $state("");
+  title: string = $state("");
+  nodeType: string = $state("");
+  colsAdded: Set<string> = $state(new Set([]));
+  colsUsed: Set<string | undefined> = $state(new Set([]));
+  colsInNode: Column[] = $state([]);
+  colsInTransform: Column[] = $state([]);
+  active: boolean = $state(true);
 
-  constructor(title: string, colsInDf: Column[]) {
+  constructor(title: string, cols: Column[]) {
     this.uuid = "node-" + uuidv4();
     this.title = title;
-    this.colsAdded = new Set([]);
-    this.colsUsed = new Set([]);
-    this.colsInDf = colsInDf;
-    this.nodeType = "";
+    this.colsInNode = cols;
+    this.colsInTransform = cols;
   }
 }
 
@@ -45,10 +47,27 @@ class LoadNode extends Node {
   }
 }
 
-class AddColumnNode extends Node {
+export class AddColumnNode extends Node {
+  expressions: any[];
+
   constructor(title: string, colsInDf: Column[]) {
     super(title, colsInDf);
     this.nodeType = "sql";
+    this.expressions = [];
+  }
+
+  public async submitTransform(
+    analysisId: string,
+    nodeId: string,
+    prevNodeId: string,
+  ): Promise<SparkTransformResponse> {
+    let transformResponse = fetchSparkApi("submitNode/NewColumnNode", {
+      session_id: analysisId,
+      node_id: nodeId,
+      prev_node_id: prevNodeId,
+      expressions: this.expressions,
+    });
+    return transformResponse;
   }
 }
 

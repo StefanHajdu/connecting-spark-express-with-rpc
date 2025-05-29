@@ -43,6 +43,7 @@ export interface Param {
 }
 
 export interface Expression {
+  uuid: string;
   fname: string;
   params: Param[];
   newColumnName: string;
