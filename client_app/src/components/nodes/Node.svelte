@@ -2,10 +2,10 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { syncNodeColsOnRemove } from "$lib/utils";
+import { syncNodeColsOnRemove, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 import { type SparkTransformResponse } from "$lib/dtype";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
-import { nodeFactoryMethod, Node } from "./NodeInstance";
+import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
@@ -74,6 +74,34 @@ function summarizeEvent() {
     finishAction();
   }
 }
+
+async function toggle() {
+  if (activeNodeStatus) {
+    // enabled => disabled
+    let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
+      session_id: analysisId,
+      node_id: nodesInAnalysis[nodeIndex].uuid,
+    });
+    if (transformResponse) {
+      syncNodeColsOnRemove(nodesInAnalysis, nodeIndex);
+    }
+    nodesInAnalysis[nodeIndex].active = false;
+  } else {
+    // disabled => enabled
+    if (nodesInAnalysis[nodeIndex] instanceof AddColumnNodeIn) {
+      let transformResponse = await nodesInAnalysis[nodeIndex].submitTransform(
+        analysisId,
+        nodesInAnalysis[nodeIndex].uuid,
+        nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+      );
+      if (transformResponse) {
+        syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
+      }
+    }
+    nodesInAnalysis[nodeIndex].active = true;
+  }
+}
+
 // $inspect("node:", nodeIndex, nodesInAnalysis[nodeIndex].colsInNode);
 </script>
 
@@ -112,7 +140,7 @@ function summarizeEvent() {
       <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewEvent}>Preview</Button>
       <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeEvent}>Summarize</Button>
       {#if nodesInAnalysis[nodeIndex].title !== "Load"}
-        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} />
+        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggle} />
       {/if}
     </div>
 

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Node } from "../components/nodes/NodeInstance";
+import { Node } from "../components/nodes/NodeInstance.svelte";
 import { type Expression, type Column } from "./dtype";
 
 export function getUniqueAnalysesId(): string {
@@ -12,6 +12,17 @@ export function sleepNow(delay: number) {
 
 export function concatMap(map: Map<string, any>): string {
   return map.values().reduce((acc, item) => acc + String(item));
+}
+
+export function getActivePredecessor(nodesInAnalysis: Node[], nodeIndex: number): number {
+  let index = 0;
+  for (let i = nodeIndex - 1; i >= 0; i--) {
+    if (nodesInAnalysis[i].active) {
+      index = i;
+      break;
+    }
+  }
+  return index;
 }
 
 export function compileExpr(expr: Expression): string[] {
@@ -44,14 +55,13 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
   return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
 }
 
-export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number): void {
+export function syncNodeColsOnAdd(nodesInAnalysis: Node[], nodeIndex: number): void {
   let colsAdded = nodesInAnalysis[nodeIndex].colsInNode.filter((col: Column) =>
     nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
   );
-  nodesInAnalysis[nodeIndex] = { ...nodesInAnalysis[nodeIndex], colsInNode: nodesInAnalysis[nodeIndex].colsInNode };
   for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
     let colsInTransformSnapshot = nodesInAnalysis[i].colsInTransform;
-    nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInNode: [...colsInTransformSnapshot, ...colsAdded] };
+    nodesInAnalysis[i].colsInNode = [...colsInTransformSnapshot, ...colsAdded];
   }
 }
 
@@ -60,7 +70,7 @@ export function syncNodeColsOnRemove(nodesInAnalysis: Node[], nodeIndex: number)
   if (colsToRemove.size > 0) {
     for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
       let colsReduced = nodesInAnalysis[i].colsInNode.filter((col: Column) => !colsToRemove.has(col.name));
-      nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInNode: colsReduced };
+      nodesInAnalysis[i].colsInNode = colsReduced;
     }
   }
 }

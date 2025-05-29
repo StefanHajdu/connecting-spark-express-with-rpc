@@ -2,7 +2,7 @@
 import { Input, Button } from "flowbite-svelte";
 import { fetchSparkApi } from "$lib/clientApi";
 import { type SparkLoadFileResponse, type Column } from "$lib/dtype";
-import { Node } from "./NodeInstance";
+import { Node } from "./NodeInstance.svelte";
 
 interface Props {
   nodesInAnalysis: Node[];

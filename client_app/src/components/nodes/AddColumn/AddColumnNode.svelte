@@ -3,12 +3,12 @@ import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from 
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
 import { v4 as uuidv4 } from "uuid";
-import { Node } from "../NodeInstance";
+import { Node, AddColumnNode } from "../NodeInstance.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { fetchSparkApi } from "$lib/clientApi";
 import type { SparkTransformResponse, Expression, Param } from "$lib/dtype";
-import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
+import { compileExprString, compileExprObj, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 
 interface Props {
   nodesInAnalysis: Node[];
@@ -71,19 +71,25 @@ async function submit() {
       .flat(),
   );
 
+  const expressionsCompiled = expressions.map((expr: any) => compileExprObj(expr));
+
   let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
     session_id: analysisId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
-    prev_node_id: nodesInAnalysis[nodeIndex - 1].uuid,
-    expressions: expressions.map((expr: any) => compileExprObj(expr)),
+    prev_node_id: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+    expressions: expressionsCompiled,
   });
+
+  if (nodesInAnalysis[nodeIndex] instanceof AddColumnNode) {
+    nodesInAnalysis[nodeIndex].expressions = expressionsCompiled;
+  }
 
   if (transformResponse) {
     msg = transformResponse.msg;
     nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode = transformResponse.columns;
     nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
     nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
-    syncNodeColsOnAdded(nodesInAnalysis, nodeIndex);
+    syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
   }
 }
 </script>
@@ -98,7 +104,7 @@ async function submit() {
       <ExpressionFrom
         bind:exprs={expressions}
         idx={i}
-        colsInPrevDf={nodesInAnalysis[nodeIndex - 1].colsInNode}
+        colsInPrevDf={nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].colsInNode}
         nodeIndex={nodeIndex} />
       <div class="mt-6 ml-4">
         <Button
