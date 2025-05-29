@@ -45,12 +45,13 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
 }
 
 export function syncNodeColsOnAdded(nodesInAnalysis: Node[], nodeIndex: number): void {
-  let colsAdded = nodesInAnalysis[nodeIndex].colsInDf.filter((col: Column) =>
+  let colsAdded = nodesInAnalysis[nodeIndex].colsInNode.filter((col: Column) =>
     nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
   );
+  nodesInAnalysis[nodeIndex] = { ...nodesInAnalysis[nodeIndex], colsInNode: nodesInAnalysis[nodeIndex].colsInNode };
   for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
-    let colsInDfSnapshot = nodesInAnalysis[i].colsInDf;
-    nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: [...colsInDfSnapshot, ...colsAdded] };
+    let colsInTransformSnapshot = nodesInAnalysis[i].colsInTransform;
+    nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInNode: [...colsInTransformSnapshot, ...colsAdded] };
   }
 }
 
@@ -58,8 +59,8 @@ export function syncNodeColsOnRemove(nodesInAnalysis: Node[], nodeIndex: number)
   let colsToRemove = nodesInAnalysis[nodeIndex].colsAdded;
   if (colsToRemove.size > 0) {
     for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
-      let colsReduced = nodesInAnalysis[i].colsInDf.filter((col: Column) => !colsToRemove.has(col.name));
-      nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInDf: colsReduced };
+      let colsReduced = nodesInAnalysis[i].colsInNode.filter((col: Column) => !colsToRemove.has(col.name));
+      nodesInAnalysis[i] = { ...nodesInAnalysis[i], colsInNode: colsReduced };
     }
   }
 }

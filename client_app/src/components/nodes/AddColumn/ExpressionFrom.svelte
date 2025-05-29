@@ -1,7 +1,15 @@
 <script lang="ts">
 import { Label, Select, MultiSelect, Input, Toggle } from "flowbite-svelte";
+import type { Expression, Column } from "$lib/dtype";
 
-let { exprs = $bindable(), idx, colsInPrevDf } = $props();
+interface Props {
+  exprs: Expression[];
+  idx: number;
+  colsInPrevDf: Column[];
+  nodeIndex: number;
+}
+
+let { exprs = $bindable(), idx, colsInPrevDf, nodeIndex } = $props();
 let multiColSelection = $state([]);
 let customInputChecked = $state(false);
 </script>

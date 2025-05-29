@@ -15,7 +15,7 @@ let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
     </p>
 
     {#each nodesInAnalysis as node, i (node.uuid)}
-      <Node bind:nodesInAnalysis={nodesInAnalysis} nodeIndex={i} analysiId={id} />
+      <Node bind:nodesInAnalysis={nodesInAnalysis} nodeIndex={i} analysisId={id} />
     {/each}
   </div>
 </TabItem>

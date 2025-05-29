@@ -5,27 +5,33 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { syncNodeColsOnRemove } from "$lib/utils";
 import { type SparkTransformResponse } from "$lib/dtype";
 import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
-import { nodeFactoryMethod } from "./NodeInstance";
+import { nodeFactoryMethod, Node } from "./NodeInstance";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
-let { nodesInAnalysis = $bindable(), nodeIndex, analysiId } = $props();
+interface Props {
+  nodesInAnalysis: Node[];
+  nodeIndex: number;
+  analysisId: string;
+}
+
+let { nodesInAnalysis = $bindable(), nodeIndex, analysisId }: Props = $props();
 
 let nextNodeId = $state("");
 let newNodeDropdownOpen = $state(false);
 let optionsOpen = $state(false);
 let summarizePromise = $state(
   Promise.resolve({
-    session_id: analysiId,
+    session_id: analysisId,
     msg: "",
     columns: "",
     schema: "",
     count: -1,
   }),
 );
-let activeNode = $state(true);
+let activeNodeStatus = $state(true);
 let opacity = $derived.by(() => {
-  return activeNode ? "opacity-100" : "opacity-40";
+  return activeNodeStatus ? "opacity-100" : "opacity-40";
 });
 
 $effect(() => {
@@ -36,7 +42,7 @@ $effect(() => {
 });
 
 function insertNextNode(nodeType: string) {
-  let nextNode = nodeFactoryMethod(nodeType, nodesInAnalysis[nodeIndex].colsInDf);
+  let nextNode = nodeFactoryMethod(nodeType, nodesInAnalysis[nodeIndex].colsInNode);
   nodesInAnalysis = nodesInAnalysis.toSpliced(nodeIndex + 1, 0, nextNode);
   nextNodeId = nextNode.uuid;
   newNodeDropdownOpen = false;
@@ -44,7 +50,7 @@ function insertNextNode(nodeType: string) {
 
 async function removeNode() {
   let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
-    session_id: analysiId,
+    session_id: analysisId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
   });
   if (transformResponse) {
@@ -55,21 +61,20 @@ async function removeNode() {
 }
 
 function previewEvent() {
-  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, nodesInAnalysis[nodeIndex].uuid, "preview");
+  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "preview");
 }
 
 function summarizeEvent() {
-  requestAction(analysiId, nodesInAnalysis[nodeIndex].colsInDf, nodesInAnalysis[nodeIndex].uuid, "sum");
+  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "sum");
   if (actionState.confirmed) {
     summarizePromise = fetchSparkApi("summarize", {
-      session_id: analysiId,
+      session_id: analysisId,
       node_id: nodesInAnalysis[nodeIndex].uuid,
     });
     finishAction();
   }
 }
-
-// $inspect(`node: ${nodesInAnalysis[nodeIndex].uuid.slice(-5)}:`, nodesInAnalysis[nodeIndex].colsInDf, nodeIndex);
+// $inspect("node:", nodeIndex, nodesInAnalysis[nodeIndex].colsInNode);
 </script>
 
 <div class={"flex min-w-80 justify-center " + opacity} id={nodesInAnalysis[nodeIndex].uuid}>
@@ -79,7 +84,7 @@ function summarizeEvent() {
       <Dropdown class="w-36" bind:open={optionsOpen}>
         {#if nodesInAnalysis[nodeIndex].nodeType !== "load"}
           <div class="flex items-stretch">
-            <DropdownItem class="flex items-center" disabled={!activeNode} onclick={removeNode}>
+            <DropdownItem class="flex items-center" disabled={!activeNodeStatus} onclick={removeNode}>
               <TrashBinOutline class="mr-2" />
               Remove
             </DropdownItem>
@@ -95,19 +100,19 @@ function summarizeEvent() {
     {#if nodesInAnalysis[nodeIndex].title === "Load"}<LoadNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
-        analysiId={analysiId} />
+        analysisId={analysisId} />
     {:else if nodesInAnalysis[nodeIndex].title === "Add Column"}<AddColumnNode
         bind:nodesInAnalysis={nodesInAnalysis}
         nodeIndex={nodeIndex}
-        analysiId={analysiId}
-        activeNode={activeNode} />
+        analysisId={analysisId}
+        activeNodeStatus={activeNodeStatus} />
     {/if}
 
     <div class="mt-2">
-      <Button size="xs" color="light" disabled={!activeNode} on:click={previewEvent}>Preview</Button>
-      <Button size="xs" color="light" disabled={!activeNode} on:click={summarizeEvent}>Summarize</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewEvent}>Preview</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeEvent}>Summarize</Button>
       {#if nodesInAnalysis[nodeIndex].title !== "Load"}
-        <Toggle size="small" class="pt-1" bind:checked={activeNode} />
+        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} />
       {/if}
     </div>
 
@@ -121,13 +126,13 @@ function summarizeEvent() {
   </Card>
 </div>
 <div class="p-1 mb-4 flex justify-center">
-  <Button size="xs" color="dark" disabled={!activeNode}
+  <Button size="xs" color="dark" disabled={!activeNodeStatus}
     >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
   <Dropdown bind:open={newNodeDropdownOpen}>
-    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
-    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
-    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Join")}>Join</DropdownItem>
+    <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
+    <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Add Column")}>Add Column</DropdownItem>
+    <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Join")}>Join</DropdownItem>
     <DropdownDivider />
-    <DropdownItem disabled={!activeNode} onclick={() => insertNextNode("Table")}>Table</DropdownItem>
+    <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Table")}>Table</DropdownItem>
   </Dropdown>
 </div>

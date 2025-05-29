@@ -2,14 +2,22 @@
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
+import { v4 as uuidv4 } from "uuid";
 import { Node } from "../NodeInstance";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { fetchSparkApi } from "$lib/clientApi";
-import { type SparkTransformResponse, type Expression, type Param } from "$lib/dtype";
+import type { SparkTransformResponse, Expression, Param } from "$lib/dtype";
 import { compileExprString, compileExprObj, syncNodeColsOnAdded } from "$lib/utils";
 
-let { analysiId, nodesInAnalysis = $bindable(), nodeIndex, activeNode } = $props();
+interface Props {
+  nodesInAnalysis: Node[];
+  nodeIndex: number;
+  analysisId: string;
+  activeNodeStatus: boolean;
+}
+
+let { analysisId, nodesInAnalysis = $bindable(), nodeIndex, activeNodeStatus }: Props = $props();
 let node: Node = nodesInAnalysis[nodeIndex];
 let expressions: Expression[] = $state([]);
 let exprSelectionOpen = $state(false);
@@ -19,6 +27,7 @@ function addExpression(category: string, fname: string) {
   // @ts-ignore
   let expr = sparkColumnFunctions[category].exprs[fname];
   expressions.push({
+    uuid: "add_col_expr-" + uuidv4(),
     fname: fname,
     params: expr["params"].map((param: any) => {
       return { ...param, valueField: { value: "", source: "input" } };
@@ -63,7 +72,7 @@ async function submit() {
   );
 
   let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
-    session_id: analysiId,
+    session_id: analysisId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
     prev_node_id: nodesInAnalysis[nodeIndex - 1].uuid,
     expressions: expressions.map((expr: any) => compileExprObj(expr)),
@@ -71,7 +80,7 @@ async function submit() {
 
   if (transformResponse) {
     msg = transformResponse.msg;
-    nodesInAnalysis[nodeIndex].colsInDf = transformResponse.columns;
+    nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode = transformResponse.columns;
     nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
     nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
     syncNodeColsOnAdded(nodesInAnalysis, nodeIndex);
@@ -83,10 +92,14 @@ async function submit() {
   {node.title}
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
-{#each expressions as _, i}
+{#each expressions as expr, i (expr.uuid)}
   <div class="mb-4">
     <div class="flex items-stretch">
-      <ExpressionFrom bind:exprs={expressions} idx={i} colsInPrevDf={nodesInAnalysis[nodeIndex - 1].colsInDf} />
+      <ExpressionFrom
+        bind:exprs={expressions}
+        idx={i}
+        colsInPrevDf={nodesInAnalysis[nodeIndex - 1].colsInNode}
+        nodeIndex={nodeIndex} />
       <div class="mt-6 ml-4">
         <Button
           color="alternative"
@@ -166,5 +179,5 @@ async function submit() {
   </Dropdown>
 </div>
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-  <Button disabled={!activeNode} onclick={submit}>Submit</Button>
+  <Button disabled={!activeNodeStatus} onclick={submit}>Submit</Button>
 </div>
