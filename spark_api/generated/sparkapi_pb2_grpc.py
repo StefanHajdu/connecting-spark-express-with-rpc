@@ -39,7 +39,7 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NewSessionRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.NewSessionResponse.FromString,
                 _registered_method=True)
-        self.previewDataset = channel.unary_unary(
+        self.previewDataset = channel.unary_stream(
                 '/sparkapi.SparkApi/previewDataset',
                 request_serializer=sparkapi__pb2.PreviewDatasetRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.DatasetResponse.FromString,
@@ -196,7 +196,7 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.NewSessionRequest.FromString,
                     response_serializer=sparkapi__pb2.NewSessionResponse.SerializeToString,
             ),
-            'previewDataset': grpc.unary_unary_rpc_method_handler(
+            'previewDataset': grpc.unary_stream_rpc_method_handler(
                     servicer.previewDataset,
                     request_deserializer=sparkapi__pb2.PreviewDatasetRequest.FromString,
                     response_serializer=sparkapi__pb2.DatasetResponse.SerializeToString,
@@ -305,7 +305,7 @@ class SparkApi(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(
+        return grpc.experimental.unary_stream(
             request,
             target,
             '/sparkapi.SparkApi/previewDataset',

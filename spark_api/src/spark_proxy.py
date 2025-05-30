@@ -186,6 +186,10 @@ class SparkApiServicer(SparkApiServicer):
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
 
-        df_bytesio = session.preview(node, req.limit)
-        df_in_bytes = df_bytesio.getbuffer().tobytes()
-        return sparkapi_pb2.DatasetResponse(data=df_in_bytes)
+        json_buffer = session.preview(node, req.limit)
+        chunk_size = 1024 * 10  # 10 mb
+        idx = 0
+        while idx < len(json_buffer):
+            chunk = json_buffer[idx : idx + chunk_size]
+            yield sparkapi_pb2.DatasetResponse(data=chunk)
+            idx += chunk_size

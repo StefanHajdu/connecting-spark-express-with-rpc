@@ -60,8 +60,37 @@ async function removeNode() {
   optionsOpen = false;
 }
 
-function previewEvent() {
-  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "preview");
+async function previewEvent() {
+  const response = await fetch("http://localhost:4444/preview", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: analysisId,
+      node_id: nodesInAnalysis[nodeIndex].uuid,
+      limit: 100000,
+    }),
+  });
+
+  console.log(response);
+
+  let final: any;
+
+  const reader = response.body?.getReader();
+  let decoder = new TextDecoder();
+  let jsonText = "";
+
+  while (true) {
+    let chunk = await reader?.read();
+    if (chunk?.done) {
+      console.log(chunk.done);
+      final = jsonText;
+      break;
+    }
+
+    jsonText += decoder.decode(chunk?.value, { stream: true });
+  }
+
+  console.log(JSON.parse(final));
 }
 
 function summarizeEvent() {

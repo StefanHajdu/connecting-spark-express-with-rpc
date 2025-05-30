@@ -61,16 +61,21 @@ app.post("/rebuildSession/:session_id", (req, res, next) => {
 
 // ACTIONS
 app.post("/summarize", (req, res, next) => {
-  console.log("summarize");
   sp._summarizeDataset(req.body, res, next);
 });
 
 app.post("/preview", (req, res, next) => {
-  console.log("preview");
-  sp.client.previewDataset(req.body, (err, fromSpark) => {
-    console.log(fromSpark);
-    res.set("Content-Type", "application/octet-stream");
-    res.send(fromSpark.data);
+  res.writeHead(200, {
+    "Content-Type": "application/json",
+    "Transfer-Encoding": "chunked",
+  });
+  const previewStream = sp.client.previewDataset(req.body);
+  previewStream.on("data", (chunk) => {
+    res.write(chunk.data);
+  });
+  previewStream.on("end", () => {
+    res.end();
+    next();
   });
 });
 

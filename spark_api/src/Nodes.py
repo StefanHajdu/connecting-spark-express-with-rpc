@@ -81,11 +81,17 @@ class SparkNode:
             'schema': self.df.schema.json(),
         }
 
-    def preview(self, limit) -> io.BytesIO:
-        df_subset = self.df.limit(limit).toPandas()
-        buffer = io.BytesIO()
-        df_subset.to_json(buffer, orient='table')
-        return buffer
+    def preview(self, limit) -> str:
+        df_pandas = self.df.limit(limit).toPandas()
+        json_buffer = df_pandas.to_json(orient='columns', force_ascii=False, date_format='iso')
+        # append df values and schema to valid json
+        return (
+            '{"data":'
+            + json_buffer
+            + ',"columns":'
+            + json.dumps([{'name': field['name'], 'type': field['type']} for field in json.loads(self.df.schema.json())['fields']])
+            + '}'
+        )
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
