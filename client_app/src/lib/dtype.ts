@@ -58,5 +58,5 @@ type SparkColumn = {
 
 export type DataFrame = {
   columns: SparkColumn[];
-  data: Record<string, { number: string }>;
+  data: string[][];
 };

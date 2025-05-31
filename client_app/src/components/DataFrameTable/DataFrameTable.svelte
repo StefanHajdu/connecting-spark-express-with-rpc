@@ -1,27 +1,23 @@
 <script lang="ts">
 import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell, Spinner } from "flowbite-svelte";
-import { lastPreviewedRows } from "$lib/stores";
-import { actionState, finishAction } from "$lib/actionState.svelte";
+import { get } from "svelte/store";
 import { post, bufferSparkStreamingApi } from "$lib/clientApi";
-import type { DataFrame } from "$lib/dtype";
+import { lastDataframe } from "$lib/stores";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-let dataframe: DataFrame | {} = $state({});
 let streamInProgress = $state(false);
 
 export async function preview(analysisId: string, nodeId: string): Promise<void> {
+  streamInProgress = true;
   const streamingResponse = await post("/preview", {
     session_id: analysisId,
     node_id: nodeId,
     limit: 1000,
   });
 
-  console.log(streamingResponse);
-
-  streamInProgress = true;
   const validJson = await bufferSparkStreamingApi(streamingResponse);
-  dataframe = JSON.parse(validJson);
+  lastDataframe.set(JSON.parse(validJson));
   streamInProgress = false;
 }
 </script>
@@ -29,21 +25,16 @@ export async function preview(analysisId: string, nodeId: string): Promise<void>
 {#if streamInProgress}
   <Spinner size="6" />
 {:else}
-  <p>Done</p>
-{/if}
-
-<!-- {#await previewPromise}
-{:then _}
   <div class="h-80 overflow-y-auto">
     <Table>
       <TableHead>
         <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs"></TableHeadCell>
-        {#each actionState.columns as column}
-          <DataFrameTableHeadCell columnName={column.name} dType={column.dtype} />
+        {#each get(lastDataframe).columns as column}
+          <DataFrameTableHeadCell columnName={column.name} dType={column.type} />
         {/each}
       </TableHead>
       <TableBody>
-        {#each $lastPreviewedRows as row, id}
+        {#each get(lastDataframe).data as row, id}
           <TableBodyRow>
             <TableBodyCell class="text- normal border border-black px-3 py-2 text-xs">{id + 1}</TableBodyCell>
             {#each Object.values(row) as rowValue}
@@ -54,4 +45,4 @@ export async function preview(analysisId: string, nodeId: string): Promise<void>
       </TableBody>
     </Table>
   </div>
-{/await} -->
+{/if}

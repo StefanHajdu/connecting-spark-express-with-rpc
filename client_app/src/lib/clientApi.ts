@@ -13,11 +13,8 @@ export async function bufferSparkStreamingApi(streamingResponse: Response): Prom
   while (true) {
     let chunk = await reader?.read();
     if (chunk?.done) {
-      console.log("done");
       return jsonText;
     }
-
-    console.log("chunk", decoder.decode(chunk?.value, { stream: true }));
     jsonText += decoder.decode(chunk?.value, { stream: true });
   }
 }
