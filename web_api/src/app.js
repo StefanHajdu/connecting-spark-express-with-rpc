@@ -6,7 +6,6 @@ import { errorHandler } from "./errors/errorHandler.js";
 const app = express();
 
 app.use(express.json());
-app.use(express.raw());
 app.use(cors());
 
 let sp = new SparkClient();
