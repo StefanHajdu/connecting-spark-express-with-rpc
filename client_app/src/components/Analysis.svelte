@@ -17,20 +17,22 @@ function previewAction(nodeId: string) {
 </script>
 
 <TabItem open title={name}>
-  <div id={name}>
-    <p class="text-sm text-gray-500 dark:text-gray-400">
-      <b>{name}</b>
-    </p>
+  <main class="bg-white-500 space-y-4 p-4">
+    <div id={name}>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        <b>{name}</b>
+      </p>
 
-    {#each nodesInAnalysis as node, i (node.uuid)}
-      <Node
-        bind:nodesInAnalysis={nodesInAnalysis}
-        nodeIndex={i}
-        analysisId={id}
-        preview={(nodeId) => {
-          previewAction(nodeId);
-        }} />
-    {/each}
-  </div>
+      {#each nodesInAnalysis as node, i (node.uuid)}
+        <Node
+          bind:nodesInAnalysis={nodesInAnalysis}
+          nodeIndex={i}
+          analysisId={id}
+          preview={(nodeId) => {
+            previewAction(nodeId);
+          }} />
+      {/each}
+    </div>
+  </main>
+  <PreviewFooter bind:this={previewFooter} />
 </TabItem>
-<PreviewFooter bind:this={previewFooter} />
