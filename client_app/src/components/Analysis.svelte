@@ -6,11 +6,10 @@ import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
-let previewFooter: any;
+let previewFooterComponent: any;
 
-function previewAction(nodeId: string) {
-  console.log(`Preview requested for ${nodeId}`);
-  previewFooter.preview(`Preview requested for ${nodeId}`);
+async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
+  await previewFooterComponent.forwardPreview(analysiId, nodeId);
 }
 
 // $inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
@@ -28,11 +27,11 @@ function previewAction(nodeId: string) {
           bind:nodesInAnalysis={nodesInAnalysis}
           nodeIndex={i}
           analysisId={id}
-          preview={(nodeId) => {
-            previewAction(nodeId);
+          preview={(analysisId, nodeId) => {
+            forwardPreview(analysisId, nodeId);
           }} />
       {/each}
     </div>
   </main>
-  <PreviewFooter bind:this={previewFooter} />
+  <PreviewFooter bind:this={previewFooterComponent} />
 </TabItem>

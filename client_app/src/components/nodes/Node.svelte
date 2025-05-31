@@ -12,7 +12,7 @@ interface Props {
   nodesInAnalysis: Node[];
   nodeIndex: number;
   analysisId: string;
-  preview(nodeId: string): void;
+  preview(analysiId: string, nodeId: string): void;
 }
 
 let { nodesInAnalysis = $bindable(), nodeIndex, analysisId, preview }: Props = $props();
@@ -60,41 +60,8 @@ async function removeNode() {
   optionsOpen = false;
 }
 
-// async function preview() {
-//   const response = await fetch("http://localhost:4444/preview", {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({
-//       session_id: analysisId,
-//       node_id: nodesInAnalysis[nodeIndex].uuid,
-//       limit: 1000,
-//     }),
-//   });
-
-//   console.log(response);
-
-//   let final: any;
-
-//   const reader = response.body?.getReader();
-//   let decoder = new TextDecoder();
-//   let jsonText = "";
-
-//   while (true) {
-//     let chunk = await reader?.read();
-//     if (chunk?.done) {
-//       console.log(chunk.done);
-//       final = jsonText;
-//       break;
-//     }
-
-//     jsonText += decoder.decode(chunk?.value, { stream: true });
-//   }
-
-//   console.log(JSON.parse(final));
-// }
-
 function previewNode() {
-  preview(nodesInAnalysis[nodeIndex].uuid);
+  preview(analysisId, nodesInAnalysis[nodeIndex].uuid);
 }
 
 function summarizeNode() {

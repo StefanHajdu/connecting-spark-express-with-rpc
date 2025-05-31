@@ -1,22 +1,29 @@
 const BASE_URL = "http://localhost:4444";
 
 export async function fetchSparkApi(transformRoute: string, body: any): Promise<any> {
-  let url = new URL(transformRoute, BASE_URL);
-  const response = await post(url, body);
+  const response = await post(transformRoute, body);
   return response.json();
 }
 
-export async function fetchSparkStreamingApi(transformRoute: string, body: any): Promise<Response> {
-  let url = new URL(transformRoute, BASE_URL);
-  const response = fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return response;
+export async function bufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
+  const reader = streamingResponse.body?.getReader();
+  let decoder = new TextDecoder();
+  let jsonText = "";
+
+  while (true) {
+    let chunk = await reader?.read();
+    if (chunk?.done) {
+      console.log("done");
+      return jsonText;
+    }
+
+    console.log("chunk", decoder.decode(chunk?.value, { stream: true }));
+    jsonText += decoder.decode(chunk?.value, { stream: true });
+  }
 }
 
-async function post(url: URL, body: Object): Promise<Response> {
+export async function post(transformRoute: string, body: Object): Promise<Response> {
+  let url = new URL(transformRoute, BASE_URL);
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

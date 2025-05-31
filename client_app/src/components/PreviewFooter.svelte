@@ -13,14 +13,13 @@ let transitionParamsBottom = {
   duration: 200,
   easing: sineIn,
 };
-let previewTableHidden = $state(true);
-let dataframeTable: any;
+let dataframeTableHidden = $state(true);
+let dataframeTableComponent: any;
 
-export function preview(previewRequest: string) {
-  console.log(`From previewFooter: ${previewRequest}`);
-  previewTableHidden = false;
-  tick().then(() => {
-    dataframeTable.preview(previewRequest);
+export async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
+  dataframeTableHidden = false;
+  tick().then(async () => {
+    await dataframeTableComponent.preview(analysiId, nodeId);
   });
 }
 </script>
@@ -29,7 +28,7 @@ export function preview(previewRequest: string) {
   <p>{title}</p>
   <Button
     on:click={() => {
-      previewTableHidden = false;
+      dataframeTableHidden = false;
     }}>
     <AngleUpOutline />
   </Button>
@@ -40,17 +39,17 @@ export function preview(previewRequest: string) {
     transitionParams={transitionParamsBottom}
     activateClickOutside={activateClickOutside}
     backdrop={backdrop}
-    bind:hidden={previewTableHidden}
+    bind:hidden={dataframeTableHidden}
     id="sidebar8"
     class="outline-1 outline-black">
     <div class="mb-2 flex h-6 items-center">
       <p>Preview</p>
       <CloseButton
         on:click={() => {
-          previewTableHidden = true;
+          dataframeTableHidden = true;
         }}
         class="dark:text-white" />
     </div>
-    <DataFrameTable bind:this={dataframeTable} />
+    <DataFrameTable bind:this={dataframeTableComponent} />
   </Drawer>
 </footer>

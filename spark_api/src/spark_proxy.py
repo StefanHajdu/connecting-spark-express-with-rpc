@@ -187,7 +187,7 @@ class SparkApiServicer(SparkApiServicer):
         node = session.plan.get_node_by_id(req.node_id)
 
         json_buffer = session.preview(node, req.limit)
-        chunk_size = 1024 * 10  # 10 mb
+        chunk_size = 1024 * 1024  # 1 mb
         idx = 0
         while idx < len(json_buffer):
             chunk = json_buffer[idx : idx + chunk_size]

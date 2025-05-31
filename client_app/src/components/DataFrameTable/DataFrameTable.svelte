@@ -2,42 +2,37 @@
 import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell, Spinner } from "flowbite-svelte";
 import { lastPreviewedRows } from "$lib/stores";
 import { actionState, finishAction } from "$lib/actionState.svelte";
-import { fetchSparkApi } from "$lib/clientApi";
+import { post, bufferSparkStreamingApi } from "$lib/clientApi";
+import type { DataFrame } from "$lib/dtype";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-let pr = $state("Empty preview Request");
+let dataframe: DataFrame | {} = $state({});
+let streamInProgress = $state(false);
 
-export function preview(previewRequest: string) {
-  console.log(`From dataframeTable: ${previewRequest}`);
-  pr = previewRequest;
+export async function preview(analysisId: string, nodeId: string): Promise<void> {
+  const streamingResponse = await post("/preview", {
+    session_id: analysisId,
+    node_id: nodeId,
+    limit: 1000,
+  });
+
+  console.log(streamingResponse);
+
+  streamInProgress = true;
+  const validJson = await bufferSparkStreamingApi(streamingResponse);
+  dataframe = JSON.parse(validJson);
+  streamInProgress = false;
 }
-
-let previewPromise = $derived.by(() => {
-  if (actionState.confirmed) {
-    return fetchSparkApi("preview", {
-      session_id: actionState.analysiId,
-      node_id: actionState.nodeId,
-      limit: 1000,
-    }).then((previewResponse) => {
-      let parsed = previewResponse.row_json.map((row: string) => {
-        return JSON.parse(JSON.parse(row));
-      });
-
-      finishAction();
-      lastPreviewedRows.update(() => {
-        return parsed;
-      });
-    });
-  }
-  return "preview";
-});
 </script>
 
-<p>{pr}</p>
+{#if streamInProgress}
+  <Spinner size="6" />
+{:else}
+  <p>Done</p>
+{/if}
 
 <!-- {#await previewPromise}
-  <Spinner size="6" />
 {:then _}
   <div class="h-80 overflow-y-auto">
     <Table>

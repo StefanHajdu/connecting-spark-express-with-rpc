@@ -50,3 +50,13 @@ export interface Expression {
   sparkTypes: Set<string>;
   customInput: CustomInputType;
 }
+
+type SparkColumn = {
+  name: string;
+  type: string;
+};
+
+export type DataFrame = {
+  columns: SparkColumn[];
+  data: Record<string, { number: string }>;
+};
