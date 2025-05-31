@@ -97,14 +97,12 @@ class ClientSession:
             raise NodeMissingException()
 
     @log_plan_execution('/preview')
-    def preview(self, node: Nodes.SparkNode, limit: int) -> Iterable[str]:
+    def preview(self, node: Nodes.SparkNode, limit: int):
         if isinstance(node, Nodes.TransformNode):
-            rows = node.preview(limit)
+            return node.preview(limit)
         else:
             prev_df = self.plan.get_node_by_id(node.prev_node_id).df
-            rows = node.preview(limit, prev_df)
-        for row in rows:
-            yield json.dumps(row)
+            return node.preview(limit, prev_df)
 
     def get_session_status(self):
         self._log(f'/getSessionStatus: {self.id}')

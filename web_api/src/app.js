@@ -64,7 +64,18 @@ app.post("/summarize", (req, res, next) => {
 });
 
 app.post("/preview", (req, res, next) => {
-  sp._previewDataset(req.body, res, next);
+  res.writeHead(200, {
+    "Content-Type": "application/json",
+    "Transfer-Encoding": "chunked",
+  });
+  const previewStream = sp.client.previewDataset(req.body);
+  previewStream.on("data", (chunk) => {
+    res.write(chunk.data);
+  });
+  previewStream.on("end", () => {
+    res.end();
+    next();
+  });
 });
 
 app.use(errorHandler);

@@ -1,3 +1,4 @@
+import io
 import json
 import os
 from abc import abstractmethod
@@ -80,9 +81,18 @@ class SparkNode:
             'schema': self.df.schema.json(),
         }
 
-    def preview(self, limit):
-        rows = self.df.take(limit)
-        return [json.dumps(row.asDict()) for row in rows]
+    def preview(self, limit) -> str:
+        df_pandas = self.df.limit(limit).toPandas()
+        # values translate easiest to html table
+        json_buffer = df_pandas.to_json(orient='values', force_ascii=False, date_format='iso')
+        # append df values and schema to valid json
+        return (
+            '{"data":'
+            + json_buffer
+            + ',"columns":'
+            + json.dumps([{'name': field['name'], 'type': field['type']} for field in json.loads(self.df.schema.json())['fields']])
+            + '}'
+        )
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
@@ -301,10 +311,12 @@ class VisualizationNode(SparkNode):
     def visualization_df(self, val: DataFrame):
         self._visualization_df = val
 
-    def preview(self, limit: int, prev_df: DataFrame):
+    def preview(self, limit: int, prev_df: DataFrame) -> io.BytesIO:
         visualization_df = spark.sql(self.visualization_query, df=prev_df)
-        for item in visualization_df.take(limit):
-            yield item.asDict()
+        df_subset = visualization_df.limit(limit).toPandas()
+        buffer = io.BytesIO()
+        df_subset.to_json(buffer, orient='table')
+        return buffer
 
 
 class TableNode(VisualizationNode):

@@ -4,7 +4,6 @@ import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flow
 import { fetchSparkApi } from "$lib/clientApi";
 import { syncNodeColsOnRemove, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 import { type SparkTransformResponse } from "$lib/dtype";
-import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
@@ -13,9 +12,10 @@ interface Props {
   nodesInAnalysis: Node[];
   nodeIndex: number;
   analysisId: string;
+  preview(analysiId: string, nodeId: string): void;
 }
 
-let { nodesInAnalysis = $bindable(), nodeIndex, analysisId }: Props = $props();
+let { nodesInAnalysis = $bindable(), nodeIndex, analysisId, preview }: Props = $props();
 
 let nextNodeId = $state("");
 let newNodeDropdownOpen = $state(false);
@@ -60,22 +60,18 @@ async function removeNode() {
   optionsOpen = false;
 }
 
-function previewEvent() {
-  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "preview");
+function previewNode() {
+  preview(analysisId, nodesInAnalysis[nodeIndex].uuid);
 }
 
-function summarizeEvent() {
-  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "sum");
-  if (actionState.confirmed) {
-    summarizePromise = fetchSparkApi("summarize", {
-      session_id: analysisId,
-      node_id: nodesInAnalysis[nodeIndex].uuid,
-    });
-    finishAction();
-  }
+function summarizeNode() {
+  summarizePromise = fetchSparkApi("summarize", {
+    session_id: analysisId,
+    node_id: nodesInAnalysis[nodeIndex].uuid,
+  });
 }
 
-async function toggle() {
+async function toggleNode() {
   if (activeNodeStatus) {
     // enabled => disabled
     let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
@@ -137,10 +133,10 @@ async function toggle() {
     {/if}
 
     <div class="mt-2">
-      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewEvent}>Preview</Button>
-      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeEvent}>Summarize</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewNode}>Preview</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeNode}>Summarize</Button>
       {#if nodesInAnalysis[nodeIndex].title !== "Load"}
-        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggle} />
+        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
       {/if}
     </div>
 

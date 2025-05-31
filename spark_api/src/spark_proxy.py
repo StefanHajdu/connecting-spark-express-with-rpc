@@ -182,8 +182,14 @@ class SparkApiServicer(SparkApiServicer):
             schema=summary['schema'],
         )
 
-    def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> sparkapi_pb2.RowsResponse:
+    def previewDataset(self, req: sparkapi_pb2.PreviewDatasetRequest, unused_context) -> sparkapi_pb2.DatasetResponse:
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
-        rows = session.preview(node, req.limit)
-        return sparkapi_pb2.RowsResponse(row_json=rows)
+
+        json_buffer = session.preview(node, req.limit)
+        chunk_size = 1024 * 1024  # 1 mb
+        idx = 0
+        while idx < len(json_buffer):
+            chunk = json_buffer[idx : idx + chunk_size]
+            yield sparkapi_pb2.DatasetResponse(data=chunk)
+            idx += chunk_size

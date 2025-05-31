@@ -1,5 +1,6 @@
 import { writable } from "svelte/store";
+import type { DataFrame } from "./dtype";
 
-let empty: any[] = [];
+let empty: DataFrame = { columns: [], data: [[]] };
 
-export const lastPreviewedRows = writable(empty);
+export const lastDataframe = writable(empty);
