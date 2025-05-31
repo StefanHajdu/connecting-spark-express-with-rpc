@@ -1,14 +1,9 @@
 <script lang="ts">
 import { browser } from "$app/environment";
 import Header from "../../components/Header.svelte";
-import PreviewFooter from "../../components/PreviewFooter.svelte";
 import Analysis from "../../components/Analysis.svelte";
 import { Tabs } from "flowbite-svelte";
-import {
-  LS_KEY_SCOPED,
-  LS_KEY_ANALYSES,
-  fromLocalStorage,
-} from "../../lib/localStorageHandles";
+import { LS_KEY_SCOPED, LS_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
 
 const scopedAnalyses = loadScoped();
 
@@ -36,5 +31,4 @@ $inspect("analyses arr", scopedAnalyses);
       {/each}
     </Tabs>
   </main>
-  <PreviewFooter />
 </div>

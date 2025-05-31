@@ -13,6 +13,12 @@ let transitionParamsBottom = {
   duration: 200,
   easing: sineIn,
 };
+let dataframeTable: any;
+
+export function preview(previewRequest: string) {
+  console.log(`From previewFooter: ${previewRequest}`);
+  dataframeTable.preview(previewRequest);
+}
 </script>
 
 <div class="sticky bottom-0">
@@ -42,7 +48,7 @@ let transitionParamsBottom = {
           }}
           class="dark:text-white" />
       </div>
-      <DataFrameTable />
+      <DataFrameTable bind:this={dataframeTable} />
     </Drawer>
   </footer>
 </div>

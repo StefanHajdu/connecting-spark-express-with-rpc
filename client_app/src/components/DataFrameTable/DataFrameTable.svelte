@@ -6,6 +6,13 @@ import { fetchSparkApi } from "$lib/clientApi";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
+let pr = $state("Empty preview Request");
+
+export function preview(previewRequest: string) {
+  console.log(`From dataframeTable: ${previewRequest}`);
+  pr = previewRequest;
+}
+
 let previewPromise = $derived.by(() => {
   if (actionState.confirmed) {
     return fetchSparkApi("preview", {
@@ -27,7 +34,9 @@ let previewPromise = $derived.by(() => {
 });
 </script>
 
-{#await previewPromise}
+<p>{pr}</p>
+
+<!-- {#await previewPromise}
   <Spinner size="6" />
 {:then _}
   <div class="h-80 overflow-y-auto">
@@ -50,4 +59,4 @@ let previewPromise = $derived.by(() => {
       </TableBody>
     </Table>
   </div>
-{/await}
+{/await} -->

@@ -1,10 +1,17 @@
 <script lang="ts">
 import { TabItem } from "flowbite-svelte";
+import PreviewFooter from "./PreviewFooter.svelte";
 import { nodeFactoryMethod } from "./nodes/NodeInstance.svelte";
 import Node from "./nodes/Node.svelte";
 
 let { id, name } = $props();
 let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
+let previewFooter: any;
+
+function previewAction(nodeId: string) {
+  console.log(`Preview requested for ${nodeId}`);
+  previewFooter.preview(`Preview requested for ${nodeId}`);
+}
 
 // $inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
 </script>
@@ -16,7 +23,14 @@ let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
     </p>
 
     {#each nodesInAnalysis as node, i (node.uuid)}
-      <Node bind:nodesInAnalysis={nodesInAnalysis} nodeIndex={i} analysisId={id} />
+      <Node
+        bind:nodesInAnalysis={nodesInAnalysis}
+        nodeIndex={i}
+        analysisId={id}
+        preview={(nodeId) => {
+          previewAction(nodeId);
+        }} />
     {/each}
   </div>
 </TabItem>
+<PreviewFooter bind:this={previewFooter} />

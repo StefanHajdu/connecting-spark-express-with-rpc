@@ -4,7 +4,6 @@ import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flow
 import { fetchSparkApi } from "$lib/clientApi";
 import { syncNodeColsOnRemove, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 import { type SparkTransformResponse } from "$lib/dtype";
-import { actionState, requestAction, finishAction } from "$lib/actionState.svelte";
 import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
@@ -13,9 +12,10 @@ interface Props {
   nodesInAnalysis: Node[];
   nodeIndex: number;
   analysisId: string;
+  preview(nodeId: string): void;
 }
 
-let { nodesInAnalysis = $bindable(), nodeIndex, analysisId }: Props = $props();
+let { nodesInAnalysis = $bindable(), nodeIndex, analysisId, preview }: Props = $props();
 
 let nextNodeId = $state("");
 let newNodeDropdownOpen = $state(false);
@@ -60,51 +60,51 @@ async function removeNode() {
   optionsOpen = false;
 }
 
-async function previewEvent() {
-  const response = await fetch("http://localhost:4444/preview", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      session_id: analysisId,
-      node_id: nodesInAnalysis[nodeIndex].uuid,
-      limit: 100000,
-    }),
+// async function preview() {
+//   const response = await fetch("http://localhost:4444/preview", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       session_id: analysisId,
+//       node_id: nodesInAnalysis[nodeIndex].uuid,
+//       limit: 1000,
+//     }),
+//   });
+
+//   console.log(response);
+
+//   let final: any;
+
+//   const reader = response.body?.getReader();
+//   let decoder = new TextDecoder();
+//   let jsonText = "";
+
+//   while (true) {
+//     let chunk = await reader?.read();
+//     if (chunk?.done) {
+//       console.log(chunk.done);
+//       final = jsonText;
+//       break;
+//     }
+
+//     jsonText += decoder.decode(chunk?.value, { stream: true });
+//   }
+
+//   console.log(JSON.parse(final));
+// }
+
+function previewNode() {
+  preview(nodesInAnalysis[nodeIndex].uuid);
+}
+
+function summarizeNode() {
+  summarizePromise = fetchSparkApi("summarize", {
+    session_id: analysisId,
+    node_id: nodesInAnalysis[nodeIndex].uuid,
   });
-
-  console.log(response);
-
-  let final: any;
-
-  const reader = response.body?.getReader();
-  let decoder = new TextDecoder();
-  let jsonText = "";
-
-  while (true) {
-    let chunk = await reader?.read();
-    if (chunk?.done) {
-      console.log(chunk.done);
-      final = jsonText;
-      break;
-    }
-
-    jsonText += decoder.decode(chunk?.value, { stream: true });
-  }
-
-  console.log(JSON.parse(final));
 }
 
-function summarizeEvent() {
-  requestAction(analysisId, nodesInAnalysis[nodeIndex].colsInNode, nodesInAnalysis[nodeIndex].uuid, "sum");
-  if (actionState.confirmed) {
-    summarizePromise = fetchSparkApi("summarize", {
-      session_id: analysisId,
-      node_id: nodesInAnalysis[nodeIndex].uuid,
-    });
-    finishAction();
-  }
-}
-
-async function toggle() {
+async function toggleNode() {
   if (activeNodeStatus) {
     // enabled => disabled
     let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
@@ -166,10 +166,10 @@ async function toggle() {
     {/if}
 
     <div class="mt-2">
-      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewEvent}>Preview</Button>
-      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeEvent}>Summarize</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewNode}>Preview</Button>
+      <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeNode}>Summarize</Button>
       {#if nodesInAnalysis[nodeIndex].title !== "Load"}
-        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggle} />
+        <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
       {/if}
     </div>
 
