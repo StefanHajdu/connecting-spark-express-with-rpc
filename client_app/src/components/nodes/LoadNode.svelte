@@ -18,7 +18,7 @@ let msg = $state("");
 let fileSize = $state(0);
 
 async function submit() {
-  let loadResponse: SparkLoadFileResponse = await fetchSparkApi("submitNode/LoadDatasetNode", {
+  let loadResponse: SparkLoadFileResponse = await fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", {
     session_id: analysisId,
     path: filePath,
   });

@@ -65,7 +65,7 @@ function previewNode() {
 }
 
 function summarizeNode() {
-  summarizePromise = fetchSparkApi("summarize", {
+  summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
     session_id: analysisId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
   });

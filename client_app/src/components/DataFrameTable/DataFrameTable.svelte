@@ -10,7 +10,7 @@ let streamInProgress = $state(false);
 
 export async function preview(analysisId: string, nodeId: string): Promise<void> {
   streamInProgress = true;
-  const streamingResponse = await post("/preview", {
+  const streamingResponse = await post("rpc/sessionNode/action/preview", {
     session_id: analysisId,
     node_id: nodeId,
     limit: 1000,

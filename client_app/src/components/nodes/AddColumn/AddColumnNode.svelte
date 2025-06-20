@@ -73,7 +73,7 @@ async function submit() {
 
   const expressionsCompiled = expressions.map((expr: any) => compileExprObj(expr));
 
-  let transformResponse: SparkTransformResponse = await fetchSparkApi("submitNode/NewColumnNode", {
+  let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
     session_id: analysisId,
     node_id: nodesInAnalysis[nodeIndex].uuid,
     prev_node_id: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
