@@ -11,7 +11,7 @@ service SparkApi {
     rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkLoadFileResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node
@@ -58,11 +58,6 @@ message SparkTransformResponse {
     repeated Column columns = 3;
 }
 
-message SparkLoadFileResponse {
-    SparkTransformResponse transformResponse = 1;
-    int64 size = 2;
-}
-
 message DatasetResponse {
     string data = 1;
 }
@@ -81,9 +76,32 @@ message NewSessionRequest {
     string name = 2;
 }
 
+message CsvInput {
+    string delimiter = 1;
+    bool include_header = 2;
+    string path = 3;
+}
+
+message JsonInput {
+    bool multiline = 1;
+    string path = 2;
+}
+
+message ParquetInput {
+    string path = 1;
+}
+
+message SessionInput {
+    string session_id = 1;
+}
+
 message LoadDatasetNodeRequest {
     string session_id = 1;
-    string path = 2;
+    oneof input_metadata {
+        CsvInput csv = 2;
+        JsonInput json = 3;
+        ParquetInput parquet = 4;
+    }
 }
 
 message PreviewDatasetRequest {
@@ -146,9 +164,13 @@ message JoinNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    string input_type = 4;
-    string input_pointer = 5;
-    JoinParams joinParams = 6;
+    oneof input_metadata {
+        CsvInput csv = 4;
+        JsonInput json = 5;
+        ParquetInput parquet = 6;
+        SessionInput session = 7;
+    }
+    JoinParams joinParams = 8;
 }
 
 message NodeRemovalRequest {

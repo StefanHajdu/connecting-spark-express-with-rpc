@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from pathlib import Path
+
+import sparkapi_pb2
 
 import spark_session_init
-from custom_exceptions import InvalidInputTypeException
-from utils import spark_read_from_path
+from utils import load_data_for_spark
 
 
 class InputType(Enum):
@@ -29,16 +29,17 @@ class NodeExtension(ABC):
 
 
 class OtherDataframe(NodeExtension):
-    def __init__(self, input_type: str, input_pointer: str):
-        if input_type == InputType.FILE_INPUT.value:
-            # input_pointer == filesystem path
-            self._df = spark_read_from_path(path=input_pointer)
-        elif input_type == InputType.SESSION_INPUT.value:
-            # input_pointer == session_id
-            input_session = spark_session_init.clientSessionTable.get_session(input_pointer)
+    def __init__(
+        self,
+        input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput | sparkapi_pb2.SessionInput,
+    ):
+        if isinstance(input_metadata, sparkapi_pb2.SessionInput):
+            # join with session
+            input_session = spark_session_init.clientSessionTable.get_session(input_metadata.session_id)
             self._df = input_session.plan.get_last_spark_node().df
         else:
-            raise InvalidInputTypeException()
+            # join with dataset
+            self._df = load_data_for_spark(input_metadata=input_metadata)
 
     @property
     def df(self):

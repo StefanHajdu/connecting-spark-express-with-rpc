@@ -1,27 +1,20 @@
-import os
+import sparkapi_pb2
 
 from custom_exceptions import InvalidSparkInputException
 from spark_session_init import spark
 
 
-def spark_read_from_path(path: str):
-    _, file_extension = os.path.splitext(path)
-    if file_extension == '.csv':
-        return spark.read.option('delimiter', ';').option('header', True).option('inferSchema', True).csv(path)
-    elif file_extension == '.json':
-        return spark.read.option('multiline', 'true').json(path)
-    elif file_extension == '.parquet':
-        return spark.read.parquet(path)
+def load_data_for_spark(input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
+    if isinstance(input_metadata, sparkapi_pb2.CsvInput):
+        return (
+            spark.read.option('delimiter', input_metadata.delimiter)
+            .option('header', input_metadata.include_header)
+            .option('inferSchema', True)
+            .csv(input_metadata.path)
+        )
+    elif isinstance(input_metadata, sparkapi_pb2.JsonInput):
+        return spark.read.option('multiline', input_metadata.multiline).json(input_metadata.path)
+    elif isinstance(input_metadata, sparkapi_pb2.ParquetInput):
+        return spark.read.parquet(input_metadata.path)
     else:
         raise InvalidSparkInputException()
-
-
-def get_dir_size(path: str):
-    total = 0
-    with os.scandir(path) as it:
-        for entry in it:
-            if entry.is_file():
-                total += entry.stat().st_size
-            elif entry.is_dir():
-                total += get_dir_size(entry.path)
-    return total
