@@ -5,7 +5,7 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { syncNodeColsOnRemove, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 import { type SparkTransformResponse } from "$lib/dtype";
 import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
-import LoadNode from "./LoadNode.svelte";
+import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 interface Props {
@@ -118,7 +118,6 @@ async function toggleNode() {
     </div>
     <div class="mb-4 flex items-center justify-between">
       <p>id: {nodesInAnalysis[nodeIndex].uuid.slice(-5)}</p>
-      <p>type: {nodesInAnalysis[nodeIndex].nodeType}</p>
     </div>
 
     {#if nodesInAnalysis[nodeIndex].title === "Load"}<LoadNode

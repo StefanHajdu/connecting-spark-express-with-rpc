@@ -22,11 +22,6 @@ export type SparkTransformResponse = {
   columns: Column[];
 };
 
-export type SparkLoadFileResponse = {
-  transformResponse: SparkTransformResponse;
-  size: number;
-};
-
 type ValueType = "col" | "input" | "cols";
 type CustomInputType = "number" | "text";
 
