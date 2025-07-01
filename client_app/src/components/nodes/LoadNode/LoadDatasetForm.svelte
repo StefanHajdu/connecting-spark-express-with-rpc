@@ -3,16 +3,37 @@ import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label } from "flo
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { type SparkTransformResponse, type Column } from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
+import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
 import { Node } from "../NodeInstance.svelte";
 
 interface Props {
     analysisId: string;
     name: string;
+    color:
+        | "dark"
+        | "blue"
+        | "none"
+        | "red"
+        | "yellow"
+        | "green"
+        | "purple"
+        | "light"
+        | "primary"
+        | "alternative"
+        | undefined;
     nodesInAnalysis: Node[];
     nodeIndex: number;
+    loadedDataset: LoadedDataset | {};
 }
 
-let { analysisId, name, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
+let {
+    analysisId,
+    name,
+    color,
+    nodesInAnalysis = $bindable(),
+    nodeIndex,
+    loadedDataset = $bindable(),
+}: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -27,7 +48,7 @@ let csvDelimiter: string = $state(";");
 let jsonMultiline: boolean = $state(true);
 
 async function submit() {
-    let loadResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", {
+    const loadInput = {
         session_id: analysisId,
         [inputType]:
             inputType === "csv"
@@ -37,13 +58,29 @@ async function submit() {
                   : inputType === "parquet"
                     ? { path: datasetPath }
                     : { path: datasetPath },
-    });
+    };
+    let loadResponse: SparkTransformResponse = await fetchSparkApi(
+        "rpc/sessionNode/transform/submitLoadDatasetNode",
+        loadInput,
+    );
 
     if (loadResponse) {
         nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode = loadResponse.columns;
         nodesInAnalysis[nodeIndex].colsAdded = new Set(loadResponse.columns.map((col: Column) => col.name));
         loadDatasetModal = false;
     }
+
+    loadedDataset = {
+        loadSuccess: loadResponse ? true : false,
+        metadata:
+            inputType === "csv"
+                ? new CsvMetadata(datasetPath, csvDelimiter, csvIncludeHeader)
+                : inputType === "json"
+                  ? new JsonMetadata(datasetPath, jsonMultiline)
+                  : inputType === "parquet"
+                    ? new ParquetMetadata(datasetPath)
+                    : new ParquetMetadata(datasetPath),
+    };
 }
 </script>
 
@@ -51,7 +88,7 @@ async function submit() {
     <div class="col-span-4 col-start-3">
         <Button
             class="mt-2 mb-3"
-            color="blue"
+            color={color}
             onclick={() => {
                 loadDatasetModal = true;
             }}>{name}</Button>
