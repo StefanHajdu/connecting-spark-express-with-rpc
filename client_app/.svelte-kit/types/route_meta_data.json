@@ -1,6 +1,4 @@
 {
-	"/": [
-		"src/routes/+page.ts"
-	],
-	"/analyses": []
+    "/": ["src/routes/+page.ts"],
+    "/analyses": []
 }
