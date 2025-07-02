@@ -56,6 +56,7 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
 }
 
 export function syncNodeColsOnAdd(nodesInAnalysis: Node[], nodeIndex: number): void {
+    // add dtype to each of added columns
     let colsAdded = nodesInAnalysis[nodeIndex].colsInNode.filter((col: Column) =>
         nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
     );
