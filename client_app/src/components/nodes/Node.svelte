@@ -85,11 +85,11 @@ async function toggleNode() {
     } else {
         // disabled => enabled
         if (nodesInAnalysis[nodeIndex] instanceof AddColumnNodeIn) {
-            let transformResponse = await nodesInAnalysis[nodeIndex].submitTransform(
-                analysisId,
-                nodesInAnalysis[nodeIndex].uuid,
-                nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-            );
+            let transformResponse = await nodesInAnalysis[nodeIndex].submitTransform({
+                analysisId: analysisId,
+                nodeId: nodesInAnalysis[nodeIndex].uuid,
+                prevNodeId: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+            });
             if (transformResponse) {
                 syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
             }

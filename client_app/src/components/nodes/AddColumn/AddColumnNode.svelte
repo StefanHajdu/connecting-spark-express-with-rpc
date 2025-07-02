@@ -3,12 +3,11 @@ import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from 
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
 import { v4 as uuidv4 } from "uuid";
-import { Node, AddColumnNode } from "../NodeInstance.svelte";
+import { Node } from "../NodeInstance.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import { fetchSparkApi } from "$lib/clientApi";
-import type { SparkTransformResponse, Expression, Param } from "$lib/dtype";
-import { compileExprString, compileExprObj, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
+import type { SparkTransformResponse, Expression } from "$lib/dtype";
+import { compileExprString, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
 
 interface Props {
     nodesInAnalysis: Node[];
@@ -52,48 +51,15 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    const colsAdded = new Set(expressions.map((expr: Expression) => expr.newColumnName));
-    const colsUsed = new Set(
-        expressions
-            .flatMap((expr: Expression) => {
-                return expr.params
-                    .filter((param: Param) => {
-                        return param.valueField.source === "col" || param.valueField.source === "cols";
-                    })
-                    .map((param: Param) => {
-                        if (param.valueField.source === "cols") {
-                            return typeof param.valueField.value === "string"
-                                ? param.valueField.value.split(",")
-                                : undefined;
-                        } else {
-                            return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
-                        }
-                    });
-            })
-            .flat(),
-    );
+    let transformRes: SparkTransformResponse = await nodesInAnalysis[nodeIndex].submitTransform({
+        session_id: analysisId,
+        node_id: nodesInAnalysis[nodeIndex].uuid,
+        prev_node_id: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+        expressions: expressions,
+    });
 
-    const expressionsCompiled = expressions.map((expr: any) => compileExprObj(expr));
-
-    let transformResponse: SparkTransformResponse = await fetchSparkApi(
-        "rpc/sessionNode/transform/submitNewColumnNode",
-        {
-            session_id: analysisId,
-            node_id: nodesInAnalysis[nodeIndex].uuid,
-            prev_node_id: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-            expressions: expressionsCompiled,
-        },
-    );
-
-    if (nodesInAnalysis[nodeIndex] instanceof AddColumnNode) {
-        nodesInAnalysis[nodeIndex].expressions = expressionsCompiled;
-    }
-
-    if (transformResponse) {
-        msg = transformResponse.msg;
-        nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode = transformResponse.columns;
-        nodesInAnalysis[nodeIndex].colsAdded = colsAdded;
-        nodesInAnalysis[nodeIndex].colsUsed = colsUsed;
+    if (transformRes) {
+        nodesInAnalysis[nodeIndex].processTransformResponse(transformRes, { expressions: expressions });
         syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
     }
 }

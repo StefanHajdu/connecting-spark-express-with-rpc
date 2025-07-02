@@ -5,6 +5,19 @@ export async function fetchSparkApi(transformRoute: string, body: any): Promise<
     return response.json();
 }
 
+export async function post(transformRoute: string, body: Object): Promise<Response> {
+    let url = new URL(transformRoute, BASE_URL);
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+    }
+    return response;
+}
+
 export async function bufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
     const reader = streamingResponse.body?.getReader();
     let decoder = new TextDecoder();
@@ -17,17 +30,4 @@ export async function bufferSparkStreamingApi(streamingResponse: Response): Prom
         }
         jsonText += decoder.decode(chunk?.value, { stream: true });
     }
-}
-
-export async function post(transformRoute: string, body: Object): Promise<Response> {
-    let url = new URL(transformRoute, BASE_URL);
-    const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-        throw new Error(`Response status: ${response.status}`);
-    }
-    return response;
 }

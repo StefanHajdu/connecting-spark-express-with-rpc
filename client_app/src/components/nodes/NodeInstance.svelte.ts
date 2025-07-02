@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import { type Column } from "$lib/dtype";
-import { type SparkTransformResponse } from "$lib/dtype";
+import type { Column, SparkTransformResponse, Expression, Param } from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
+import { compileExprObj } from "$lib/utils";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -37,6 +37,9 @@ export abstract class Node {
         this.colsInNode = cols;
         this.colsInTransform = cols;
     }
+
+    abstract submitTransform(params: any): Promise<SparkTransformResponse>;
+    abstract processTransformResponse(res: SparkTransformResponse, params?: any): void;
 }
 
 class LoadNode extends Node {
@@ -44,6 +47,16 @@ class LoadNode extends Node {
         super(title, colsInDf);
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
+    }
+
+    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", params.body);
+        return transformResponse;
+    }
+
+    processTransformResponse(res: SparkTransformResponse, params?: any) {
+        this.colsInTransform = this.colsInNode = res.columns;
+        this.colsAdded = new Set(res.columns.map((col: Column) => col.name));
     }
 }
 
@@ -56,18 +69,38 @@ export class AddColumnNode extends Node {
         this.expressions = [];
     }
 
-    public async submitTransform(
-        analysisId: string,
-        nodeId: string,
-        prevNodeId: string,
-    ): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("submitNode/NewColumnNode", {
-            session_id: analysisId,
-            node_id: nodeId,
-            prev_node_id: prevNodeId,
-            expressions: this.expressions,
+    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+        console.log(params);
+        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
+            ...params,
+            expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
         });
         return transformResponse;
+    }
+
+    processTransformResponse(res: SparkTransformResponse, params?: any) {
+        this.colsInTransform = this.colsInNode = res.columns;
+        this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
+        this.colsUsed = new Set(
+            params.expressions
+                .flatMap((expr: Expression) => {
+                    return expr.params
+                        .filter((param: Param) => {
+                            return param.valueField.source === "col" || param.valueField.source === "cols";
+                        })
+                        .map((param: Param) => {
+                            if (param.valueField.source === "cols") {
+                                return typeof param.valueField.value === "string"
+                                    ? param.valueField.value.split(",")
+                                    : undefined;
+                            } else {
+                                return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
+                            }
+                        });
+                })
+                .flat(),
+        );
+        this.expressions = params.expressions;
     }
 }
 
@@ -76,6 +109,17 @@ class FilterNode extends Node {
         super(title, colsInDf);
         this.nodeType = "sql";
     }
+
+    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+        let transformResponse = fetchSparkApi("/filter", {
+            session_id: params.analysisId,
+            node_id: params.nodeId,
+            prev_node_id: params.prevNodeId,
+        });
+        return transformResponse;
+    }
+
+    processTransformResponse(res: SparkTransformResponse, params?: any) {}
 }
 
 class JoinNode extends Node {
@@ -83,6 +127,17 @@ class JoinNode extends Node {
         super(title, colsInDf);
         this.nodeType = "sql";
     }
+
+    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+        let transformResponse = fetchSparkApi("/join", {
+            session_id: params.analysisId,
+            node_id: params.nodeId,
+            prev_node_id: params.prevNodeId,
+        });
+        return transformResponse;
+    }
+
+    processTransformResponse(res: SparkTransformResponse, params?: any) {}
 }
 
 class TableNode extends Node {
@@ -90,4 +145,15 @@ class TableNode extends Node {
         super(title, colsInDf);
         this.nodeType = "visualization";
     }
+
+    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+        let transformResponse = fetchSparkApi("/table", {
+            session_id: params.analysisId,
+            node_id: params.nodeId,
+            prev_node_id: params.prevNodeId,
+        });
+        return transformResponse;
+    }
+
+    processTransformResponse(res: SparkTransformResponse, params?: any) {}
 }

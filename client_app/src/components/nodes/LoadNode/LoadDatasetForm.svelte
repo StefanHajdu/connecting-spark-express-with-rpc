@@ -1,8 +1,6 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { type SparkTransformResponse, type Column } from "$lib/dtype";
-import { fetchSparkApi } from "$lib/clientApi";
 import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
 import { Node } from "../NodeInstance.svelte";
 
@@ -59,19 +57,15 @@ async function submit() {
                     ? { path: datasetPath }
                     : { path: datasetPath },
     };
-    let loadResponse: SparkTransformResponse = await fetchSparkApi(
-        "rpc/sessionNode/transform/submitLoadDatasetNode",
-        loadInput,
-    );
+    let transformRes = await nodesInAnalysis[nodeIndex].submitTransform({ body: loadInput });
 
-    if (loadResponse) {
-        nodesInAnalysis[nodeIndex].colsInTransform = nodesInAnalysis[nodeIndex].colsInNode = loadResponse.columns;
-        nodesInAnalysis[nodeIndex].colsAdded = new Set(loadResponse.columns.map((col: Column) => col.name));
+    if (transformRes) {
+        nodesInAnalysis[nodeIndex].processTransformResponse(transformRes);
         loadDatasetModal = false;
     }
 
     loadedDataset = {
-        loadSuccess: loadResponse ? true : false,
+        loadSuccess: transformRes ? true : false,
         metadata:
             inputType === "csv"
                 ? new CsvMetadata(datasetPath, csvDelimiter, csvIncludeHeader)

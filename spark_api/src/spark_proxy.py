@@ -66,6 +66,9 @@ class SparkApiServicer(SparkApiServicer):
 
     def submit_NewColumnNode(self, req: sparkapi_pb2.NewColumnNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
+
+        print(req)
+
         node = session.submit_node(
             node_class='NewColumnNode',
             session_id=session.id,
