@@ -43,6 +43,7 @@ function addExpression(category: string, fname: string) {
 function duplicateExpr(exprId: number) {
     const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
     exprToDuplicate.newColumnName = "new_" + exprToDuplicate.newColumnName;
+    exprToDuplicate.uuid = "add_col_expr-" + uuidv4();
     expressions.splice(exprId + 1, 0, exprToDuplicate);
 }
 
@@ -59,7 +60,7 @@ async function submit() {
     });
 
     if (transformRes) {
-        nodesInAnalysis[nodeIndex].processTransformResponse(transformRes, { expressions: expressions });
+        nodesInAnalysis[nodeIndex].parseTransformResponse(transformRes, { expressions: expressions });
         syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
     }
 }

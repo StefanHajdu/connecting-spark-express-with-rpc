@@ -25,8 +25,8 @@ export abstract class Node {
     uuid: string = $state("");
     title: string = $state("");
     nodeType: string = $state("");
-    colsAdded: Set<string> = $state(new Set([]));
-    colsUsed: Set<string | undefined> = $state(new Set([]));
+    colsAdded: Set<string> = $state(new Set([])); // column names added by node
+    colsUsed: Set<string | undefined> = $state(new Set([])); // column names used by node
     colsInNode: Column[] = $state([]);
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
@@ -39,7 +39,7 @@ export abstract class Node {
     }
 
     abstract submitTransform(params: any): Promise<SparkTransformResponse>;
-    abstract processTransformResponse(res: SparkTransformResponse, params?: any): void;
+    abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
 }
 
 class LoadNode extends Node {
@@ -50,11 +50,11 @@ class LoadNode extends Node {
     }
 
     public async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", params.body);
+        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", params);
         return transformResponse;
     }
 
-    processTransformResponse(res: SparkTransformResponse, params?: any) {
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {
         this.colsInTransform = this.colsInNode = res.columns;
         this.colsAdded = new Set(res.columns.map((col: Column) => col.name));
     }
@@ -70,7 +70,6 @@ export class AddColumnNode extends Node {
     }
 
     public async submitTransform(params: any): Promise<SparkTransformResponse> {
-        console.log(params);
         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
             ...params,
             expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
@@ -78,7 +77,7 @@ export class AddColumnNode extends Node {
         return transformResponse;
     }
 
-    processTransformResponse(res: SparkTransformResponse, params?: any) {
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {
         this.colsInTransform = this.colsInNode = res.columns;
         this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
         this.colsUsed = new Set(
@@ -119,7 +118,7 @@ class FilterNode extends Node {
         return transformResponse;
     }
 
-    processTransformResponse(res: SparkTransformResponse, params?: any) {}
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 }
 
 class JoinNode extends Node {
@@ -137,7 +136,7 @@ class JoinNode extends Node {
         return transformResponse;
     }
 
-    processTransformResponse(res: SparkTransformResponse, params?: any) {}
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 }
 
 class TableNode extends Node {
@@ -155,5 +154,5 @@ class TableNode extends Node {
         return transformResponse;
     }
 
-    processTransformResponse(res: SparkTransformResponse, params?: any) {}
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 }

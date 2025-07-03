@@ -57,10 +57,10 @@ async function submit() {
                     ? { path: datasetPath }
                     : { path: datasetPath },
     };
-    let transformRes = await nodesInAnalysis[nodeIndex].submitTransform({ body: loadInput });
+    let transformRes = await nodesInAnalysis[nodeIndex].submitTransform(loadInput);
 
     if (transformRes) {
-        nodesInAnalysis[nodeIndex].processTransformResponse(transformRes);
+        nodesInAnalysis[nodeIndex].parseTransformResponse(transformRes);
         loadDatasetModal = false;
     }
 

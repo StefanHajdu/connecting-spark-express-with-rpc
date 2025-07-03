@@ -19,7 +19,7 @@ let loadedDataset: LoadedDataset | { loadSuccess: false } = $state({ loadSuccess
         <span class="text-m text-gray-500 dark:text-gray-400">Path: {loadedDataset.metadata.path}</span>
         <span class="text-m text-gray-500 dark:text-gray-400">Delimiter: {loadedDataset.metadata.delimiter}</span>
         <span class="text-m text-gray-500 dark:text-gray-400"
-            >Inlcude header{loadedDataset.metadata.includeHeader}</span>
+            >Include header: {loadedDataset.metadata.includeHeader}</span>
     {:else if loadedDataset.metadata instanceof JsonMetadata}
         <span class="text-m text-gray-500 dark:text-gray-400">Path: {loadedDataset.metadata.path}</span>
         <span class="text-m text-gray-500 dark:text-gray-400">Multiline: {loadedDataset.metadata.multiline}</span>

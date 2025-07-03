@@ -74,7 +74,7 @@ function summarizeNode() {
 async function toggleNode() {
     if (activeNodeStatus) {
         // enabled => disabled
-        let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
+        let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
             session_id: analysisId,
             node_id: nodesInAnalysis[nodeIndex].uuid,
         });

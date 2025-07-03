@@ -1,6 +1,6 @@
 [
-  { "id": 1, "name": "Pirate" },
-  { "id": 2, "name": "Monkey" },
-  { "id": 3, "name": "Ninja" },
-  { "id": 4, "name": "Spagethi" }
+  { "domain": 1.0, "id": "1", "name": "Pirate" },
+  { "domain": 1.0, "id": "2", "name": "Monkey" },
+  { "domain": 1.0, "id": "3", "name": "Ninja" },
+  { "domain": 1.0, "id": "4", "name": "Spagethi" }
 ]
