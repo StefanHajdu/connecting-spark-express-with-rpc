@@ -3,6 +3,7 @@ import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label } from "flo
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
 import { Node } from "../NodeInstance.svelte";
+import { tryRestoreNodes } from "$lib/utils";
 
 interface Props {
     analysisId: string;
@@ -74,9 +75,7 @@ async function submit() {
                     : new ParquetMetadata(datasetPath),
     };
 
-    for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
-        nodesInAnalysis[i].isInvalid(false, nodesInAnalysis[i - 1]);
-    }
+    await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
 }
 </script>
 

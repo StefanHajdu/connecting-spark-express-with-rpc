@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import type { Column, SparkTransformResponse, Expression, Param, InvalidState } from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
-import { compileExprObj, syncInNewColumns } from "$lib/utils";
+import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/utils";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -39,12 +39,8 @@ export abstract class Node {
         this.colsInTransform = cols;
     }
 
-    public resetInvalidState() {
-        this.invalidState = { trigger: false, description: "Default" };
-    }
-
-    public setInvalidState(description: string) {
-        this.invalidState = { trigger: true, description: description };
+    public setInvalidState(trigger: boolean, description: string) {
+        this.invalidState = { trigger: trigger, description: description };
     }
 
     public colsToSet(cols: Column[]): Set<string> {
@@ -52,6 +48,7 @@ export abstract class Node {
     }
 
     public abstract submit(params: any): Promise<boolean>;
+    public abstract getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any;
     public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
     public abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
     public abstract isInvalid(force: boolean, prevNode?: Node): boolean;
@@ -62,6 +59,10 @@ class LoadNode extends Node {
         super(title, colsInDf);
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
+    }
+
+    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+        return {};
     }
 
     async submit(params: any): Promise<boolean> {
@@ -87,7 +88,7 @@ class LoadNode extends Node {
 
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState("invalid schema");
+            this.setInvalidState(true, "invalid schema");
             return true;
         }
         return false;
@@ -101,6 +102,17 @@ export class AddColumnNode extends Node {
         super(title, colsInDf);
         this.nodeType = "sql";
         this.expressions = [];
+    }
+
+    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+        return {
+            analysisId: analysisId,
+            nodeUuid: nodesInAnalysis[nodeIndex].uuid,
+            prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+            expressions: this.expressions,
+            nodesInAnalysis: nodesInAnalysis,
+            nodeIndex: nodeIndex,
+        };
     }
 
     async submit(params: any): Promise<boolean> {
@@ -154,7 +166,7 @@ export class AddColumnNode extends Node {
 
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState("Invalid schema upstream");
+            this.setInvalidState(true, "Invalid schema upstream");
             return true;
         }
 
@@ -180,6 +192,10 @@ class FilterNode extends Node {
         this.nodeType = "sql";
     }
 
+    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+        return {};
+    }
+
     async submit(params: any): Promise<boolean> {
         return true;
     }
@@ -197,7 +213,7 @@ class FilterNode extends Node {
 
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState("invalid schema");
+            this.setInvalidState(true, "invalid schema");
             return true;
         }
         return false;
@@ -208,6 +224,10 @@ class JoinNode extends Node {
     constructor(title: string, colsInDf: Column[]) {
         super(title, colsInDf);
         this.nodeType = "sql";
+    }
+
+    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+        return {};
     }
 
     async submit(params: any): Promise<boolean> {
@@ -227,7 +247,7 @@ class JoinNode extends Node {
 
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState("invalid schema");
+            this.setInvalidState(true, "invalid schema");
             return true;
         }
         return false;
@@ -238,6 +258,10 @@ class TableNode extends Node {
     constructor(title: string, colsInDf: Column[]) {
         super(title, colsInDf);
         this.nodeType = "visualization";
+    }
+
+    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+        return {};
     }
 
     async submit(params: any): Promise<boolean> {
@@ -257,7 +281,7 @@ class TableNode extends Node {
 
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState("invalid schema");
+            this.setInvalidState(true, "invalid schema");
             return true;
         }
         return false;

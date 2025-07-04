@@ -119,9 +119,10 @@ async function toggleNode() {
 
         {#if nodesInAnalysis[nodeIndex].invalidState.trigger}
             <div>
-                <Button id="invalid-state" outline color="red" size="xs">Error</Button>
-                <Tooltip arrow={false} triggeredBy="#invalid-state"
-                    >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip>
+                <Button id="invalid-state" outline color="red" size="xs"
+                    >{nodesInAnalysis[nodeIndex].invalidState.description}</Button>
+                <!-- <Tooltip arrow={false} triggeredBy="#invalid-state"
+                    >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip> -->
             </div>
         {/if}
 

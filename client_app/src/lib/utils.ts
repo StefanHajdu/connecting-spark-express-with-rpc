@@ -75,3 +75,21 @@ export function syncOutRemovedColumns(nodesInAnalysis: Node[], nodeIndex: number
         }
     }
 }
+
+export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[], restoreFrom: number): Promise<void> {
+    for (let i = restoreFrom; i < nodesInAnalysis.length; i++) {
+        let invalid = nodesInAnalysis[i].isInvalid(false, nodesInAnalysis[i - 1]);
+        if (invalid) {
+            for (let j = i + 1; j < nodesInAnalysis.length; j++) {
+                console.log("j", j, nodesInAnalysis[j]);
+                nodesInAnalysis[j].setInvalidState(
+                    true,
+                    "Invalid schema, cannot apply this node. Fix errors in previous node.",
+                );
+            }
+            break;
+        } else {
+            let _ = await nodesInAnalysis[i].submit(nodesInAnalysis[i].getSubmitParams(analysisId, nodesInAnalysis, i));
+        }
+    }
+}
