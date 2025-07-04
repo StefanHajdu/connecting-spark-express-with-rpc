@@ -55,7 +55,7 @@ export function compileExprObj(expr: Expression): { expression: string; col_name
     return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
 }
 
-export function syncNodeColsOnAdd(nodesInAnalysis: Node[], nodeIndex: number): void {
+export function syncInNewColumns(nodesInAnalysis: Node[], nodeIndex: number): void {
     // add dtype to each of added columns
     let colsAdded = nodesInAnalysis[nodeIndex].colsInNode.filter((col: Column) =>
         nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
@@ -66,7 +66,7 @@ export function syncNodeColsOnAdd(nodesInAnalysis: Node[], nodeIndex: number): v
     }
 }
 
-export function syncNodeColsOnRemove(nodesInAnalysis: Node[], nodeIndex: number): void {
+export function syncOutRemovedColumns(nodesInAnalysis: Node[], nodeIndex: number): void {
     let colsToRemove = nodesInAnalysis[nodeIndex].colsAdded;
     if (colsToRemove.size > 0) {
         for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {

@@ -1,3 +1,8 @@
+export interface InvalidState {
+    trigger: boolean;
+    description: string;
+}
+
 export type SparkActionlResponse = {
     session_id: string;
     msg: string;

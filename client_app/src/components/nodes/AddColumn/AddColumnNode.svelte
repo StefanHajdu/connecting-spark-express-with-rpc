@@ -7,7 +7,7 @@ import { Node } from "../NodeInstance.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import type { SparkTransformResponse, Expression } from "$lib/dtype";
-import { compileExprString, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
+import { compileExprString, syncInNewColumns, getActivePredecessor } from "$lib/utils";
 
 interface Props {
     nodesInAnalysis: Node[];
@@ -52,17 +52,14 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    let transformRes: SparkTransformResponse = await nodesInAnalysis[nodeIndex].submitTransform({
-        session_id: analysisId,
-        node_id: nodesInAnalysis[nodeIndex].uuid,
-        prev_node_id: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+    let _ = await nodesInAnalysis[nodeIndex].submit({
+        analysisId: analysisId,
+        nodeUuid: nodesInAnalysis[nodeIndex].uuid,
+        prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
         expressions: expressions,
+        nodesInAnalysis: nodesInAnalysis,
+        nodeIndex: nodeIndex,
     });
-
-    if (transformRes) {
-        nodesInAnalysis[nodeIndex].parseTransformResponse(transformRes, { expressions: expressions });
-        syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
-    }
 }
 </script>
 

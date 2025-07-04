@@ -46,7 +46,7 @@ let csvDelimiter: string = $state(";");
 let jsonMultiline: boolean = $state(true);
 
 async function submit() {
-    const loadInput = {
+    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
         session_id: analysisId,
         [inputType]:
             inputType === "csv"
@@ -56,16 +56,14 @@ async function submit() {
                   : inputType === "parquet"
                     ? { path: datasetPath }
                     : { path: datasetPath },
-    };
-    let transformRes = await nodesInAnalysis[nodeIndex].submitTransform(loadInput);
+    });
 
-    if (transformRes) {
-        nodesInAnalysis[nodeIndex].parseTransformResponse(transformRes);
+    if (submitSuccessful) {
         loadDatasetModal = false;
     }
 
     loadedDataset = {
-        loadSuccess: transformRes ? true : false,
+        loadSuccess: submitSuccessful,
         metadata:
             inputType === "csv"
                 ? new CsvMetadata(datasetPath, csvDelimiter, csvIncludeHeader)
@@ -75,6 +73,10 @@ async function submit() {
                     ? new ParquetMetadata(datasetPath)
                     : new ParquetMetadata(datasetPath),
     };
+
+    for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
+        nodesInAnalysis[i].isInvalid(false, nodesInAnalysis[i - 1]);
+    }
 }
 </script>
 

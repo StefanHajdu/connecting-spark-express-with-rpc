@@ -1,9 +1,9 @@
 <script lang="ts">
-import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
+import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Tooltip, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { syncNodeColsOnRemove, syncNodeColsOnAdd, getActivePredecessor } from "$lib/utils";
-import { type SparkTransformResponse } from "$lib/dtype";
+import { syncInNewColumns, syncOutRemovedColumns, getActivePredecessor } from "$lib/utils";
+import type { SparkTransformResponse } from "$lib/dtype";
 import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
@@ -54,7 +54,7 @@ async function removeNode() {
         node_id: nodesInAnalysis[nodeIndex].uuid,
     });
     if (transformResponse) {
-        syncNodeColsOnRemove(nodesInAnalysis, nodeIndex);
+        syncInNewColumns(nodesInAnalysis, nodeIndex);
         nodesInAnalysis.splice(nodeIndex, 1);
     }
     optionsOpen = false;
@@ -79,7 +79,7 @@ async function toggleNode() {
             node_id: nodesInAnalysis[nodeIndex].uuid,
         });
         if (transformResponse) {
-            syncNodeColsOnRemove(nodesInAnalysis, nodeIndex);
+            syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
         }
         nodesInAnalysis[nodeIndex].active = false;
     } else {
@@ -91,7 +91,7 @@ async function toggleNode() {
                 prevNodeId: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
             });
             if (transformResponse) {
-                syncNodeColsOnAdd(nodesInAnalysis, nodeIndex);
+                syncInNewColumns(nodesInAnalysis, nodeIndex);
             }
         }
         nodesInAnalysis[nodeIndex].active = true;
@@ -116,7 +116,16 @@ async function toggleNode() {
                 {/if}
             </Dropdown>
         </div>
-        <div class="mb-4 flex items-center justify-between">
+
+        {#if nodesInAnalysis[nodeIndex].invalidState.trigger}
+            <div>
+                <Button id="invalid-state" outline color="red" size="xs">Error</Button>
+                <Tooltip arrow={false} triggeredBy="#invalid-state"
+                    >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip>
+            </div>
+        {/if}
+
+        <div class="mb-4 mt-4 flex items-center justify-between">
             <p>id: {nodesInAnalysis[nodeIndex].uuid.slice(-5)}</p>
         </div>
 
@@ -132,8 +141,16 @@ async function toggleNode() {
         {/if}
 
         <div class="mt-2">
-            <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={previewNode}>Preview</Button>
-            <Button size="xs" color="light" disabled={!activeNodeStatus} on:click={summarizeNode}>Summarize</Button>
+            <Button
+                size="xs"
+                color="light"
+                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
+                on:click={previewNode}>Preview</Button>
+            <Button
+                size="xs"
+                color="light"
+                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
+                on:click={summarizeNode}>Summarize</Button>
             {#if nodesInAnalysis[nodeIndex].title !== "Load"}
                 <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
             {/if}
@@ -149,7 +166,7 @@ async function toggleNode() {
     </Card>
 </div>
 <div class="p-1 mb-4 flex justify-center">
-    <Button size="xs" color="dark" disabled={!activeNodeStatus}
+    <Button size="xs" color="dark" disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
         <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>

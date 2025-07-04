@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import type { Column, SparkTransformResponse, Expression, Param } from "$lib/dtype";
+import type { Column, SparkTransformResponse, Expression, Param, InvalidState } from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
-import { compileExprObj } from "$lib/utils";
+import { compileExprObj, syncInNewColumns } from "$lib/utils";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -30,6 +30,7 @@ export abstract class Node {
     colsInNode: Column[] = $state([]);
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
+    invalidState: InvalidState = $state({ trigger: false, description: "Default" });
 
     constructor(title: string, cols: Column[]) {
         this.uuid = "node-" + uuidv4();
@@ -38,8 +39,22 @@ export abstract class Node {
         this.colsInTransform = cols;
     }
 
-    abstract submitTransform(params: any): Promise<SparkTransformResponse>;
-    abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
+    public resetInvalidState() {
+        this.invalidState = { trigger: false, description: "Default" };
+    }
+
+    public setInvalidState(description: string) {
+        this.invalidState = { trigger: true, description: description };
+    }
+
+    public colsToSet(cols: Column[]): Set<string> {
+        return new Set(cols.map((col) => col.name));
+    }
+
+    public abstract submit(params: any): Promise<boolean>;
+    public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
+    public abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
+    public abstract isInvalid(force: boolean, prevNode?: Node): boolean;
 }
 
 class LoadNode extends Node {
@@ -49,7 +64,18 @@ class LoadNode extends Node {
         this.nodeType = "load";
     }
 
-    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+    async submit(params: any): Promise<boolean> {
+        let transformRes = await this.submitTransform(params);
+
+        if (transformRes) {
+            this.parseTransformResponse(transformRes);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async submitTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", params);
         return transformResponse;
     }
@@ -57,6 +83,14 @@ class LoadNode extends Node {
     parseTransformResponse(res: SparkTransformResponse, params?: any) {
         this.colsInTransform = this.colsInNode = res.columns;
         this.colsAdded = new Set(res.columns.map((col: Column) => col.name));
+    }
+
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState("invalid schema");
+            return true;
+        }
+        return false;
     }
 }
 
@@ -69,7 +103,23 @@ export class AddColumnNode extends Node {
         this.expressions = [];
     }
 
-    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+    async submit(params: any): Promise<boolean> {
+        let transformRes: SparkTransformResponse = await this.submitTransform({
+            session_id: params.analysisId,
+            node_id: params.nodeUuid,
+            prev_node_id: params.prevNodeUuid,
+            expressions: params.expressions,
+        });
+        if (transformRes) {
+            this.parseTransformResponse(transformRes, { expressions: params.expressions });
+            syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async submitTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
             ...params,
             expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
@@ -101,6 +151,27 @@ export class AddColumnNode extends Node {
         );
         this.expressions = params.expressions;
     }
+
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState("Invalid schema upstream");
+            return true;
+        }
+
+        if (prevNode) {
+            // invalid if node uses columns that are not present in prev node
+            const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
+            if (diff.size > 0) {
+                this.invalidState = {
+                    trigger: true,
+                    description: `Missing or renamed columns: ${[...diff].join(", ")}, please manually fix and submit node`,
+                };
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 class FilterNode extends Node {
@@ -109,7 +180,11 @@ class FilterNode extends Node {
         this.nodeType = "sql";
     }
 
-    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+    async submit(params: any): Promise<boolean> {
+        return true;
+    }
+
+    async submitTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("/filter", {
             session_id: params.analysisId,
             node_id: params.nodeId,
@@ -119,6 +194,14 @@ class FilterNode extends Node {
     }
 
     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState("invalid schema");
+            return true;
+        }
+        return false;
+    }
 }
 
 class JoinNode extends Node {
@@ -127,7 +210,11 @@ class JoinNode extends Node {
         this.nodeType = "sql";
     }
 
-    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+    async submit(params: any): Promise<boolean> {
+        return true;
+    }
+
+    async submitTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("/join", {
             session_id: params.analysisId,
             node_id: params.nodeId,
@@ -137,6 +224,14 @@ class JoinNode extends Node {
     }
 
     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState("invalid schema");
+            return true;
+        }
+        return false;
+    }
 }
 
 class TableNode extends Node {
@@ -145,7 +240,11 @@ class TableNode extends Node {
         this.nodeType = "visualization";
     }
 
-    public async submitTransform(params: any): Promise<SparkTransformResponse> {
+    async submit(params: any): Promise<boolean> {
+        return true;
+    }
+
+    async submitTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("/table", {
             session_id: params.analysisId,
             node_id: params.nodeId,
@@ -155,4 +254,12 @@ class TableNode extends Node {
     }
 
     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState("invalid schema");
+            return true;
+        }
+        return false;
+    }
 }
