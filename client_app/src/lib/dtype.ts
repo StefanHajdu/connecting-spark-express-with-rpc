@@ -1,5 +1,5 @@
 export interface InvalidState {
-    trigger: boolean;
+    value: boolean;
     description: string;
 }
 

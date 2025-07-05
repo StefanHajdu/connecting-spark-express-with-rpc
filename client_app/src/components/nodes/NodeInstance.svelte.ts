@@ -30,7 +30,7 @@ export abstract class Node {
     colsInNode: Column[] = $state([]);
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
-    invalidState: InvalidState = $state({ trigger: false, description: "" });
+    invalidState: InvalidState = $state({ value: false, description: "" });
 
     constructor(title: string, cols: Column[]) {
         this.uuid = "node-" + uuidv4();
@@ -39,8 +39,8 @@ export abstract class Node {
         this.colsInTransform = cols;
     }
 
-    public setInvalidState(trigger: boolean, description: string) {
-        this.invalidState = { trigger: trigger, description: description };
+    public setInvalidState(value: boolean, description: string) {
+        this.invalidState = { value: value, description: description };
     }
 
     public colsToSet(cols: Column[]): Set<string> {
@@ -175,7 +175,7 @@ export class AddColumnNode extends Node {
             const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
             if (diff.size > 0) {
                 this.invalidState = {
-                    trigger: true,
+                    value: true,
                     description: `Missing or renamed columns: ${[...diff].join(", ")}, please manually fix and submit node`,
                 };
                 return true;

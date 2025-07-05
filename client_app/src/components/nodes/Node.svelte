@@ -2,9 +2,9 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Tooltip, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { syncInNewColumns, syncOutRemovedColumns, getActivePredecessor } from "$lib/utils";
+import { syncInNewColumns, syncOutRemovedColumns } from "$lib/utils";
 import type { SparkTransformResponse } from "$lib/dtype";
-import { nodeFactoryMethod, Node, AddColumnNode as AddColumnNodeIn } from "./NodeInstance.svelte";
+import { nodeFactoryMethod, Node } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
@@ -49,14 +49,16 @@ function insertNextNode(nodeType: string) {
 }
 
 async function removeNode() {
-    let transformResponse: SparkTransformResponse = await fetchSparkApi("removeNode", {
-        session_id: analysisId,
-        node_id: nodesInAnalysis[nodeIndex].uuid,
-    });
-    if (transformResponse) {
-        syncInNewColumns(nodesInAnalysis, nodeIndex);
-        nodesInAnalysis.splice(nodeIndex, 1);
+    if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+        let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
+            session_id: analysisId,
+            node_id: nodesInAnalysis[nodeIndex].uuid,
+        });
+        if (transformResponse) {
+            syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
+        }
     }
+    nodesInAnalysis.splice(nodeIndex, 1);
     optionsOpen = false;
 }
 
@@ -74,25 +76,25 @@ function summarizeNode() {
 async function toggleNode() {
     if (activeNodeStatus) {
         // enabled => disabled
-        let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
-            session_id: analysisId,
-            node_id: nodesInAnalysis[nodeIndex].uuid,
-        });
-        if (transformResponse) {
-            syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
+        if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+            let transformResponse: SparkTransformResponse = await fetchSparkApi(
+                "rpc/sessionNode/transform/removeNode",
+                {
+                    session_id: analysisId,
+                    node_id: nodesInAnalysis[nodeIndex].uuid,
+                },
+            );
+            if (transformResponse) {
+                syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
+            }
         }
         nodesInAnalysis[nodeIndex].active = false;
     } else {
         // disabled => enabled
-        if (nodesInAnalysis[nodeIndex] instanceof AddColumnNodeIn) {
-            let transformResponse = await nodesInAnalysis[nodeIndex].submitTransform({
-                analysisId: analysisId,
-                nodeId: nodesInAnalysis[nodeIndex].uuid,
-                prevNodeId: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-            });
-            if (transformResponse) {
-                syncInNewColumns(nodesInAnalysis, nodeIndex);
-            }
+        if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+            let _ = await nodesInAnalysis[nodeIndex].submit(
+                nodesInAnalysis[nodeIndex].getSubmitParams(analysisId, nodesInAnalysis, nodeIndex),
+            );
         }
         nodesInAnalysis[nodeIndex].active = true;
     }
@@ -117,7 +119,7 @@ async function toggleNode() {
             </Dropdown>
         </div>
 
-        {#if nodesInAnalysis[nodeIndex].invalidState.trigger}
+        {#if nodesInAnalysis[nodeIndex].invalidState.value}
             <div>
                 <Button id="invalid-state" outline color="red" size="xs"
                     >{nodesInAnalysis[nodeIndex].invalidState.description}</Button>
@@ -145,12 +147,12 @@ async function toggleNode() {
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
+                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.value}
                 on:click={previewNode}>Preview</Button>
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
+                disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.value}
                 on:click={summarizeNode}>Summarize</Button>
             {#if nodesInAnalysis[nodeIndex].title !== "Load"}
                 <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
@@ -167,7 +169,7 @@ async function toggleNode() {
     </Card>
 </div>
 <div class="p-1 mb-4 flex justify-center">
-    <Button size="xs" color="dark" disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.trigger}
+    <Button size="xs" color="dark" disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.value}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
         <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
