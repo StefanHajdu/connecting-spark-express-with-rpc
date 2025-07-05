@@ -30,7 +30,7 @@ export abstract class Node {
     colsInNode: Column[] = $state([]);
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
-    invalidState: InvalidState = $state({ trigger: false, description: "Default" });
+    invalidState: InvalidState = $state({ trigger: false, description: "" });
 
     constructor(title: string, cols: Column[]) {
         this.uuid = "node-" + uuidv4();

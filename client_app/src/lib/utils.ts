@@ -81,7 +81,6 @@ export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[
         let invalid = nodesInAnalysis[i].isInvalid(false, nodesInAnalysis[i - 1]);
         if (invalid) {
             for (let j = i + 1; j < nodesInAnalysis.length; j++) {
-                console.log("j", j, nodesInAnalysis[j]);
                 nodesInAnalysis[j].setInvalidState(
                     true,
                     "Invalid schema, cannot apply this node. Fix errors in previous node.",

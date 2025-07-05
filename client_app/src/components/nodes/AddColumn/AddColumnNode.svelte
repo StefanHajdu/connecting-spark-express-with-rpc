@@ -52,7 +52,7 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    let _ = await nodesInAnalysis[nodeIndex].submit({
+    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
         analysisId: analysisId,
         nodeUuid: nodesInAnalysis[nodeIndex].uuid,
         prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
@@ -60,6 +60,10 @@ async function submit() {
         nodesInAnalysis: nodesInAnalysis,
         nodeIndex: nodeIndex,
     });
+
+    if (submitSuccessful) {
+        nodesInAnalysis[nodeIndex].setInvalidState(false, "");
+    }
 }
 </script>
 
