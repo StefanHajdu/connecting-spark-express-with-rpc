@@ -2,7 +2,7 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Tooltip, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { syncInNewColumns, syncOutRemovedColumns } from "$lib/utils";
+import { tryRestoreNodes, syncOutRemovedColumns } from "$lib/utils";
 import type { SparkTransformResponse } from "$lib/dtype";
 import { nodeFactoryMethod, Node } from "./NodeInstance.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
@@ -49,6 +49,7 @@ function insertNextNode(nodeType: string) {
 }
 
 async function removeNode() {
+    // todo: cannot remove node that is not present on backend
     if (!nodesInAnalysis[nodeIndex].invalidState.value) {
         let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
             session_id: analysisId,
@@ -60,6 +61,11 @@ async function removeNode() {
     }
     nodesInAnalysis.splice(nodeIndex, 1);
     optionsOpen = false;
+
+    // removing invalid node trigger submit on following nodes
+    if (nodesInAnalysis[nodeIndex].invalidState.value) {
+        await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex);
+    }
 }
 
 function previewNode() {
@@ -89,6 +95,11 @@ async function toggleNode() {
             }
         }
         nodesInAnalysis[nodeIndex].active = false;
+
+        // disabling invalid node trigger submit on following nodes
+        if (nodesInAnalysis[nodeIndex].invalidState.value) {
+            await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
+        }
     } else {
         // disabled => enabled
         if (!nodesInAnalysis[nodeIndex].invalidState.value) {

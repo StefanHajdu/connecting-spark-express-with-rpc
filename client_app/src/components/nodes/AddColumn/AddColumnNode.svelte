@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Node } from "../NodeInstance.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import type { SparkTransformResponse, Expression } from "$lib/dtype";
-import { compileExprString, syncInNewColumns, getActivePredecessor } from "$lib/utils";
+import type { Expression } from "$lib/dtype";
+import { compileExprString, tryRestoreNodes, getActivePredecessor } from "$lib/utils";
 
 interface Props {
     nodesInAnalysis: Node[];
@@ -62,6 +62,10 @@ async function submit() {
     });
 
     if (submitSuccessful) {
+        // invalid -> valid trigger submit on following nodes
+        if (nodesInAnalysis[nodeIndex].invalidState.value) {
+            await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
+        }
         nodesInAnalysis[nodeIndex].setInvalidState(false, "");
     }
 }
