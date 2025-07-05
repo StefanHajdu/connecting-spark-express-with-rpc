@@ -48,9 +48,9 @@ function insertNextNode(nodeType: string) {
     newNodeDropdownOpen = false;
 }
 
-async function removeNode() {
+async function removeNode(apiInvolved: boolean) {
     // todo: cannot remove node that is not present on backend
-    if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+    if (apiInvolved) {
         let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
             session_id: analysisId,
             node_id: nodesInAnalysis[nodeIndex].uuid,
@@ -59,13 +59,9 @@ async function removeNode() {
             syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
         }
     }
+
     nodesInAnalysis.splice(nodeIndex, 1);
     optionsOpen = false;
-
-    // removing invalid node trigger submit on following nodes
-    if (nodesInAnalysis[nodeIndex].invalidState.value) {
-        await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex);
-    }
 }
 
 function previewNode() {
@@ -79,10 +75,13 @@ function summarizeNode() {
     });
 }
 
-async function toggleNode() {
+async function toggleNode(apiInvolved: boolean) {
+    console.log(nodesInAnalysis[nodeIndex].invalidState);
+    console.log(apiInvolved);
+
     if (activeNodeStatus) {
         // enabled => disabled
-        if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+        if (apiInvolved) {
             let transformResponse: SparkTransformResponse = await fetchSparkApi(
                 "rpc/sessionNode/transform/removeNode",
                 {
@@ -94,24 +93,35 @@ async function toggleNode() {
                 syncOutRemovedColumns(nodesInAnalysis, nodeIndex);
             }
         }
-        nodesInAnalysis[nodeIndex].active = false;
 
-        // disabling invalid node trigger submit on following nodes
-        if (nodesInAnalysis[nodeIndex].invalidState.value) {
-            await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
-        }
+        nodesInAnalysis[nodeIndex].active = false;
     } else {
         // disabled => enabled
-        if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+        if (apiInvolved) {
             let _ = await nodesInAnalysis[nodeIndex].submit(
                 nodesInAnalysis[nodeIndex].getSubmitParams(analysisId, nodesInAnalysis, nodeIndex),
             );
         }
+
         nodesInAnalysis[nodeIndex].active = true;
     }
 }
 
-// $inspect("node:", nodeIndex, nodesInAnalysis[nodeIndex].colsInNode);
+async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Promise<void>): Promise<void> {
+    const wrapped = async () => {
+        if (!nodesInAnalysis[nodeIndex].invalidState.value) {
+            await func(true);
+        } else {
+            // trigger restore on following nodes when:
+            // 1. removing invalid node
+            // 2. disabling invalid node
+            let index = func.name === "removeNode" ? nodeIndex : nodeIndex + 1;
+            await func(false);
+            await tryRestoreNodes(analysisId, nodesInAnalysis, index);
+        }
+    };
+    await wrapped();
+}
 </script>
 
 <div class={"flex min-w-80 justify-center " + opacity} id={nodesInAnalysis[nodeIndex].uuid}>
@@ -121,7 +131,10 @@ async function toggleNode() {
             <Dropdown class="w-36" bind:open={optionsOpen}>
                 {#if nodesInAnalysis[nodeIndex].nodeType !== "load"}
                     <div class="flex items-stretch">
-                        <DropdownItem class="flex items-center" disabled={!activeNodeStatus} onclick={removeNode}>
+                        <DropdownItem
+                            class="flex items-center"
+                            disabled={!activeNodeStatus}
+                            onclick={() => reactWhenSourceChangedWrapper(removeNode)}>
                             <TrashBinOutline class="mr-2" />
                             Remove
                         </DropdownItem>
@@ -166,7 +179,13 @@ async function toggleNode() {
                 disabled={!activeNodeStatus || nodesInAnalysis[nodeIndex].invalidState.value}
                 on:click={summarizeNode}>Summarize</Button>
             {#if nodesInAnalysis[nodeIndex].title !== "Load"}
-                <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
+                <Toggle
+                    size="small"
+                    class="pt-1"
+                    bind:checked={activeNodeStatus}
+                    onclick={() => {
+                        reactWhenSourceChangedWrapper(toggleNode);
+                    }} />
             {/if}
         </div>
 

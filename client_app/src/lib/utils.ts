@@ -92,6 +92,7 @@ export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[
             break;
         } else {
             let _ = await nodesInAnalysis[i].submit(nodesInAnalysis[i].getSubmitParams(analysisId, nodesInAnalysis, i));
+            nodesInAnalysis[i].setInvalidState(false, "");
         }
     }
 }
