@@ -76,9 +76,6 @@ function summarizeNode() {
 }
 
 async function toggleNode(apiInvolved: boolean) {
-    console.log(nodesInAnalysis[nodeIndex].invalidState);
-    console.log(apiInvolved);
-
     if (activeNodeStatus) {
         // enabled => disabled
         if (apiInvolved) {
