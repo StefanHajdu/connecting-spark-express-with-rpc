@@ -16,6 +16,7 @@ class SessionPlanner:
         idx = self._find_node_by_id(node_id)
         if idx is not None:
             return self.nodes[idx]
+        raise AttributeError('Invalid node request')
 
     def _find_node_by_id(self, node_id: str) -> int | None:
         for idx, node in enumerate(self.nodes):

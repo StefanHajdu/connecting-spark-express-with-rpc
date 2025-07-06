@@ -1,6 +1,5 @@
 import io
 import json
-import os
 from abc import abstractmethod
 
 import sparkapi_pb2
@@ -8,10 +7,9 @@ from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
 from constants import PLAN_NODE_ROOT_ID
-from custom_exceptions import InvalidPathException
 from NodeExtensions import OtherDataframe
 from spark_session_init import spark
-from utils import get_dir_size, spark_read_from_path
+from utils import load_data_for_spark
 
 
 class SparkNode:
@@ -48,14 +46,6 @@ class SparkNode:
         self._prev_node_id = val
 
     @property
-    def operation(self):
-        return self._operation
-
-    @operation.setter
-    def operation(self, val: str):
-        self._operation = val
-
-    @property
     def columns(self):
         types = []
         for field in json.loads(self.df.schema.json()).get('fields', []):
@@ -83,10 +73,10 @@ class SparkNode:
 
     def preview(self, limit) -> str:
         df_pandas = self.df.limit(limit).toPandas()
-        # values translate easiest to html table
+        # (orient='values' translate easiest to html table
         json_buffer = df_pandas.to_json(orient='values', force_ascii=False, date_format='iso')
-        # append df values and schema to valid json
         return (
+            # concat df values and schema to valid json
             '{"data":'
             + json_buffer
             + ',"columns":'
@@ -127,14 +117,11 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, path: str):
+    def __init__(self, session_id: str, input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
-        self._operation = 'load_dataset'
-        self._query = 'spark.read'
-        self._path = path
-        self.path_valid = self.validate_path()
+        self._input_metadata = input_metadata
         self.df = self.run_transform()
 
     @property
@@ -146,19 +133,10 @@ class LoadNode(TransformNode):
         self._path = val
 
     def __str__(self):
-        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self.path}'
-
-    def validate_path(self):
-        if os.path.exists(self.path):
-            if not os.path.isdir(self.path):
-                self.input_size = os.path.getsize(self.path)
-            else:
-                self.input_size = get_dir_size(self.path)
-        else:
-            raise InvalidPathException()
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self._input_metadata.path}'
 
     def run_transform(self, **kwargs):
-        return spark_read_from_path(path=self.path)
+        return load_data_for_spark(input_metadata=self._input_metadata)
 
 
 class LoadFromSessionNode(TransformNode):
@@ -166,8 +144,6 @@ class LoadFromSessionNode(TransformNode):
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
-        self._operation = 'load_from_session'
-        self._query = 'load_from_session'
         self._parent_session_plan = parent_session_plan
         self.df = self.run_transform()
 
@@ -238,15 +214,14 @@ class JoinNode(TransformNode):
         session_id: str,
         node_id: str,
         prev_node_id: str,
-        input_type: str,
-        input_pointer: str,
+        input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput | sparkapi_pb2.SessionInput,
         joinParams: sparkapi_pb2.JoinParams,
         prev_df: DataFrame,
     ):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.other_df = OtherDataframe(input_type, input_pointer)
+        self.other_df = OtherDataframe(input_metadata)
         self.joinParams = MessageToDict(joinParams)
         self.df = self.run_transform(spark=spark, df=prev_df)
 

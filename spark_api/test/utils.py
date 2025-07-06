@@ -23,11 +23,7 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def submit_loadNode(session_id: str, src_path: str) -> None:
-    json_data = {
-        'session_id': session_id,
-        'path': src_path,
-    }
+def submit_loadNode(json_data: any) -> None:
     res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitLoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
