@@ -109,11 +109,15 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
         if (!nodesInAnalysis[nodeIndex].invalidState.value) {
             await func(true);
         } else {
+            await func(false);
+
             // trigger restore on following nodes when:
             // 1. removing invalid node
             // 2. disabling invalid node
-            let index = func.name === "removeNode" ? nodeIndex : nodeIndex + 1;
-            await func(false);
+            let index =
+                func.name === "removeNode" || (func.name === "toggleNode" && !activeNodeStatus)
+                    ? nodeIndex
+                    : nodeIndex + 1;
             await tryRestoreNodes(analysisId, nodesInAnalysis, index);
         }
     };

@@ -176,7 +176,7 @@ export class AddColumnNode extends Node {
             if (diff.size > 0) {
                 this.invalidState = {
                     value: true,
-                    description: `Missing or renamed columns: ${[...diff].join(", ")}, please manually fix and submit node`,
+                    description: `Missing or renamed columns: [${[...diff].join(", ")}], please manually fix and submit node`,
                 };
                 return true;
             }
