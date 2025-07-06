@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label } from "flowbite-svelte";
+import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
 import { Node } from "../NodeInstance.svelte";
@@ -46,7 +46,10 @@ let csvDelimiter: string = $state(";");
 // json
 let jsonMultiline: boolean = $state(true);
 
+let loadInProgress = $state(false);
+
 async function submit() {
+    loadInProgress = true;
     let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
         session_id: analysisId,
         [inputType]:
@@ -76,6 +79,8 @@ async function submit() {
     };
 
     await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
+
+    loadInProgress = false;
 }
 </script>
 
@@ -145,5 +150,8 @@ async function submit() {
 
     {#if datasetPath !== ""}
         <Button color="blue" disabled={datasetPath === ""} on:click={submit}>Submit</Button>
+    {/if}
+    {#if loadInProgress}
+        <Spinner size="6" />
     {/if}
 </Modal>
