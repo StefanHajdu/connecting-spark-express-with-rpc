@@ -1,0 +1,79 @@
+name: Python Tests
+
+on:
+  push:
+    branches: [ master, dev ]
+  pull_request:
+    branches: [ master, dev ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Java (OpenJDK) for PySpark
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('spark_api/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd spark_api
+        pip install --editable .
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: web_api/package-lock.json
+
+    - name: Install Node.js dependencies
+      run: |
+        cd web_api
+        npm install
+
+    - name: Start backend services
+      run: |
+        chmod +x start-backend.sh
+        ./start-backend.sh &
+        # allow services to spin up
+        sleep 30
+
+    - name: Run tests with pytest
+      run: |
+        cd spark_api
+        # Copy data if needed for tests
+        if [ -d "../data" ]; then
+          cp -r ../data ./data
+        fi
+        pytest test/test_use_cases.py -v --tb=short
+      env:
+        PYTHONPATH: ${{ github.workspace }}/spark_api/src:${{ github.workspace }}/spark_api/lib
+
+    - name: Stop services
+      if: always()
+      run: |
+        [ -f spark_api.pid ] && kill $(cat spark_api.pid) || true
+        [ -f web_api.pid ] && kill $(cat web_api.pid) || true

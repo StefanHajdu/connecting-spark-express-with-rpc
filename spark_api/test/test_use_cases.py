@@ -18,8 +18,6 @@ import utils as u
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 NODE_MISSING_EXCEPTION = NodeMissingException()
-s = TestState()
-
 TEST_STATE = TestState()
 
 
@@ -468,8 +466,8 @@ def test_08_removeNode_after_summarize():
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
     assert NODE_MISSING_EXCEPTION.__str__() in df_session_1['error']['message']
-    df_session_2 = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_session_2['count'] == s.total_rows
+    df_session_2 = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+    assert df_session_2['count'] == TEST_STATE.total_rows
 
 
 def test_08_removeNode_before_summarize():
@@ -516,8 +514,8 @@ def test_08_removeNode_before_summarize():
     )
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
     assert NODE_MISSING_EXCEPTION.__str__() in df_session_3['error']['message']
-    df_session_4 = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_session_4['count'] == s.total_rows
+    df_session_4 = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+    assert df_session_4['count'] == TEST_STATE.total_rows
 
 
 def test_12_toggle():
