@@ -2,7 +2,7 @@ name: Python Tests
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ master ]
   pull_request:
     branches: [ master, dev ]
   workflow_dispatch:
@@ -59,7 +59,7 @@ jobs:
         chmod +x start-backend.sh
         ./start-backend.sh &
         # allow services to spin up
-        sleep 30
+        sleep 20
 
     - name: Run tests with pytest
       run: |
