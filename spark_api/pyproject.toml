@@ -12,10 +12,10 @@ dynamic = ["dependencies"]
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools]
-package-dir = { "" = "generated" }
+package-dir = { "" = "lib" }
 
 [tool.setuptools.packages.find]
-where = ["generated"]
+where = ["lib"]
 
 
 [tool.ruff]
