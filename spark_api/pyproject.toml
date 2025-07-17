@@ -67,6 +67,7 @@ ignore = [
     "D105",
     "D106",
     "D107",
+    "UP045",
     "N812",   # Imports as uppercase (e.g., functions as F)
     "PD901",  # Generic dataframe name df
     "COM812", # Missing trailing comma
