@@ -1,6 +1,6 @@
 import io
 import json
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import sparkapi_pb2
 from constants import PLAN_NODE_ROOT_ID
@@ -12,7 +12,7 @@ from spark_session_init import spark
 from utils import load_data_for_spark
 
 
-class SparkNode:
+class SparkNode(ABC):
     @property
     def session_id(self):
         return self._session_id
@@ -71,18 +71,9 @@ class SparkNode:
             'schema': self.df.schema.json(),
         }
 
-    def preview(self, limit) -> str:
-        df_pandas = self.df.limit(limit).toPandas()
-        # (orient='values' translate easiest to html table
-        json_buffer = df_pandas.to_json(orient='values', force_ascii=False, date_format='iso')
-        return (
-            # concat df values and schema to valid json
-            '{"data":'
-            + json_buffer
-            + ',"columns":'
-            + json.dumps([{'name': field['name'], 'type': field['type']} for field in json.loads(self.df.schema.json())['fields']])
-            + '}'
-        )
+    @abstractmethod
+    def preview(self, **kwargs) -> str:
+        pass
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
@@ -114,6 +105,19 @@ class TransformNode(SparkNode):
     @abstractmethod
     def query_kwargs(self) -> dict:
         pass
+
+    def preview(self, limit) -> str:
+        df_pandas = self.df.limit(limit).toPandas()
+        # (orient='values' translate easiest to html table
+        json_buffer = df_pandas.to_json(orient='values', force_ascii=False, date_format='iso')
+        return (
+            # concat df values and schema to valid json
+            '{"data":'
+            + json_buffer
+            + ',"columns":'
+            + json.dumps([{'name': field['name'], 'type': field['type']} for field in json.loads(self.df.schema.json())['fields']])
+            + '}'
+        )
 
 
 class LoadNode(TransformNode):

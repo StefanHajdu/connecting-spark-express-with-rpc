@@ -78,10 +78,10 @@ class ClientSession:
     @log_plan_execution('/preview')
     def preview(self, node: Nodes.SparkNode, limit: int):
         if isinstance(node, Nodes.TransformNode):
-            return node.preview(limit)
-        else:
+            return node.preview(limit=limit)
+        elif isinstance(node, Nodes.VisualizationNode):
             prev_df = self.plan.get_node_by_id(node.prev_node_id).df
-            return node.preview(limit, prev_df)
+            return node.preview(limit=limit, prev_df=prev_df)
 
     def get_session_status(self):
         self._log(f'/getSessionStatus: {self.id}')
