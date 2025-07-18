@@ -1,7 +1,9 @@
-from exceptions import NodeMissingException
+from __future__ import annotations
 
 import Nodes
+import PipelinePlan
 from api_logging import log_plan_execution
+from misc_types import SparkActionMetadata
 from spark_session_init import spark
 
 
@@ -43,7 +45,7 @@ class ClientSession:
         return self._plan
 
     @plan.setter
-    def plan(self, val):
+    def plan(self, val: PipelinePlan.SessionPlanner):
         self._plan = val
 
     def notify_transformation_change(self):
@@ -68,20 +70,17 @@ class ClientSession:
         self.update_status.reset()
 
     @log_plan_execution('/summarize')
-    def summarize(self, node_id: str):
+    def summarize(self, node_id: str) -> SparkActionMetadata:
         node = self.plan.get_node_by_id(node_id)
-        if node:
-            return node.summarize()
-        else:
-            raise NodeMissingException()
+        return node.summarize()
 
     @log_plan_execution('/preview')
     def preview(self, node: Nodes.SparkNode, limit: int):
-        if isinstance(node, Nodes.TransformNode):
-            return node.preview(limit=limit)
-        elif isinstance(node, Nodes.VisualizationNode):
+        if isinstance(node, Nodes.VisualizationNode):
             prev_df = self.plan.get_node_by_id(node.prev_node_id).df
             return node.preview(limit=limit, prev_df=prev_df)
+        else:
+            return node.preview(limit=limit)
 
     def get_session_status(self):
         self._log(f'/getSessionStatus: {self.id}')

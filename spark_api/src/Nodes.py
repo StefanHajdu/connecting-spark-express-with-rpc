@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import json
 from abc import ABC, abstractmethod
@@ -7,7 +9,9 @@ from constants import PLAN_NODE_ROOT_ID
 from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
-from NodeExtensions import OtherDataframe
+import NodeExtensions
+import PipelinePlan
+from misc_types import SparkActionMetadata
 from spark_session_init import spark
 from utils import load_data_for_spark
 
@@ -18,7 +22,7 @@ class SparkNode(ABC):
         return self._session_id
 
     @session_id.setter
-    def session_id(self, val: DataFrame):
+    def session_id(self, val: str):
         self._session_id = val
 
     @property
@@ -72,7 +76,7 @@ class SparkNode(ABC):
     def query_kwargs(self, val: dict):
         self._query_kwargs = val
 
-    def summarize(self):
+    def summarize(self) -> SparkActionMetadata:
         return {
             'columns': json.dumps(self.df.columns),
             'count': self.df.count(),
@@ -109,9 +113,9 @@ class TransformNode(SparkNode):
     def query_template(self) -> str:
         pass
 
-    def preview(self, limit) -> str:
+    def preview(self, limit: int) -> str:
         df_pandas = self.df.limit(limit).toPandas()
-        # (orient='values' translate easiest to html table
+        # orient='values' translate easiest to html table
         json_buffer = df_pandas.to_json(orient='values', force_ascii=False, date_format='iso')
         return (
             # concat df values and schema to valid json
@@ -155,7 +159,7 @@ class LoadNode(TransformNode):
 
 
 class LoadFromSessionNode(TransformNode):
-    def __init__(self, session_id: str, parent_session_plan: str):
+    def __init__(self, session_id: str, parent_session_plan: PipelinePlan.SessionPlanner):
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
@@ -163,11 +167,19 @@ class LoadFromSessionNode(TransformNode):
         self.df = self.run_transform()
 
     @property
+    def query(self) -> str:
+        return ''
+
+    @property
+    def query_template(self) -> str:
+        return ''
+
+    @property
     def parent_session_plan(self):
         return self._parent_session_plan
 
     @parent_session_plan.setter
-    def parent_session_plan(self, val: str):
+    def parent_session_plan(self, val: PipelinePlan.SessionPlanner):
         self._parent_session_plan = val
 
     def __str__(self):
@@ -202,7 +214,9 @@ class FilterNode(TransformNode):
 
 
 class NewColumnNode(TransformNode):
-    def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], prev_df: DataFrame):
+    def __init__(
+        self, session_id: str, node_id: str, prev_node_id: str, expressions: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame
+    ):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
@@ -236,7 +250,7 @@ class JoinNode(TransformNode):
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.other_df = OtherDataframe(input_metadata)
+        self.other_df = NodeExtensions.OtherDataframe(input_metadata)
         self.joinParams = MessageToDict(joinParams)
         self.df = self.run_transform(spark=spark, df=prev_df)
 
@@ -301,12 +315,18 @@ class VisualizationNode(SparkNode):
     def visualization_df(self, val: DataFrame):
         self._visualization_df = val
 
-    def preview(self, limit: int, prev_df: DataFrame) -> io.BytesIO:
+    def preview(self, limit: int, prev_df: DataFrame) -> str:
         visualization_df = spark.sql(self.visualization_query, df=prev_df)
         df_subset = visualization_df.limit(limit).toPandas()
-        buffer = io.BytesIO()
-        df_subset.to_json(buffer, orient='table')
-        return buffer
+        json_buffer = df_subset.to_json(orient='values', force_ascii=False, date_format='iso')
+        return (
+            # concat df values and schema to valid json
+            '{"data":'
+            + json_buffer
+            + ',"columns":'
+            + json.dumps([{'name': field['name'], 'type': field['type']} for field in json.loads(self.df.schema.json())['fields']])
+            + '}'
+        )
 
 
 class TableNode(VisualizationNode):

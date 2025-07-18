@@ -57,6 +57,7 @@ class SparkRpcApi(SparkApiServicer):
             matching=req.matching,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
+
         session.plan.process_node(spark, node)
         session.notify_transformation_change()
 
@@ -187,6 +188,7 @@ class SparkRpcApi(SparkApiServicer):
         node = session.plan.get_node_by_id(req.node_id)
 
         json_buffer = session.preview(node, req.limit)
+
         chunk_size = 1024 * 1024  # 1 mb
         idx = 0
         while idx < len(json_buffer):

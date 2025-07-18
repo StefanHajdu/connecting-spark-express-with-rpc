@@ -1,51 +1,48 @@
+from __future__ import annotations
+
 from collections import deque
 
 from exceptions import EmptyException, InvalidRemovalException, LoadNodeRemovalException, NodeMissingException
 from pyspark.errors import PySparkException
 from pyspark.sql import SparkSession
 
-from Nodes import SparkNode
+import Nodes
 
 
 class SessionPlanner:
-    def __init__(self, session_id: str, root_node: SparkNode):
+    def __init__(self, session_id: str, root_node: Nodes.SparkNode):
         self.session_id = session_id
         self.nodes = deque([root_node])
 
-    def get_node_by_id(self, node_id: str) -> SparkNode | None:
-        idx = self._find_node_by_id(node_id)
-        if idx is not None:
-            return self.nodes[idx]
+    def get_node_by_id(self, node_id: str) -> Nodes.SparkNode:
+        for idx, node in enumerate(self.nodes):
+            if node.node_id == node_id:
+                return self.nodes[idx]
         raise NodeMissingException()
 
-    def _find_node_by_id(self, node_id: str) -> int | None:
-        for idx, node in enumerate(self.nodes):
-            if node.node_id == node_id:
-                return idx
-
-    def is_node_present(self, node: SparkNode):
+    def is_node_present(self, node: Nodes.SparkNode) -> bool:
         return any(n.node_id == node.node_id for n in self.nodes)
 
-    def get_node_position(self, node_id: str):
+    def get_node_index(self, node_id: str) -> int:
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
-                break
-        return -1 if idx == len(self.nodes) - 1 else idx
+                return -1 if idx == len(self.nodes) - 1 else idx
+        raise NodeMissingException()
 
-    def get_last_spark_node(self) -> SparkNode:
+    def get_last_spark_node(self) -> Nodes.SparkNode:
         idx = -1
-        while not isinstance(self.nodes[idx], SparkNode):
+        while not isinstance(self.nodes[idx], Nodes.SparkNode):
             idx -= 1
         return self.nodes[idx]
 
-    def process_node(self, spark: SparkSession, node: SparkNode):
+    def process_node(self, spark: SparkSession, node: Nodes.SparkNode):
         if self.is_node_present(node):
             self.edit_node(spark, node)
         else:
             self.add_node(spark, node)
 
-    def add_node(self, spark: SparkSession, new_node: SparkNode):
-        prev_position = self.get_node_position(new_node.prev_node_id)
+    def add_node(self, spark: SparkSession, new_node: Nodes.SparkNode):
+        prev_position = self.get_node_index(new_node.prev_node_id)
 
         if prev_position == -1:
             # append
@@ -59,16 +56,16 @@ class SessionPlanner:
             # rerun from next node
             self.reapply_plan(spark, next_position)
 
-    def edit_node(self, spark: SparkSession, edited_node: SparkNode):
+    def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode):
         # get node index
-        node_position = self.get_node_position(edited_node.node_id)
+        node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
         if node_position != -1:
             # rerun from edited
             self.reapply_plan(spark, node_position + 1)
 
     def remove_node(self, spark: SparkSession, node_id: str):
-        del_position = self.get_node_position(node_id)
+        del_position = self.get_node_index(node_id)
         if del_position == 0:
             raise LoadNodeRemovalException()
         elif del_position == -1:

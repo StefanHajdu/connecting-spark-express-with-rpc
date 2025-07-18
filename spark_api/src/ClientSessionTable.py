@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 from exceptions import DuplicateSessionException
+
+import Client
 
 
 class ClientSessionTable:
@@ -12,5 +16,5 @@ class ClientSessionTable:
         else:
             self.session_table.update({id: session})
 
-    def get_session(self, session_id: str):
+    def get_session(self, session_id: str) -> Client.ClientSession:
         return self.session_table[session_id]
