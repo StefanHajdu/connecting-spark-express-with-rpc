@@ -13,6 +13,6 @@
   "python-envs.pythonProjects": [],
   "ruff.nativeServer": "on",
   "python.testing.pytestArgs": [
-    "spark_api"
+    "spark_api/test"
   ]
 }

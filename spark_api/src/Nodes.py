@@ -3,10 +3,10 @@ import json
 from abc import abstractmethod
 
 import sparkapi_pb2
+from constants import PLAN_NODE_ROOT_ID
 from google.protobuf.json_format import MessageToDict
 from pyspark.sql import DataFrame
 
-from constants import PLAN_NODE_ROOT_ID
 from NodeExtensions import OtherDataframe
 from spark_session_init import spark
 from utils import load_data_for_spark
@@ -96,7 +96,9 @@ class SparkNode:
 
 class TransformNode(SparkNode):
     def __str__(self):
-        return f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return (
+            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        )
 
     @property
     @abstractmethod

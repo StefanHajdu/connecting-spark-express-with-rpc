@@ -5,8 +5,7 @@ from ClientSessionTable import ClientSessionTable
 clientSessionTable = ClientSessionTable()
 
 spark = (
-    SparkSession.builder.appName('SparkSession')
-    .master('local[*]')
+    SparkSession.builder.master('local[*]')  # type: ignore
     .config('spark.driver.memory', '30720m')
     .config('spark.scheduler.mode', 'FAIR')
     .getOrCreate()

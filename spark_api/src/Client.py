@@ -1,8 +1,7 @@
-import datetime
-from functools import wraps
+from exceptions import NodeMissingException
 
 import Nodes
-from exceptions import NodeMissingException
+from api_logging import log_plan_execution
 from spark_session_init import spark
 
 
@@ -50,24 +49,6 @@ class ClientSession:
     def notify_transformation_change(self):
         for child_session in self.child_sessions:
             child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
-
-    def log_plan_execution(route):
-        def inner_func(func):
-            @wraps(func)
-            def wrapper(self, *args, **kwargs):
-                start = datetime.datetime.now()
-                print(f'\n>[start: {start}] PLAN TO APPLY for session: {self.id} <')
-                res = func(self, *args, **kwargs)
-                for idx, node in enumerate(self.plan.nodes):
-                    print(f'    {idx}. {node}')
-                end = datetime.datetime.now()
-                print(f'>[end: {end} | diff: {end - start}] PLAN EXECUTED for session: {self.id} <')
-                print(f'{route} {args}')
-                return res
-
-            return wrapper
-
-        return inner_func
 
     def submit_node(self, node_class: str, **kwargs):
         self._log(f'/addNode/{node_class}')
