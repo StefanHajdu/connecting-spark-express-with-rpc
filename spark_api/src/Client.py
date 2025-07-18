@@ -2,7 +2,7 @@ import datetime
 from functools import wraps
 
 import Nodes
-from custom_exceptions import NodeMissingException
+from exceptions import NodeMissingException
 from spark_session_init import spark
 
 

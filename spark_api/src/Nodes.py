@@ -96,9 +96,7 @@ class SparkNode:
 
 class TransformNode(SparkNode):
     def __str__(self):
-        return (
-            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
-        )
+        return f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
     @abstractmethod

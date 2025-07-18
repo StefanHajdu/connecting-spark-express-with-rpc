@@ -1,4 +1,4 @@
-from custom_exceptions import DuplicateSessionException
+from exceptions import DuplicateSessionException
 
 
 class ClientSessionTable:

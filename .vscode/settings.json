@@ -6,16 +6,13 @@
     "shellscript": false,
     "toml": false
   },
-  "python.testing.pytestArgs": [
-    "spark_api",
-    "-s"
-  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python-envs.defaultEnvManager": "ms-python.python:conda",
   "python-envs.defaultPackageManager": "ms-python.python:conda",
   "python-envs.pythonProjects": [],
-  {
-    "ruff.nativeServer": "on"
-  }
+  "ruff.nativeServer": "on",
+  "python.testing.pytestArgs": [
+    "spark_api"
+  ]
 }

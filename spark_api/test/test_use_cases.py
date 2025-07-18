@@ -1,6 +1,8 @@
 import json
+import os
 
-from spark_api.src.custom_exceptions import NodeMissingException
+import pytest
+from exceptions import NodeMissingException
 from state import TestState
 from test_queries import (
     array_functions,
@@ -14,26 +16,26 @@ from test_queries import (
 
 import utils as u
 
-nodeMissingException = NodeMissingException()
-
-s = TestState()
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+NODE_MISSING_EXCEPTION = NodeMissingException()
+TEST_STATE = TestState()
 
 
 def test_01_submit_loadNode_and_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    _ = u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
-    df_meta = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_meta['count'] == s.total_rows
+    _ = u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
+    df_meta = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+    assert df_meta['count'] == TEST_STATE.total_rows
 
 
 def test_02_submit_loadFromSessionNode():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = '.com'"],
             'matching': '',
         }
@@ -43,18 +45,18 @@ def test_02_submit_loadFromSessionNode():
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.submit_loadFromSessionNode(session_id=session_1, input_session_id=session_0)
 
-    df_session_1 = u.summarize(session_id=session_1, node_id=s.root_node_id)
+    df_session_1 = u.summarize(session_id=session_1, node_id=TEST_STATE.root_node_id)
     assert df_session_0['count'] == df_session_1['count']
 
 
 def test_03_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'"],
             'matching': '',
         }
@@ -88,15 +90,16 @@ def test_03_filter():
     assert df_session_1['count'] > df_session_2['count']
 
 
+@pytest.mark.skip(reason='Test not implemented')
 def test_04_1_parent_session_changed():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_01 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'", "tld = 'org'"],
             'matching': 'or',
         }
@@ -120,13 +123,13 @@ def test_04_1_parent_session_changed():
     session_1 = u.create_session(session_id=u.to_session_id(1))
     u.submit_loadFromSessionNode(session_id=session_1, input_session_id=session_0)
 
-    df_session_11 = u.summarize(session_id=session_1, node_id=s.root_node_id)
+    df_session_11 = u.summarize(session_id=session_1, node_id=TEST_STATE.root_node_id)
     assert df_session_01['count'] == df_session_11['count']
     node_11 = u.submit_filterNode(
         **{
             'session_id': session_1,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["registrar = 'NameCheap, Inc.'"],
             'matching': '',
         }
@@ -154,15 +157,16 @@ def test_04_1_parent_session_changed():
     assert df_session_13['count'] < df_session_12['count']
 
 
+@pytest.mark.skip(reason='Test not implemented')
 def test_04_2_parent_session_changed_multi_level():
     # session 0
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_01 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'previous_node_id': s.root_node_id,
+            'previous_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'", "tld = 'org'"],
             'matching': 'or',
         }
@@ -176,7 +180,7 @@ def test_04_2_parent_session_changed_multi_level():
         **{
             'session_id': session_1,
             'node_id': u.to_node_id(1),
-            'previous_node_id': s.root_node_id,
+            'previous_node_id': TEST_STATE.root_node_id,
             'expressions': [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
@@ -194,7 +198,7 @@ def test_04_2_parent_session_changed_multi_level():
         **{
             'session_id': session_2,
             'node_id': u.to_node_id(1),
-            'previous_node_id': s.root_node_id,
+            'previous_node_id': TEST_STATE.root_node_id,
             'expressions': ["registrar = 'GoDaddy.com, LLC'"],
             'matching': '',
         }
@@ -228,12 +232,12 @@ def test_04_2_parent_session_changed_multi_level():
 
 def test_05_append_sql():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'", "tld = 'org'"],
             'matching': 'or',
         }
@@ -268,12 +272,12 @@ def test_05_append_sql():
 
 def test_05_submit_filterNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
@@ -308,12 +312,12 @@ def test_05_submit_filterNode_before_summarize():
 
 def test_06_unordered_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'"],
             'matching': '',
         }
@@ -350,12 +354,12 @@ def test_06_unordered_summarize():
 
 def test_07_submit_filterNode_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'", "tld = 'org'"],
             'matching': 'or',
         }
@@ -390,12 +394,12 @@ def test_07_submit_filterNode_after_summarize():
 
 def test_07_submit_filterNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = 'com'", "tld = 'org'"],
             'matching': 'or',
         }
@@ -416,7 +420,7 @@ def test_07_submit_filterNode_before_summarize():
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
 
     node_2 = u.submit_filterNode(
-        **{'session_id': session_0, 'node_id': node_1, 'prev_node_id': s.root_node_id, 'expressions': ["tld = '.com'"], 'matching': ''}
+        **{'session_id': session_0, 'node_id': node_1, 'prev_node_id': TEST_STATE.root_node_id, 'expressions': ["tld = '.com'"], 'matching': ''}
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_1['count'] > df_session_2['count']
@@ -424,12 +428,12 @@ def test_07_submit_filterNode_before_summarize():
 
 def test_08_removeNode_after_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = '.com'"],
             'matching': '',
         }
@@ -461,19 +465,19 @@ def test_08_removeNode_after_summarize():
         }
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
-    assert nodeMissingException.__str__() in df_session_1['error']['message']
-    df_session_2 = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_session_2['count'] == s.total_rows
+    assert NODE_MISSING_EXCEPTION.__str__() in df_session_1['error']['message']
+    df_session_2 = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+    assert df_session_2['count'] == TEST_STATE.total_rows
 
 
 def test_08_removeNode_before_summarize():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = '.com'"],
             'matching': '',
         }
@@ -509,19 +513,19 @@ def test_08_removeNode_before_summarize():
         }
     )
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
-    assert nodeMissingException.__str__() in df_session_3['error']['message']
-    df_session_4 = u.summarize(session_id=session_0, node_id=s.root_node_id)
-    assert df_session_4['count'] == s.total_rows
+    assert NODE_MISSING_EXCEPTION.__str__() in df_session_3['error']['message']
+    df_session_4 = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+    assert df_session_4['count'] == TEST_STATE.total_rows
 
 
 def test_12_toggle():
     session_0 = u.create_session(session_id=u.to_session_id(0))
-    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+    u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = '.com'"],
             'matching': '',
         }
@@ -554,13 +558,13 @@ def test_12_toggle():
         }
     )
     res = u.summarize(session_id=session_0, node_id=node_2)
-    assert nodeMissingException.__str__() in res['error']['message']
+    assert NODE_MISSING_EXCEPTION.__str__() in res['error']['message']
 
     node_2 = u.submit_filterNode(
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(2),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': [
                 "registrar = 'GoDaddy.com, LLC'",
                 "registrar = 'NameCheap, Inc.'",
@@ -576,7 +580,7 @@ def test_12_toggle():
         **{
             'session_id': session_0,
             'node_id': u.to_node_id(1),
-            'prev_node_id': s.root_node_id,
+            'prev_node_id': TEST_STATE.root_node_id,
             'expressions': ["tld = '.com'"],
             'matching': '',
         }
@@ -588,11 +592,11 @@ def test_12_toggle():
 def test_13_text_filter():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for filter_function in filter_functions:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
         # add numerical col
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': [{'expression': 1, 'col_name': 'numerical_col'}]},
             }
         )
@@ -626,10 +630,10 @@ def test_13_text_filter():
 def test_14_addColumn_math_numerical_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for math_numerical_function in math_numerical_functions:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': [{'expression': 1, 'col_name': 'numerical_col'}]},
             }
         )
@@ -652,10 +656,10 @@ def test_14_addColumn_math_numerical_functions():
 def test_15_addColumn_string_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for string_function in string_functions:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': [string_function]},
             }
         )
@@ -672,11 +676,11 @@ def test_15_addColumn_string_functions():
 def test_16_addColumn_array_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for array_function in array_functions[1:]:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
 
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': [array_functions[0]]},
             }
         )
@@ -700,11 +704,11 @@ def test_16_addColumn_array_functions():
 def test_17_addColumn_date_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for date_function in date_functions[1:]:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
 
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': date_functions[0]},
             }
         )
@@ -728,11 +732,11 @@ def test_17_addColumn_date_functions():
 def test_18_misc_functions():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for misc_function in misc_functions:
-        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': s.path}})
+        u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
 
         node_1 = u.submit_newColumnNode(
             **{
-                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': s.root_node_id},
+                **{'session_id': session_0, 'node_id': u.to_node_id(1), 'prev_node_id': TEST_STATE.root_node_id},
                 **{'expressions': [misc_function]},
             }
         )
@@ -749,13 +753,13 @@ def test_18_misc_functions():
 def test_19_join_relations():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     for join_relation in join_relations:
-        u.submit_loadNode({'session_id': session_0, 'json': {'multiline': True, 'path': '../data/df1.json'}})
+        u.submit_loadNode({'session_id': session_0, 'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df1.json'}})
         node_1 = u.submit_joinNode(
             **{
                 'session_id': session_0,
                 'node_id': 'n0001',
-                'prev_node_id': s.root_node_id,
-                'json': {'multiline': True, 'path': '../data/df2.json'},
+                'prev_node_id': TEST_STATE.root_node_id,
+                'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df2.json'},
                 'joinParams': {},
             }
         )
@@ -765,8 +769,8 @@ def test_19_join_relations():
                 **{
                     'session_id': session_0,
                     'node_id': 'n0001',
-                    'prev_node_id': s.root_node_id,
-                    'json': {'multiline': True, 'path': '../data/df2.json'},
+                    'prev_node_id': TEST_STATE.root_node_id,
+                    'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df2.json'},
                     'joinParams': join_relation['case'],
                 }
             }

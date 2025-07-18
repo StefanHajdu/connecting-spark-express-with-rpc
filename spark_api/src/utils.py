@@ -1,6 +1,6 @@
 import sparkapi_pb2
 
-from custom_exceptions import InvalidSparkInputException
+from exceptions import InvalidSparkInputException
 from spark_session_init import spark
 
 

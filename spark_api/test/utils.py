@@ -1,5 +1,6 @@
 import requests
-from spark_api.src.custom_exceptions import DuplicateSessionException, NodeMissingException
+
+from exceptions import DuplicateSessionException, NodeMissingException
 
 nodeMissingException = NodeMissingException()
 duplicateSessionException = DuplicateSessionException()
@@ -23,7 +24,7 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def submit_loadNode(json_data: any) -> None:
+def submit_loadNode(json_data: dict) -> None:
     res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitLoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
