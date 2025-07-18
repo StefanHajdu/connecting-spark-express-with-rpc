@@ -64,6 +64,14 @@ class SparkNode(ABC):
     def query(self, val: bool):
         self._query = val
 
+    @property
+    def query_kwargs(self) -> dict:
+        return self._query_kwargs
+
+    @query_kwargs.setter
+    def query_kwargs(self, val: dict):
+        self._query_kwargs = val
+
     def summarize(self):
         return {
             'columns': json.dumps(self.df.columns),
@@ -77,10 +85,10 @@ class SparkNode(ABC):
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
-        _query_kwargs = {**kwargs, **self.query_kwargs}
+        query_kwargs_complete = {**kwargs, **self.query_kwargs}
         df_result = spark.sql(
             self.query,
-            **_query_kwargs,
+            **query_kwargs_complete,
         )
         return df_result
 
@@ -99,11 +107,6 @@ class TransformNode(SparkNode):
     @property
     @abstractmethod
     def query_template(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def query_kwargs(self) -> dict:
         pass
 
     def preview(self, limit) -> str:
@@ -127,6 +130,14 @@ class LoadNode(TransformNode):
         self._prev_node_id = None
         self._input_metadata = input_metadata
         self.df = self.run_transform()
+
+    @property
+    def query(self) -> str:
+        return ''
+
+    @property
+    def query_template(self) -> str:
+        return ''
 
     @property
     def path(self):
