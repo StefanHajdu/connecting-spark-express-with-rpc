@@ -36,6 +36,7 @@ exclude = [
     "dist",
     ".*venv",
     "setup.py",
+    "*_pb2*.py",
 ]
 
 
