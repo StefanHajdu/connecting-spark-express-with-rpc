@@ -1,8 +1,9 @@
-import datetime
-from functools import wraps
+from __future__ import annotations
 
 import Nodes
-from exceptions import NodeMissingException
+import PipelinePlan
+from api_logging import log_plan_execution
+from misc_types import SparkActionMetadata
 from spark_session_init import spark
 
 
@@ -44,30 +45,12 @@ class ClientSession:
         return self._plan
 
     @plan.setter
-    def plan(self, val):
+    def plan(self, val: PipelinePlan.SessionPlanner):
         self._plan = val
 
     def notify_transformation_change(self):
         for child_session in self.child_sessions:
             child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
-
-    def log_plan_execution(route):
-        def inner_func(func):
-            @wraps(func)
-            def wrapper(self, *args, **kwargs):
-                start = datetime.datetime.now()
-                print(f'\n>[start: {start}] PLAN TO APPLY for session: {self.id} <')
-                res = func(self, *args, **kwargs)
-                for idx, node in enumerate(self.plan.nodes):
-                    print(f'    {idx}. {node}')
-                end = datetime.datetime.now()
-                print(f'>[end: {end} | diff: {end - start}] PLAN EXECUTED for session: {self.id} <')
-                print(f'{route} {args}')
-                return res
-
-            return wrapper
-
-        return inner_func
 
     def submit_node(self, node_class: str, **kwargs):
         self._log(f'/addNode/{node_class}')
@@ -87,20 +70,17 @@ class ClientSession:
         self.update_status.reset()
 
     @log_plan_execution('/summarize')
-    def summarize(self, node_id: str):
+    def summarize(self, node_id: str) -> SparkActionMetadata:
         node = self.plan.get_node_by_id(node_id)
-        if node:
-            return node.summarize()
-        else:
-            raise NodeMissingException()
+        return node.summarize()
 
     @log_plan_execution('/preview')
     def preview(self, node: Nodes.SparkNode, limit: int):
-        if isinstance(node, Nodes.TransformNode):
-            return node.preview(limit)
-        else:
+        if isinstance(node, Nodes.VisualizationNode):
             prev_df = self.plan.get_node_by_id(node.prev_node_id).df
-            return node.preview(limit, prev_df)
+            return node.preview(limit=limit, prev_df=prev_df)
+        else:
+            return node.preview(limit=limit)
 
     def get_session_status(self):
         self._log(f'/getSessionStatus: {self.id}')

@@ -13,6 +13,24 @@
   "python-envs.pythonProjects": [],
   "ruff.nativeServer": "on",
   "python.testing.pytestArgs": [
-    "spark_api"
+    "spark_api/test"
+  ],
+  "python.analysis.extraPaths": [
+    "../lib",
+    "../src"
+  ],
+  "python.analysis.stubPath": "./lib",
+  "python.defaultInterpreterPath": "python",
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.include": [
+    "src/**",
+    "lib/**",
+    "test/**"
+  ],
+  "python.analysis.exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/*_pb2*.py"
   ]
 }
