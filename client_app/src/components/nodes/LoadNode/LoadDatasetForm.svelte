@@ -1,38 +1,22 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
+import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
+import { type LoadNodeData } from "./LoadNode.svelte";
 import { Node } from "../NodeInstance.svelte";
 import { tryRestoreNodes } from "$lib/utils";
+import { type ButtonColor } from "$lib/uitype";
 
 interface Props {
     analysisId: string;
     name: string;
-    color:
-        | "dark"
-        | "blue"
-        | "none"
-        | "red"
-        | "yellow"
-        | "green"
-        | "purple"
-        | "light"
-        | "primary"
-        | "alternative"
-        | undefined;
+    color: ButtonColor;
     nodesInAnalysis: Node[];
     nodeIndex: number;
-    loadedDataset: LoadedDataset | {};
+    loadNodeData: LoadNodeData;
 }
 
-let {
-    analysisId,
-    name,
-    color,
-    nodesInAnalysis = $bindable(),
-    nodeIndex,
-    loadedDataset = $bindable(),
-}: Props = $props();
+let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex, loadNodeData = $bindable() }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -66,7 +50,7 @@ async function submit() {
         loadDatasetModal = false;
     }
 
-    loadedDataset = {
+    loadNodeData = {
         loadSuccess: submitSuccessful,
         metadata:
             inputType === "csv"

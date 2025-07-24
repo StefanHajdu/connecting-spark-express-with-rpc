@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 
-export const LS_KEY_ANALYSES = "analyses";
-export const LS_KEY_SCOPED = "scoped";
+export const STORAGE_KEY_ANALYSES = "analyses";
+export const STORAGE_KEY_SELECTED_ANALYSES = "scoped";
 
 export function fromLocalStorage(storageKey: string) {
     if (browser) {

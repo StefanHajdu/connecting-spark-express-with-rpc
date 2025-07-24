@@ -11,8 +11,6 @@ let previewFooterComponent: any;
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
     await previewFooterComponent.forwardPreview(analysiId, nodeId);
 }
-
-// $inspect(`nodes in analysis ${id} arr`, nodesInAnalysis);
 </script>
 
 <TabItem open title={name}>

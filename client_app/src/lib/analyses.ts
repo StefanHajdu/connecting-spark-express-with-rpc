@@ -1,3 +1,5 @@
+import Node from "../components/nodes/Node.svelte";
+
 interface Analysis {
     id: string;
     name: string;
@@ -6,6 +8,7 @@ interface Analysis {
     resources: string;
     rest: string;
     selected: boolean;
+    nodes: Node[];
 }
 
 export type AnalysesMock = Record<string, Analysis>;
@@ -19,6 +22,7 @@ export const analysesMock: AnalysesMock = {
         resources: "4 cores, 32gb",
         rest: "...",
         selected: false,
+        nodes: [],
     },
     "id-analysis-#2": {
         id: "id-analysis-#2",
@@ -28,6 +32,7 @@ export const analysesMock: AnalysesMock = {
         resources: "4 cores, 32gb",
         rest: "...",
         selected: false,
+        nodes: [],
     },
     "id-analysis-#3": {
         id: "id-analysis-#3",
@@ -37,5 +42,6 @@ export const analysesMock: AnalysesMock = {
         resources: "4 cores, 32gb",
         rest: "...",
         selected: false,
+        nodes: [],
     },
 };

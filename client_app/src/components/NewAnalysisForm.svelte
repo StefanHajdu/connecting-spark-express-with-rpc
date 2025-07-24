@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
-import { LS_KEY_ANALYSES, LS_KEY_SCOPED, toLocalStorage } from "$lib/localStorageHandles";
+import { STORAGE_KEY_ANALYSES, STORAGE_KEY_SELECTED_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 import { getUniqueAnalysesId } from "../lib/utils";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
@@ -26,8 +26,8 @@ async function initNewAnalysis() {
             rest: "...",
             selected: false,
         };
-        toLocalStorage(LS_KEY_ANALYSES, analyses);
-        toLocalStorage(LS_KEY_SCOPED, [id]);
+        toLocalStorage(STORAGE_KEY_ANALYSES, analyses);
+        toLocalStorage(STORAGE_KEY_SELECTED_ANALYSES, [id]);
         await goto("http://localhost:5173/analyses");
     }
 }

@@ -27,8 +27,3 @@ export class ParquetMetadata {
         this.path = path;
     }
 }
-
-export interface LoadedDataset {
-    loadSuccess: boolean;
-    metadata: CsvMetadata | JsonMetadata | ParquetMetadata;
-}
