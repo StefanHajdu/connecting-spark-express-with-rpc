@@ -1,3 +1,14 @@
+export interface Analysis {
+    id: string;
+    name: string;
+    status: string;
+    buildTime: string;
+    resources: string;
+    rest: string;
+    selected: boolean;
+    nodes: Node[];
+}
+
 export interface InvalidState {
     value: boolean;
     description: string;

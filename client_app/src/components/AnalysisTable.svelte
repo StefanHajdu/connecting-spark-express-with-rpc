@@ -8,37 +8,29 @@ import {
     TableHeadCell,
     Checkbox,
     Button,
+    A,
 } from "flowbite-svelte";
-import { STORAGE_KEY_ANALYSES, STORAGE_KEY_SELECTED_ANALYSES, toLocalStorage } from "../lib/localStorageHandles";
-import { type AnalysesMock } from "$lib/analyses";
+import type { Analysis } from "$lib/dtype";
 
-let analyses = $props();
-let allAnalyses: AnalysesMock = $state(analyses[STORAGE_KEY_ANALYSES]);
-let globalCheck = $derived.by(() => {
-    return Object.keys(allAnalyses).every((key: string) => allAnalyses[key].selected === true);
-});
-
-function checkAllAnalyses(analyses: any, flag: boolean): AnalysesMock {
-    let keys = Object.keys(analyses);
-    for (let key of keys) {
-        analyses[key].selected = flag;
-    }
-    return analyses;
+interface Props {
+    analyses: Analysis[];
 }
 
-function scopeSelected(): undefined {
-    const scoped = [];
-    for (const [key, value] of Object.entries(allAnalyses)) {
-        if (value.selected) {
-            scoped.push(key);
-        }
-    }
-    toLocalStorage(STORAGE_KEY_SELECTED_ANALYSES, scoped);
+let { analyses = $bindable() }: Props = $props();
+
+let globalCheck = $derived.by(() => {
+    return analyses.every((a) => a.selected);
+});
+
+function checkboxAnalyses(analyses: Analysis[], flag: boolean): Analysis[] {
+    return analyses.map((analysis: Analysis) => {
+        return { ...analysis, selected: flag };
+    });
 }
 </script>
 
 <div>
-    <Button size="xs" color="blue" onclick={scopeSelected} href="analyses">Open</Button>
+    <Button size="xs" color="blue" href="analyses">Open</Button>
     <Button size="xs" color="red">Delete</Button>
 </div>
 <Table hoverable={true}>
@@ -50,12 +42,12 @@ function scopeSelected(): undefined {
                     onchange={() => {
                         globalCheck = !globalCheck;
                         ``;
-                        allAnalyses = checkAllAnalyses(allAnalyses, globalCheck);
-                        toLocalStorage(STORAGE_KEY_ANALYSES, allAnalyses);
+                        analyses = checkboxAnalyses(analyses, globalCheck);
                     }} />
             </form>
         </TableHeadCell>
         <TableHeadCell>Name</TableHeadCell>
+        <TableHeadCell># Nodes</TableHeadCell>
         <TableHeadCell>Status</TableHeadCell>
         <TableHeadCell>Build Time</TableHeadCell>
         <TableHeadCell>Resources</TableHeadCell>
@@ -63,23 +55,23 @@ function scopeSelected(): undefined {
     </TableHead>
 
     <TableBody tableBodyClass="divide-y">
-        {#each Object.keys(allAnalyses) as key}
+        {#each analyses as analysis}
             <TableBodyRow>
                 <TableBodyCell class="p-4!">
                     <form autocomplete="off">
                         <Checkbox
-                            checked={allAnalyses[key].selected}
+                            checked={analysis.selected}
                             onchange={() => {
-                                allAnalyses[key].selected = !allAnalyses[key].selected;
-                                toLocalStorage(STORAGE_KEY_ANALYSES, allAnalyses);
+                                analysis.selected = !analysis.selected;
                             }} />
                     </form>
                 </TableBodyCell>
-                <TableBodyCell>{allAnalyses[key].name}</TableBodyCell>
-                <TableBodyCell>{allAnalyses[key].status}</TableBodyCell>
-                <TableBodyCell>{allAnalyses[key].buildTime}</TableBodyCell>
-                <TableBodyCell>{allAnalyses[key].resources}</TableBodyCell>
-                <TableBodyCell>{allAnalyses[key].rest}</TableBodyCell>
+                <TableBodyCell>{analysis.name}</TableBodyCell>
+                <TableBodyCell>{analysis.nodes ? analysis.nodes.length : 0}</TableBodyCell>
+                <TableBodyCell>{analysis.status}</TableBodyCell>
+                <TableBodyCell>{analysis.buildTime}</TableBodyCell>
+                <TableBodyCell>{analysis.resources}</TableBodyCell>
+                <TableBodyCell>{analysis.rest}</TableBodyCell>
             </TableBodyRow>
         {/each}
     </TableBody>

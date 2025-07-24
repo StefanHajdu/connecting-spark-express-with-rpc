@@ -1,24 +1,14 @@
 <script lang="ts">
 import { browser } from "$app/environment";
 import Header from "../../components/Header.svelte";
-import Analysis from "../../components/Analysis.svelte";
+import AnalysisUI from "../../components/AnalysisUI.svelte";
 import { Tabs } from "flowbite-svelte";
-import { STORAGE_KEY_SELECTED_ANALYSES, STORAGE_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
+import { STORAGE_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
+import type { Analysis } from "$lib/dtype";
 
-const scopedAnalyses = loadScoped();
+let analyses = $state(browser ? fromLocalStorage(STORAGE_KEY_ANALYSES).analyses : []);
 
-function loadScoped(): any[] {
-    if (browser) {
-        let analyses = fromLocalStorage(STORAGE_KEY_ANALYSES);
-        let scopedKeys = fromLocalStorage(STORAGE_KEY_SELECTED_ANALYSES);
-        return scopedKeys.map((key: string) => {
-            return analyses[key];
-        });
-    }
-    return [];
-}
-
-$inspect("analyses arr", scopedAnalyses);
+$inspect("analyses arr", analyses);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -26,8 +16,8 @@ $inspect("analyses arr", scopedAnalyses);
 
     <main class="bg-white-500 space-y-4 p-4">
         <Tabs>
-            {#each scopedAnalyses as analysis}
-                <Analysis name={analysis.name} id={analysis.id} />
+            {#each analyses.filter((a: Analysis) => a.selected) as analysis}
+                <AnalysisUI name={analysis.name} id={analysis.id} />
             {/each}
         </Tabs>
     </main>

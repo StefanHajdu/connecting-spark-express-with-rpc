@@ -1,11 +1,16 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
-import { STORAGE_KEY_ANALYSES, STORAGE_KEY_SELECTED_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
+import { STORAGE_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 import { getUniqueAnalysesId } from "../lib/utils";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
+import type { Analysis } from "$lib/dtype";
 
-let { analyses } = $props();
+interface Props {
+    analyses: Analysis[];
+}
+
+let { analyses }: Props = $props();
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
@@ -17,17 +22,17 @@ async function initNewAnalysis() {
         name: name,
     });
     if (createSessionResponse) {
-        analyses[id] = {
+        analyses.push({
             id: id,
             name: name,
             status: "new",
             buildTime: "---",
             resources: "---",
             rest: "...",
-            selected: false,
-        };
+            selected: true,
+            nodes: [],
+        });
         toLocalStorage(STORAGE_KEY_ANALYSES, analyses);
-        toLocalStorage(STORAGE_KEY_SELECTED_ANALYSES, [id]);
         await goto("http://localhost:5173/analyses");
     }
 }
