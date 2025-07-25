@@ -8,7 +8,6 @@ import type { Analysis } from "$lib/dtype";
 import { STORAGE_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
 let { data }: PageProps = $props();
-
 let analyses: Analysis[] = $state(data.analyses);
 
 $effect(() => {
@@ -23,7 +22,7 @@ $inspect(analyses);
 
     <main class="bg-white-500 space-y-4 p-4">
         <div>
-            <NewAnalysisForm analyses={analyses} />
+            <NewAnalysisForm bind:analyses={analyses} />
         </div>
         <div>
             <AnalysisTable bind:analyses={analyses} />

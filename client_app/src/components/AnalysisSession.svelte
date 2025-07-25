@@ -3,9 +3,13 @@ import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "./PreviewFooter.svelte";
 import { nodeFactoryMethod } from "./nodes/NodeInstance.svelte";
 import Node from "./nodes/Node.svelte";
+import type { Analysis } from "$lib/dtype";
 
-let { id, name } = $props();
-let nodesInAnalysis = $state([nodeFactoryMethod("Load", [])]);
+interface Props {
+    analysis: Analysis;
+}
+
+let { analysis }: Props = $props();
 let previewFooterComponent: any;
 
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
@@ -13,18 +17,17 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
 }
 </script>
 
-<TabItem open title={name}>
+<TabItem open title={analysis.name}>
     <main class="bg-white-500 space-y-4 p-4">
-        <div id={name}>
+        <div id={analysis.name}>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>{name}</b>
+                <b>{analysis.name}</b>
             </p>
 
-            {#each nodesInAnalysis as node, i (node.uuid)}
+            {#each analysis.nodes as node, i (node.uuid)}
                 <Node
-                    bind:nodesInAnalysis={nodesInAnalysis}
+                    analysis={analysis}
                     nodeIndex={i}
-                    analysisId={id}
                     preview={(analysisId, nodeId) => {
                         forwardPreview(analysisId, nodeId);
                     }} />

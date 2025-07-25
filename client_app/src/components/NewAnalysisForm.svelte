@@ -10,7 +10,7 @@ interface Props {
     analyses: Analysis[];
 }
 
-let { analyses }: Props = $props();
+let { analyses = $bindable() }: Props = $props();
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");

@@ -1,3 +1,5 @@
+import { Node } from "../components/nodes/NodeInstance.svelte.js";
+
 export interface Analysis {
     id: string;
     name: string;

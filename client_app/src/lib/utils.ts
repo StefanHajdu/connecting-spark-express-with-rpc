@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { Node } from "../components/nodes/NodeInstance.svelte";
-import { type Expression, type Column } from "./dtype";
+import { type Expression, type Column, type Analysis } from "./dtype";
 
 export function getUniqueAnalysesId(): string {
     return "analysis-" + uuidv4();
