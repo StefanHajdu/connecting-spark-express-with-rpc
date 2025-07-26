@@ -1,4 +1,4 @@
-import { Node } from "../components/nodes/NodeInstance.svelte.js";
+import { Node } from "../components/Nodes/NodeClass.svelte.js";
 
 export interface Analysis {
     id: string;

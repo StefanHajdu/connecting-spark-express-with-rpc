@@ -5,6 +5,7 @@ import { getUniqueAnalysesId } from "../lib/utils";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
 import type { Analysis } from "$lib/dtype";
+import { nodeFactoryMethod } from "./Nodes/NodeClass.svelte";
 
 interface Props {
     analyses: Analysis[];
@@ -30,10 +31,10 @@ async function initNewAnalysis() {
             resources: "---",
             rest: "...",
             selected: true,
-            nodes: [],
+            nodes: [nodeFactoryMethod("Load", [])],
         });
-        toLocalStorage(STORAGE_KEY_ANALYSES, analyses);
-        await goto("http://localhost:5173/analyses");
+        // toLocalStorage(STORAGE_KEY_ANALYSES, analyses);
+        // await goto("http://localhost:5173/analyses");
     }
 }
 </script>

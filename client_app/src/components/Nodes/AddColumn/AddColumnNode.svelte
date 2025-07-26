@@ -3,7 +3,7 @@ import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from 
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
 import { v4 as uuidv4 } from "uuid";
-import { Node } from "../NodeInstance.svelte";
+import { Node } from "../NodeClass.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import type { Expression } from "$lib/dtype";

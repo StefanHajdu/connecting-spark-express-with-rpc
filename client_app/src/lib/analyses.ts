@@ -1,4 +1,5 @@
 import type { Analysis } from "./dtype";
+import { nodeFactoryMethod } from "../components/Nodes/NodeClass.svelte";
 
 export type AnalysesMock = Record<string, Analysis[]>;
 
@@ -12,7 +13,7 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [],
+            nodes: [nodeFactoryMethod("Load", [])],
         },
         {
             id: "id-analysis-#2",
@@ -22,7 +23,7 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [],
+            nodes: [nodeFactoryMethod("Load", [])],
         },
         {
             id: "id-analysis-#3",
@@ -32,7 +33,7 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [],
+            nodes: [nodeFactoryMethod("Load", [])],
         },
     ],
 };

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Node } from "../NodeInstance.svelte";
+import { Node } from "../NodeClass.svelte";
 import LoadDatasetForm from "./LoadDatasetForm.svelte";
 import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
 

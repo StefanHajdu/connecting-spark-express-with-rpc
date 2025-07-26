@@ -5,14 +5,9 @@ import NewAnalysisForm from "../components/NewAnalysisForm.svelte";
 import AnalysisTable from "../components/AnalysisTable.svelte";
 import type { PageProps } from "./$types";
 import type { Analysis } from "$lib/dtype";
-import { STORAGE_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
 let { data }: PageProps = $props();
 let analyses: Analysis[] = $state(data.analyses);
-
-$effect(() => {
-    toLocalStorage(STORAGE_KEY_ANALYSES, { analyses: analyses });
-});
 
 $inspect(analyses);
 </script>

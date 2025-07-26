@@ -1,8 +1,8 @@
 <script lang="ts">
 import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "./PreviewFooter.svelte";
-import { nodeFactoryMethod } from "./nodes/NodeInstance.svelte";
-import Node from "./nodes/Node.svelte";
+import { nodeFactoryMethod } from "./Nodes/NodeClass.svelte";
+import Node from "./Nodes/Node.svelte";
 import type { Analysis } from "$lib/dtype";
 
 interface Props {

@@ -2,8 +2,8 @@
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
-import { type LoadNodeData } from "./LoadNode.svelte";
-import { Node } from "../NodeInstance.svelte";
+import { type LoadNodeData } from "./LoadNodeClass.svelte";
+import { Node } from "../NodeClass.svelte";
 import { tryRestoreNodes } from "$lib/utils";
 import { type ButtonColor } from "$lib/uitype";
 

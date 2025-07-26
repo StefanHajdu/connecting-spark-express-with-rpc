@@ -7,8 +7,6 @@ import { STORAGE_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHa
 import type { Analysis } from "$lib/dtype";
 
 let analyses = $state(browser ? fromLocalStorage(STORAGE_KEY_ANALYSES) : []);
-
-// $inspect("analyses arr", analyses);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
