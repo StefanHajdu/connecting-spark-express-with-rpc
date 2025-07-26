@@ -1,15 +1,14 @@
 <script lang="ts">
 import Header from "../components/Header.svelte";
 import Footer from "../components/Footer.svelte";
-import NewAnalysisForm from "../components/NewAnalysisForm.svelte";
-import AnalysisTable from "../components/AnalysisTable.svelte";
-import type { PageProps } from "./$types";
-import type { Analysis } from "$lib/dtype";
+import NewAnalysisForm from "../components/Analysis/NewAnalysisForm.svelte";
+import AnalysisTable from "../components/Analysis/AnalysisTable.svelte";
+import { analysesMock } from "$lib/analysesMock";
+import { AnalysisC } from "../components/Analysis/AnalysisClass.svelte";
 
-let { data }: PageProps = $props();
-let analyses: Analysis[] = $state(data.analyses);
-
-$inspect(analyses);
+let analyses = analysesMock.analyses.map((mocked: any) => {
+    return new AnalysisC(mocked);
+});
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">

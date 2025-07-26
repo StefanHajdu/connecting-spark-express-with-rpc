@@ -1,20 +1,19 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { Node } from "../NodeClass.svelte";
 import { tryRestoreNodes } from "$lib/utils";
 import { type ButtonColor } from "$lib/uitype";
-import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
+import type { Analysis, ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 
 interface Props {
-    analysisId: string;
     name: string;
     color: ButtonColor;
-    nodesInAnalysis: Node[];
+    analyses: Analysis[];
+    analysisIndex: number;
     nodeIndex: number;
 }
 
-let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
+let { name, color, analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -44,9 +43,9 @@ async function submit() {
     loadInProgress = true;
     let inputMetadata = getInputMetadata(inputType);
 
-    nodesInAnalysis[nodeIndex].setNodeParams({ inputType: inputType, inputMetadata: inputMetadata });
-    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
-        session_id: analysisId,
+    analyses[analysisIndex].nodes[nodeIndex].setNodeParams({ inputType: inputType, inputMetadata: inputMetadata });
+    let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
+        session_id: analyses[analysisIndex].id,
         ...inputMetadata,
     });
 
@@ -54,7 +53,7 @@ async function submit() {
         loadDatasetModal = false;
     }
 
-    await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
+    await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, nodeIndex + 1);
 
     loadInProgress = false;
 }

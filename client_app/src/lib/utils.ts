@@ -1,10 +1,5 @@
-import { v4 as uuidv4 } from "uuid";
 import { Node, nodeFactory } from "../components/Nodes/NodeClass.svelte";
 import { type Expression, type Column, type Analysis } from "./dtype";
-
-export function getUniqueAnalysesId(): string {
-    return "analysis-" + uuidv4();
-}
 
 export function sleepNow(delay: number) {
     new Promise((resolve) => setTimeout(resolve, delay * 1000));

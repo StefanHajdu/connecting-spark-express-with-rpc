@@ -74,6 +74,17 @@ export type DataFrame = {
     data: string[][];
 };
 
+export interface AnalysisSnapshot {
+    id: string;
+    name: string;
+    status: string;
+    buildTime: string;
+    resources: string;
+    rest: string;
+    selected: boolean;
+    nodes: NodeSnapshot[];
+}
+
 export interface NodeSnapshot {
     uuid: string;
     title: string;

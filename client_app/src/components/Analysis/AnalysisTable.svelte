@@ -9,10 +9,10 @@ import {
     Checkbox,
     Button,
 } from "flowbite-svelte";
-import type { Analysis } from "$lib/dtype";
+import { AnalysisC } from "./AnalysisClass.svelte";
 
 interface Props {
-    analyses: Analysis[];
+    analyses: AnalysisC[];
 }
 
 let { analyses = $bindable() }: Props = $props();
@@ -21,10 +21,10 @@ let globalCheck = $derived.by(() => {
     return analyses.every((a) => a.selected);
 });
 
-function checkboxAnalyses(analyses: Analysis[], flag: boolean): Analysis[] {
-    return analyses.map((analysis: Analysis) => {
-        return { ...analysis, selected: flag };
-    });
+function checkboxAnalyses(analyses: AnalysisC[], flag: boolean): void {
+    for (let i = 0; i < analyses.length; i++) {
+        analyses[i].setSelected(flag);
+    }
 }
 </script>
 
@@ -40,8 +40,7 @@ function checkboxAnalyses(analyses: Analysis[], flag: boolean): Analysis[] {
                     checked={globalCheck}
                     onchange={() => {
                         globalCheck = !globalCheck;
-                        ``;
-                        analyses = checkboxAnalyses(analyses, globalCheck);
+                        checkboxAnalyses(analyses, globalCheck);
                     }} />
             </form>
         </TableHeadCell>
@@ -61,7 +60,7 @@ function checkboxAnalyses(analyses: Analysis[], flag: boolean): Analysis[] {
                         <Checkbox
                             checked={analysis.selected}
                             onchange={() => {
-                                analysis.selected = !analysis.selected;
+                                analysis.setSelected(!analysis.selected);
                             }} />
                     </form>
                 </TableBodyCell>

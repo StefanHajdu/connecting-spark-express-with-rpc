@@ -9,19 +9,20 @@ import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 interface Props {
-    analysis: Analysis;
+    analyses: Analysis[];
+    analysisIndex: number;
     nodeIndex: number;
     preview(analysiId: string, nodeId: string): void;
 }
 
-let { analysis, nodeIndex, preview }: Props = $props();
+let { analyses = $bindable(), analysisIndex, nodeIndex, preview }: Props = $props();
 
 let nextNodeId = $state("");
 let newNodeDropdownOpen = $state(false);
 let optionsOpen = $state(false);
 let summarizePromise = $state(
     Promise.resolve({
-        session_id: analysis.id,
+        session_id: analyses[analysisIndex].id,
         msg: "",
         columns: "",
         schema: "",
@@ -41,8 +42,12 @@ $effect(() => {
 });
 
 function insertNextNode(nodeType: string) {
-    let nextNode = nodeFactory(nodeType, analysis.nodes[nodeIndex].colsInNode);
-    analysis.nodes = analysis.nodes.toSpliced(nodeIndex + 1, 0, nextNode);
+    let nextNode = nodeFactory({
+        title: nodeType,
+        colsInNode: analyses[analysisIndex].nodes[nodeIndex].colsInNode,
+        submitted: false,
+    });
+    analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, nextNode);
     nextNodeId = nextNode.uuid;
     newNodeDropdownOpen = false;
 }
@@ -51,26 +56,26 @@ async function removeNode(apiInvolved: boolean) {
     // todo: cannot remove node that is not present on backend
     if (apiInvolved) {
         let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
-            session_id: analysis.id,
-            node_id: analysis.nodes[nodeIndex].uuid,
+            session_id: analyses[analysisIndex].id,
+            node_id: analyses[analysisIndex].nodes[nodeIndex].uuid,
         });
         if (transformResponse) {
-            syncOutRemovedColumns(analysis.nodes, nodeIndex);
+            syncOutRemovedColumns(analyses[analysisIndex].nodes, nodeIndex);
         }
     }
 
-    analysis.nodes.splice(nodeIndex, 1);
+    analyses[analysisIndex].nodes.splice(nodeIndex, 1);
     optionsOpen = false;
 }
 
 function previewNode() {
-    preview(analysis.id, analysis.nodes[nodeIndex].uuid);
+    preview(analyses[analysisIndex].id, analyses[analysisIndex].nodes[nodeIndex].uuid);
 }
 
 function summarizeNode() {
     summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
-        session_id: analysis.id,
-        node_id: analysis.nodes[nodeIndex].uuid,
+        session_id: analyses[analysisIndex].id,
+        node_id: analyses[analysisIndex].nodes[nodeIndex].uuid,
     });
 }
 
@@ -81,31 +86,35 @@ async function toggleNode(apiInvolved: boolean) {
             let transformResponse: SparkTransformResponse = await fetchSparkApi(
                 "rpc/sessionNode/transform/removeNode",
                 {
-                    session_id: analysis.id,
-                    node_id: analysis.nodes[nodeIndex].uuid,
+                    session_id: analyses[analysisIndex].id,
+                    node_id: analyses[analysisIndex].nodes[nodeIndex].uuid,
                 },
             );
             if (transformResponse) {
-                syncOutRemovedColumns(analysis.nodes, nodeIndex);
+                syncOutRemovedColumns(analyses[analysisIndex].nodes, nodeIndex);
             }
         }
 
-        analysis.nodes[nodeIndex].active = false;
+        analyses[analysisIndex].nodes[nodeIndex].active = false;
     } else {
         // disabled => enabled
         if (apiInvolved) {
-            let _ = await analysis.nodes[nodeIndex].submit(
-                analysis.nodes[nodeIndex].getSubmitParams(analysis.id, analysis.nodes, nodeIndex),
+            let _ = await analyses[analysisIndex].nodes[nodeIndex].submit(
+                analyses[analysisIndex].nodes[nodeIndex].getSubmitParams(
+                    analyses[analysisIndex].id,
+                    analyses[analysisIndex].nodes,
+                    nodeIndex,
+                ),
             );
         }
 
-        analysis.nodes[nodeIndex].active = true;
+        analyses[analysisIndex].nodes[nodeIndex].active = true;
     }
 }
 
 async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Promise<void>): Promise<void> {
     const wrapped = async () => {
-        if (!analysis.nodes[nodeIndex].invalidState.value) {
+        if (!analyses[analysisIndex].nodes[nodeIndex].invalidState.value) {
             await func(true);
         } else {
             await func(false);
@@ -117,19 +126,19 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
                 func.name === "removeNode" || (func.name === "toggleNode" && !activeNodeStatus)
                     ? nodeIndex
                     : nodeIndex + 1;
-            await tryRestoreNodes(analysis.id, analysis.nodes, index);
+            await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, index);
         }
     };
     await wrapped();
 }
 </script>
 
-<div class={"flex min-w-80 justify-center " + opacity} id={analysis.nodes[nodeIndex].uuid}>
+<div class={"flex min-w-80 justify-center " + opacity} id={analyses[analysisIndex].nodes[nodeIndex].uuid}>
     <Card class="max-w-5xl">
         <div class="flex justify-end">
             <DotsHorizontalOutline />
             <Dropdown class="w-36" bind:open={optionsOpen}>
-                {#if analysis.nodes[nodeIndex].nodeType !== "load"}
+                {#if analyses[analysisIndex].nodes[nodeIndex].nodeType !== "load"}
                     <div class="flex items-stretch">
                         <DropdownItem
                             class="flex items-center"
@@ -143,27 +152,27 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
             </Dropdown>
         </div>
 
-        {#if analysis.nodes[nodeIndex].invalidState.value}
+        {#if analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
             <div>
                 <Button id="invalid-state" outline color="red" size="xs"
-                    >{analysis.nodes[nodeIndex].invalidState.description}</Button>
+                    >{analyses[analysisIndex].nodes[nodeIndex].invalidState.description}</Button>
                 <!-- <Tooltip arrow={false} triggeredBy="#invalid-state"
                     >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip> -->
             </div>
         {/if}
 
         <div class="mb-4 mt-4 flex items-center justify-between">
-            <p>id: {analysis.nodes[nodeIndex].uuid.slice(-5)}</p>
+            <p>id: {analyses[analysisIndex].nodes[nodeIndex].uuid.slice(-5)}</p>
         </div>
 
-        {#if analysis.nodes[nodeIndex].title === "Load"}<LoadNode
-                bind:nodesInAnalysis={analysis.nodes}
+        {#if analyses[analysisIndex].nodes[nodeIndex].title === "Load"}<LoadNode
+                bind:analyses={analyses}
+                analysisIndex={analysisIndex}
+                nodeIndex={nodeIndex} />
+        {:else if analyses[analysisIndex].nodes[nodeIndex].title === "Add Column"}<AddColumnNode
+                bind:nodesInAnalysis={analyses[analysisIndex].nodes}
                 nodeIndex={nodeIndex}
-                analysisId={analysis.id} />
-        {:else if analysis.nodes[nodeIndex].title === "Add Column"}<AddColumnNode
-                bind:nodesInAnalysis={analysis.nodes}
-                nodeIndex={nodeIndex}
-                analysisId={analysis.id}
+                analysisId={analyses[analysisIndex].id}
                 activeNodeStatus={activeNodeStatus} />
         {/if}
 
@@ -171,14 +180,14 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analysis.nodes[nodeIndex].invalidState.value}
+                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
                 on:click={previewNode}>Preview</Button>
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analysis.nodes[nodeIndex].invalidState.value}
+                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
                 on:click={summarizeNode}>Summarize</Button>
-            {#if analysis.nodes[nodeIndex].title !== "Load"}
+            {#if analyses[analysisIndex].nodes[nodeIndex].title !== "Load"}
                 <Toggle
                     size="small"
                     class="pt-1"
@@ -199,7 +208,10 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
     </Card>
 </div>
 <div class="p-1 mb-4 flex justify-center">
-    <Button size="xs" color="dark" disabled={!activeNodeStatus || analysis.nodes[nodeIndex].invalidState.value}
+    <Button
+        size="xs"
+        color="dark"
+        disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
         <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>

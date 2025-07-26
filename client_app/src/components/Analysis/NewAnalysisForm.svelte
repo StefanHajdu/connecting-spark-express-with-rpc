@@ -1,55 +1,32 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
 import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
-import { getUniqueAnalysesId } from "../lib/utils";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
-import type { Analysis } from "$lib/dtype";
-import { nodeFactory } from "./Nodes/NodeClass.svelte";
+import { AnalysisC } from "./AnalysisClass.svelte";
 
 interface Props {
-    analyses: Analysis[];
+    analyses: AnalysisC[];
 }
 
 let { analyses = $bindable() }: Props = $props();
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
-let id = getUniqueAnalysesId();
 
 async function initNewAnalysis() {
+    let analysisC = new AnalysisC({ selected: true });
+
     let createSessionResponse = await fetchSparkApi("/rpc/session/create", {
-        id: id,
-        name: name,
+        id: analysisC.id,
+        name: analysisC.name,
     });
     if (createSessionResponse) {
-        analyses.push({
-            id: id,
-            name: name,
-            status: "new",
-            buildTime: "---",
-            resources: "---",
-            rest: "...",
-            selected: true,
-            nodes: [
-                nodeFactory({
-                    title: "Load",
-                    colsInNode: [],
-                    sumitted: false,
-                }),
-            ],
-        });
+        analyses.push(analysisC);
 
         toLocalStorage(
             LS_KEY_ANALYSES,
-            analyses
-                .filter((analysis) => analysis.selected)
-                .map((analysis) => {
-                    return {
-                        ...analysis,
-                        nodes: analysis.nodes.map((node) => node.getClassSnapshot()),
-                    };
-                }),
+            analyses.filter((analysis) => analysis.selected).map((analysis) => analysis.getSnapshot()),
         );
 
         await goto("http://localhost:5173/analyses");

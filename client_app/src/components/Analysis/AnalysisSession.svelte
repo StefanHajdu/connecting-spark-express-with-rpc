@@ -1,32 +1,34 @@
 <script lang="ts">
 import { TabItem } from "flowbite-svelte";
-import PreviewFooter from "./PreviewFooter.svelte";
-import { nodeFactory } from "./Nodes/NodeClass.svelte";
-import Node from "./Nodes/Node.svelte";
+import PreviewFooter from "../PreviewFooter.svelte";
+import Node from "../Nodes/Node.svelte";
 import type { Analysis } from "$lib/dtype";
 
 interface Props {
-    analysis: Analysis;
+    analyses: Analysis[];
+    analysisIndex: number;
 }
 
-let { analysis }: Props = $props();
+let { analyses = $bindable(), analysisIndex }: Props = $props();
 let previewFooterComponent: any;
 
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
     await previewFooterComponent.forwardPreview(analysiId, nodeId);
 }
+$inspect("from analysis session", analyses[analysisIndex].nodes);
 </script>
 
-<TabItem open title={analysis.name}>
+<TabItem open title={analyses[analysisIndex].name}>
     <main class="bg-white-500 space-y-4 p-4">
-        <div id={analysis.name}>
+        <div id={analyses[analysisIndex].name}>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>{analysis.name}</b>
+                <b>{analyses[analysisIndex].name}</b>
             </p>
 
-            {#each analysis.nodes as node, i (node.uuid)}
+            {#each analyses[analysisIndex].nodes as node, i (node.uuid)}
                 <Node
-                    analysis={analysis}
+                    bind:analyses={analyses}
+                    analysisIndex={analysisIndex}
                     nodeIndex={i}
                     preview={(analysisId, nodeId) => {
                         forwardPreview(analysisId, nodeId);
