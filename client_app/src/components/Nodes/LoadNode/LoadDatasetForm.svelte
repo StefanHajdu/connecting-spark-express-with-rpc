@@ -2,10 +2,11 @@
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
-import { type LoadNodeData } from "./LoadNodeClass.svelte";
+import { type LoadNodeData } from "./LoadNode.svelte";
 import { Node } from "../NodeClass.svelte";
 import { tryRestoreNodes } from "$lib/utils";
 import { type ButtonColor } from "$lib/uitype";
+import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 
 interface Props {
     analysisId: string;
@@ -13,10 +14,10 @@ interface Props {
     color: ButtonColor;
     nodesInAnalysis: Node[];
     nodeIndex: number;
-    loadNodeData: LoadNodeData;
+    loadSuccess: boolean;
 }
 
-let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex, loadNodeData = $bindable() }: Props = $props();
+let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex, loadSuccess = $bindable() }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -32,35 +33,30 @@ let jsonMultiline: boolean = $state(true);
 
 let loadInProgress = $state(false);
 
+function getInputMetadata(inputType: string): ICsvMetadata | IJsonMetadata | IParquetMetadata {
+    return inputType === "csv"
+        ? { kind: "csv", delimiter: csvDelimiter, include_header: csvIncludeHeader, path: datasetPath }
+        : inputType === "json"
+          ? { kind: "json", multiline: jsonMultiline, path: datasetPath }
+          : inputType === "parquet"
+            ? { kind: "parquet", path: datasetPath }
+            : { kind: "parquet", path: datasetPath };
+}
+
 async function submit() {
     loadInProgress = true;
+    let inputMetadata = getInputMetadata(inputType);
+
+    nodesInAnalysis[nodeIndex].setNodeParams({ inputType: inputType, inputMetadata: inputMetadata });
     let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
         session_id: analysisId,
-        [inputType]:
-            inputType === "csv"
-                ? { delimiter: csvDelimiter, include_header: csvIncludeHeader, path: datasetPath }
-                : inputType === "json"
-                  ? { multiline: jsonMultiline, path: datasetPath }
-                  : inputType === "parquet"
-                    ? { path: datasetPath }
-                    : { path: datasetPath },
+        ...inputMetadata,
     });
 
     if (submitSuccessful) {
         loadDatasetModal = false;
+        loadSuccess = true;
     }
-
-    loadNodeData = {
-        loadSuccess: submitSuccessful,
-        metadata:
-            inputType === "csv"
-                ? new CsvMetadata(datasetPath, csvDelimiter, csvIncludeHeader)
-                : inputType === "json"
-                  ? new JsonMetadata(datasetPath, jsonMultiline)
-                  : inputType === "parquet"
-                    ? new ParquetMetadata(datasetPath)
-                    : new ParquetMetadata(datasetPath),
-    };
 
     await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
 

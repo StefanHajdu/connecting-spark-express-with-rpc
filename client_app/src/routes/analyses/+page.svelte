@@ -3,10 +3,10 @@ import { browser } from "$app/environment";
 import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
-import { STORAGE_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
+import { LS_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
 import type { Analysis } from "$lib/dtype";
 
-let analyses = $state(browser ? fromLocalStorage(STORAGE_KEY_ANALYSES) : []);
+let analyses = $state(browser ? fromLocalStorage(LS_KEY_ANALYSES) : []);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">

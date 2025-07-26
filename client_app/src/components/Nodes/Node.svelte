@@ -4,9 +4,9 @@ import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flow
 import { fetchSparkApi } from "$lib/clientApi";
 import { tryRestoreNodes, syncOutRemovedColumns } from "$lib/utils";
 import type { SparkTransformResponse, Analysis } from "$lib/dtype";
-import { nodeFactoryMethod } from "./NodeClass.svelte";
-import LoadNode from "./LoadNode/LoadNodeClass.svelte";
-import AddColumnNode from "./AddColumn/AddColumnNodeClass.svelte";
+import { nodeFactory } from "./NodeClass.svelte";
+import LoadNode from "./LoadNode/LoadNode.svelte";
+import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 interface Props {
     analysis: Analysis;
@@ -41,7 +41,7 @@ $effect(() => {
 });
 
 function insertNextNode(nodeType: string) {
-    let nextNode = nodeFactoryMethod(nodeType, analysis.nodes[nodeIndex].colsInNode);
+    let nextNode = nodeFactory(nodeType, analysis.nodes[nodeIndex].colsInNode);
     analysis.nodes = analysis.nodes.toSpliced(nodeIndex + 1, 0, nextNode);
     nextNodeId = nextNode.uuid;
     newNodeDropdownOpen = false;

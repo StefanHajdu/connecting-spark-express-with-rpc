@@ -1,11 +1,11 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
-import { STORAGE_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
+import { LS_KEY_ANALYSES, LS_KEY_SCOPED, toLocalStorage } from "$lib/localStorageHandles";
 import { getUniqueAnalysesId } from "../lib/utils";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
 import type { Analysis } from "$lib/dtype";
-import { nodeFactoryMethod } from "./Nodes/NodeClass.svelte";
+import { nodeFactory } from "./Nodes/NodeClass.svelte";
 
 interface Props {
     analyses: Analysis[];
@@ -31,10 +31,22 @@ async function initNewAnalysis() {
             resources: "---",
             rest: "...",
             selected: true,
-            nodes: [nodeFactoryMethod("Load", [])],
+            nodes: [nodeFactory("Load", [])],
         });
-        // toLocalStorage(STORAGE_KEY_ANALYSES, analyses);
-        // await goto("http://localhost:5173/analyses");
+
+        toLocalStorage(
+            LS_KEY_ANALYSES,
+            analyses
+                .filter((a) => a.selected)
+                .map((a) => {
+                    return {
+                        ...a,
+                        nodes: a.nodes.map((node) => node.getClassSnapshot()),
+                    };
+                }),
+        );
+
+        await goto("http://localhost:5173/analyses");
     }
 }
 </script>

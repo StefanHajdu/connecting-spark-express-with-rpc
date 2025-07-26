@@ -1,11 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
-import type { Column, SparkTransformResponse, Expression, Param, InvalidState } from "$lib/dtype";
+import type {
+    Column,
+    SparkTransformResponse,
+    Expression,
+    Param,
+    InvalidState,
+    NodeSnapshot,
+    ICsvMetadata,
+    IJsonMetadata,
+    IParquetMetadata,
+    LoadNodeSnapshot,
+} from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
 import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/utils";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
-export function nodeFactoryMethod(title: string, colsInDf: Column[]): Node {
+export function nodeFactory(title: string, colsInDf: Column[]): Node {
     if (title.toLowerCase() === "load") {
         return new LoadNode(title, colsInDf);
     } else if (title.toLowerCase() === "filter") {
@@ -47,22 +58,55 @@ export abstract class Node {
         return new Set(cols.map((col) => col.name));
     }
 
+    public getSnapshot(): NodeSnapshot {
+        return {
+            uuid: $state.snapshot(this.uuid),
+            title: $state.snapshot(this.title),
+            nodeType: $state.snapshot(this.nodeType),
+            colsAdded: $state.snapshot(this.colsAdded),
+            colsUsed: $state.snapshot(this.colsUsed),
+            colsInNode: $state.snapshot(this.colsInNode),
+            colsInTransform: $state.snapshot(this.colsInTransform),
+            active: $state.snapshot(this.active),
+            invalidState: $state.snapshot(this.invalidState),
+        };
+    }
+
+    public abstract setNodeParams(params: any): void;
     public abstract submit(params: any): Promise<boolean>;
     public abstract getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any;
     public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
     public abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
     public abstract isInvalid(force: boolean, prevNode?: Node): boolean;
+    public abstract getClassSnapshot(): NodeSnapshot | any;
 }
 
-class LoadNode extends Node {
+export class LoadNode extends Node {
+    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
+
     constructor(title: string, colsInDf: Column[]) {
         super(title, colsInDf);
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
+        this.inputMetadata = { kind: "parquet", path: "" };
+    }
+
+    getClassSnapshot(): LoadNodeSnapshot {
+        return {
+            ...this.getSnapshot(),
+            metadata: this.inputMetadata,
+        };
     }
 
     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
         return {};
+    }
+
+    setNodeParams(params: any): void {
+        this.inputMetadata = {
+            kind: params.inputType,
+            ...params.inputMetadata,
+        };
     }
 
     async submit(params: any): Promise<boolean> {
@@ -77,7 +121,10 @@ class LoadNode extends Node {
     }
 
     async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", params);
+        let inputType = params.kind;
+        delete params.kind;
+        let body = { [inputType]: params };
+        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", body);
         return transformResponse;
     }
 
@@ -104,6 +151,8 @@ export class AddColumnNode extends Node {
         this.expressions = [];
     }
 
+    getClassSnapshot(): NodeSnapshot | any {}
+
     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
         return {
             analysisId: analysisId,
@@ -114,6 +163,8 @@ export class AddColumnNode extends Node {
             nodeIndex: nodeIndex,
         };
     }
+
+    setNodeParams(params: any): void {}
 
     async submit(params: any): Promise<boolean> {
         let transformRes: SparkTransformResponse = await this.submitTransform({
@@ -192,9 +243,13 @@ class FilterNode extends Node {
         this.nodeType = "sql";
     }
 
+    getClassSnapshot(): NodeSnapshot | any {}
+
     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
         return {};
     }
+
+    setNodeParams(params: any): void {}
 
     async submit(params: any): Promise<boolean> {
         return true;
@@ -226,9 +281,13 @@ class JoinNode extends Node {
         this.nodeType = "sql";
     }
 
+    getClassSnapshot(): NodeSnapshot | any {}
+
     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
         return {};
     }
+
+    setNodeParams(params: any): void {}
 
     async submit(params: any): Promise<boolean> {
         return true;
@@ -260,9 +319,13 @@ class TableNode extends Node {
         this.nodeType = "visualization";
     }
 
+    getClassSnapshot(): NodeSnapshot | any {}
+
     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
         return {};
     }
+
+    setNodeParams(params: any): void {}
 
     async submit(params: any): Promise<boolean> {
         return true;

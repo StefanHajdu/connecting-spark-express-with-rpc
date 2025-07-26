@@ -1,4 +1,6 @@
-export class CsvMetadata {
+import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
+
+export class CsvMetadata implements ICsvMetadata {
     path: string;
     delimiter: string;
     includeHeader: string;
@@ -10,7 +12,7 @@ export class CsvMetadata {
     }
 }
 
-export class JsonMetadata {
+export class JsonMetadata implements IJsonMetadata {
     path: string;
     multiline: string;
 
@@ -20,7 +22,7 @@ export class JsonMetadata {
     }
 }
 
-export class ParquetMetadata {
+export class ParquetMetadata implements IParquetMetadata {
     path: string;
 
     constructor(path: string) {

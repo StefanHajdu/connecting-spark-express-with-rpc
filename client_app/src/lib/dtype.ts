@@ -73,3 +73,35 @@ export type DataFrame = {
     columns: SparkColumn[];
     data: string[][];
 };
+
+export interface NodeSnapshot {
+    uuid: string;
+    title: string;
+    nodeType: string;
+    colsAdded: Set<string>;
+    colsUsed: Set<string | undefined>;
+    colsInNode: Column[];
+    colsInTransform: Column[];
+    active: boolean;
+    invalidState: InvalidState;
+}
+
+export interface ICsvMetadata {
+    kind: "csv";
+    path: string;
+    delimiter: string;
+    include_header: boolean;
+}
+export interface IJsonMetadata {
+    kind: "json";
+    path: string;
+    multiline: boolean;
+}
+export interface IParquetMetadata {
+    kind: "parquet";
+    path: string;
+}
+
+export interface LoadNodeSnapshot extends NodeSnapshot {
+    metadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
+}

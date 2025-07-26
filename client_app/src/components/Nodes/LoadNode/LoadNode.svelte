@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Node } from "../NodeClass.svelte";
+import { Node, LoadNode } from "../NodeClass.svelte";
 import LoadDatasetForm from "./LoadDatasetForm.svelte";
 import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
 
@@ -16,27 +16,32 @@ export interface LoadNodeData {
 
 let { analysisId, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
 
-let loadNodeData: LoadNodeData = $state({ loadSuccess: false });
+let loadSuccess: boolean = $state(false);
 </script>
 
-{#if loadNodeData.loadSuccess}
-    {#if loadNodeData.metadata instanceof CsvMetadata}
-        <span class="text-m text-gray-500 dark:text-gray-400">Path: {loadNodeData.metadata.path}</span>
-        <span class="text-m text-gray-500 dark:text-gray-400">Delimiter: {loadNodeData.metadata.delimiter}</span>
+{#if loadSuccess}
+    {#if nodesInAnalysis[nodeIndex] instanceof LoadNode && nodesInAnalysis[nodeIndex].inputMetadata.kind == "csv"}
         <span class="text-m text-gray-500 dark:text-gray-400"
-            >Include header: {loadNodeData.metadata.includeHeader}</span>
-    {:else if loadNodeData.metadata instanceof JsonMetadata}
-        <span class="text-m text-gray-500 dark:text-gray-400">Path: {loadNodeData.metadata.path}</span>
-        <span class="text-m text-gray-500 dark:text-gray-400">Multiline: {loadNodeData.metadata.multiline}</span>
-    {:else if loadNodeData.metadata instanceof ParquetMetadata}
-        <span class="text-m text-gray-500 dark:text-gray-400">Path: {loadNodeData.metadata.path}</span>
+            >Path: {nodesInAnalysis[nodeIndex].inputMetadata.path}</span>
+        <span class="text-m text-gray-500 dark:text-gray-400"
+            >Delimiter: {nodesInAnalysis[nodeIndex].inputMetadata.delimiter}</span>
+        <span class="text-m text-gray-500 dark:text-gray-400"
+            >Include header: {nodesInAnalysis[nodeIndex].inputMetadata.include_header}</span>
+    {:else if nodesInAnalysis[nodeIndex] instanceof LoadNode && nodesInAnalysis[nodeIndex].inputMetadata.kind == "json"}
+        <span class="text-m text-gray-500 dark:text-gray-400"
+            >Path: {nodesInAnalysis[nodeIndex].inputMetadata.path}</span>
+        <span class="text-m text-gray-500 dark:text-gray-400"
+            >Multiline: {nodesInAnalysis[nodeIndex].inputMetadata.multiline}</span>
+    {:else if nodesInAnalysis[nodeIndex] instanceof LoadNode && nodesInAnalysis[nodeIndex].inputMetadata.kind == "parquet"}
+        <span class="text-m text-gray-500 dark:text-gray-400"
+            >Path: {nodesInAnalysis[nodeIndex].inputMetadata.path}</span>
     {/if}
     <LoadDatasetForm
         analysisId={analysisId}
         name={"Replace Dataset"}
         color={"dark"}
         bind:nodesInAnalysis={nodesInAnalysis}
-        bind:loadNodeData={loadNodeData}
+        bind:loadSuccess={loadSuccess}
         nodeIndex={nodeIndex} />
 {:else}
     <LoadDatasetForm
@@ -44,6 +49,6 @@ let loadNodeData: LoadNodeData = $state({ loadSuccess: false });
         name={"Load New Dataset"}
         color={"blue"}
         bind:nodesInAnalysis={nodesInAnalysis}
-        bind:loadNodeData={loadNodeData}
+        bind:loadSuccess={loadSuccess}
         nodeIndex={nodeIndex} />
 {/if}
