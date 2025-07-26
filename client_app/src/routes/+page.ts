@@ -1,5 +1,5 @@
-import { analysesMock } from "$lib/analyses";
-import { type AnalysesMock } from "$lib/analyses";
+import { analysesMock } from "$lib/analysesMock";
+import { type AnalysesMock } from "$lib/analysesMock";
 
 export function load(): AnalysesMock {
     return analysesMock;

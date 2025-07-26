@@ -15,11 +15,9 @@ export interface LoadNodeData {
 }
 
 let { analysisId, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
-
-let loadSuccess: boolean = $state(false);
 </script>
 
-{#if loadSuccess}
+{#if nodesInAnalysis[nodeIndex].submitted}
     {#if nodesInAnalysis[nodeIndex] instanceof LoadNode && nodesInAnalysis[nodeIndex].inputMetadata.kind == "csv"}
         <span class="text-m text-gray-500 dark:text-gray-400"
             >Path: {nodesInAnalysis[nodeIndex].inputMetadata.path}</span>
@@ -41,7 +39,6 @@ let loadSuccess: boolean = $state(false);
         name={"Replace Dataset"}
         color={"dark"}
         bind:nodesInAnalysis={nodesInAnalysis}
-        bind:loadSuccess={loadSuccess}
         nodeIndex={nodeIndex} />
 {:else}
     <LoadDatasetForm
@@ -49,6 +46,5 @@ let loadSuccess: boolean = $state(false);
         name={"Load New Dataset"}
         color={"blue"}
         bind:nodesInAnalysis={nodesInAnalysis}
-        bind:loadSuccess={loadSuccess}
         nodeIndex={nodeIndex} />
 {/if}

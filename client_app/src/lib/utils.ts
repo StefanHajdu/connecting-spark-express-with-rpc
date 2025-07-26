@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { Node } from "../components/Nodes/NodeClass.svelte";
+import { Node, nodeFactory } from "../components/Nodes/NodeClass.svelte";
 import { type Expression, type Column, type Analysis } from "./dtype";
 
 export function getUniqueAnalysesId(): string {
@@ -95,4 +95,15 @@ export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[
             nodesInAnalysis[i].setInvalidState(false, "");
         }
     }
+}
+
+export function rehydrateAnalysesFromRaw(analysesRaw: Analysis[]): Analysis[] {
+    return analysesRaw.map((analysisRaw) => {
+        return {
+            ...analysisRaw,
+            nodes: analysisRaw.nodes.map((nodeRaw) => {
+                return nodeFactory({ ...nodeRaw });
+            }),
+        };
+    });
 }

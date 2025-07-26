@@ -8,7 +8,6 @@ import {
     TableHeadCell,
     Checkbox,
     Button,
-    A,
 } from "flowbite-svelte";
 import type { Analysis } from "$lib/dtype";
 

@@ -1,8 +1,6 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadNodeTypes";
-import { type LoadNodeData } from "./LoadNode.svelte";
 import { Node } from "../NodeClass.svelte";
 import { tryRestoreNodes } from "$lib/utils";
 import { type ButtonColor } from "$lib/uitype";
@@ -14,10 +12,9 @@ interface Props {
     color: ButtonColor;
     nodesInAnalysis: Node[];
     nodeIndex: number;
-    loadSuccess: boolean;
 }
 
-let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex, loadSuccess = $bindable() }: Props = $props();
+let { analysisId, name, color, nodesInAnalysis = $bindable(), nodeIndex }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -55,7 +52,6 @@ async function submit() {
 
     if (submitSuccessful) {
         loadDatasetModal = false;
-        loadSuccess = true;
     }
 
     await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);

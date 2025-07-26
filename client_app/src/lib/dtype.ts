@@ -84,6 +84,7 @@ export interface NodeSnapshot {
     colsInTransform: Column[];
     active: boolean;
     invalidState: InvalidState;
+    submitted: boolean;
 }
 
 export interface ICsvMetadata {
@@ -103,5 +104,5 @@ export interface IParquetMetadata {
 }
 
 export interface LoadNodeSnapshot extends NodeSnapshot {
-    metadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
+    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
 }

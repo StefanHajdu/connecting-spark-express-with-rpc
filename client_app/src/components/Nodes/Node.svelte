@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Tooltip, Spinner, Toggle } from "flowbite-svelte";
+import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
 import { tryRestoreNodes, syncOutRemovedColumns } from "$lib/utils";

@@ -13,7 +13,13 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [nodeFactory("Load", [])],
+            nodes: [
+                nodeFactory({
+                    title: "Load",
+                    colsInNode: [],
+                    submitted: false,
+                }),
+            ],
         },
         {
             id: "id-analysis-#2",
@@ -23,7 +29,13 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [nodeFactory("Load", [])],
+            nodes: [
+                nodeFactory({
+                    title: "Load",
+                    colsInNode: [],
+                    submitted: false,
+                }),
+            ],
         },
         {
             id: "id-analysis-#3",
@@ -33,7 +45,13 @@ export const analysesMock: AnalysesMock = {
             resources: "4 cores, 32gb",
             rest: "...",
             selected: false,
-            nodes: [nodeFactory("Load", [])],
+            nodes: [
+                nodeFactory({
+                    title: "Load",
+                    colsInNode: [],
+                    submitted: false,
+                }),
+            ],
         },
     ],
 };

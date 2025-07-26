@@ -16,19 +16,19 @@ import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/uti
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
-export function nodeFactory(title: string, colsInDf: Column[]): Node {
-    if (title.toLowerCase() === "load") {
-        return new LoadNode(title, colsInDf);
-    } else if (title.toLowerCase() === "filter") {
-        return new FilterNode(title, colsInDf);
-    } else if (title.toLowerCase() === "join") {
-        return new JoinNode(title, colsInDf);
-    } else if (title.toLowerCase() === "add column") {
-        return new AddColumnNode(title, colsInDf);
-    } else if (title.toLowerCase() === "table") {
-        return new TableNode(title, colsInDf);
+export function nodeFactory(params: any): Node {
+    if (params.title.toLowerCase() === "load") {
+        return new LoadNode(params);
+        // } else if (params.title.toLowerCase() === "filter") {
+        //     return new FilterNode(params);
+        // } else if (params.title.toLowerCase() === "join") {
+        //     return new JoinNode(params);
+        // } else if (params.title.toLowerCase() === "add column") {
+        //     return new AddColumnNode(params);
+        // } else if (params.title.toLowerCase() === "table") {
+        //     return new TableNode(params);
     } else {
-        return new LoadNode(title, colsInDf);
+        return new LoadNode(params);
     }
 }
 
@@ -42,12 +42,19 @@ export abstract class Node {
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
     invalidState: InvalidState = $state({ value: false, description: "" });
+    submitted: boolean = $state(false);
 
-    constructor(title: string, cols: Column[]) {
-        this.uuid = "node-" + uuidv4();
-        this.title = title;
-        this.colsInNode = cols;
-        this.colsInTransform = cols;
+    constructor(params: any) {
+        this.title = params.title;
+        this.colsInNode = params.colsInNode;
+        this.colsInTransform = params.colsInTransform ? params.colsInTransform : params.colsInNode;
+        this.uuid = params.uuid ? params.uuid : "node-" + uuidv4();
+        this.nodeType = params.nodeType ? params.nodeType : "";
+        this.colsAdded = params.colsAdded ? params.colsAdded : new Set([]);
+        this.colsUsed = params.colsUsed ? params.colsUsed : new Set([]);
+        this.active = params.active ? params.active : true;
+        this.invalidState = params.invalidState ? params.invalidState : { value: false, description: "" };
+        this.submitted = params.submitted ? params.submitted : false;
     }
 
     public setInvalidState(value: boolean, description: string) {
@@ -59,6 +66,7 @@ export abstract class Node {
     }
 
     public getSnapshot(): NodeSnapshot {
+        // todo: Set() needs special serialization, in local storage it is represented and Object not Set
         return {
             uuid: $state.snapshot(this.uuid),
             title: $state.snapshot(this.title),
@@ -69,6 +77,7 @@ export abstract class Node {
             colsInTransform: $state.snapshot(this.colsInTransform),
             active: $state.snapshot(this.active),
             invalidState: $state.snapshot(this.invalidState),
+            submitted: $state.snapshot(this.submitted),
         };
     }
 
@@ -82,19 +91,20 @@ export abstract class Node {
 }
 
 export class LoadNode extends Node {
-    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
+    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata = $state({ kind: "parquet", path: "" });
 
-    constructor(title: string, colsInDf: Column[]) {
-        super(title, colsInDf);
+    constructor(params: any) {
+        super(params);
+
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
-        this.inputMetadata = { kind: "parquet", path: "" };
+        this.inputMetadata = params.inputMetadata ? params.inputMetadata : { kind: "parquet", path: "" };
     }
 
     getClassSnapshot(): LoadNodeSnapshot {
         return {
             ...this.getSnapshot(),
-            metadata: this.inputMetadata,
+            inputMetadata: this.inputMetadata,
         };
     }
 
@@ -114,16 +124,21 @@ export class LoadNode extends Node {
 
         if (transformRes) {
             this.parseTransformResponse(transformRes);
+            this.submitted = true;
             return true;
         } else {
+            this.submitted = false;
             return false;
         }
     }
 
     async submitTransform(params: any): Promise<SparkTransformResponse> {
+        // transform {kind: "csv", session_id: "", path: "", ...} to {session_id: "", csv: {path: ""}}, it looks better in request body
         let inputType = params.kind;
+        let sessionId = params.session_id;
         delete params.kind;
-        let body = { [inputType]: params };
+        delete params.session_id;
+        let body = { session_id: sessionId, [inputType]: params };
         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitLoadDatasetNode", body);
         return transformResponse;
     }
