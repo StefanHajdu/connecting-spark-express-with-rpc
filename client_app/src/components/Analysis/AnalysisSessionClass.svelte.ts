@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { IAnalysis } from "../../lib/dtype";
 import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
-export class Analysis {
+export class AnalysisSession {
     id: string = $state("");
     name: string = $state("");
     status: string = $state("");
@@ -28,13 +28,15 @@ export class Analysis {
         this.resources = params.resources ? params.resources : "";
         this.rest = params.rest ? params.rest : "";
         this.selected = params.selected ? params.selected : false;
-        this.nodes = [
-            nodeFactory({
-                title: "Load",
-                colsInNode: [],
-                sumitted: false,
-            }),
-        ];
+        this.nodes = params.nodes
+            ? params.nodes
+            : [
+                  nodeFactory({
+                      title: "Load",
+                      colsInNode: [],
+                      sumitted: false,
+                  }),
+              ];
     }
 
     public setSelected(selected: boolean): void {
@@ -55,18 +57,18 @@ export class Analysis {
     }
 }
 
-export function rehydrateAnalysesFromLocalStorage(analysesRaw: IAnalysis[]): Analysis[] {
+export function rehydrateAnalysesFromLocalStorage(analysesRaw: IAnalysis[]): AnalysisSession[] {
     return analysesRaw.map((analysisRaw) => {
-        return new Analysis({
+        return new AnalysisSession({
             ...analysisRaw,
             nodes: analysisRaw.nodes.map((nodeRaw) => {
-                return nodeFactory({ ...nodeRaw });
+                return nodeFactory(nodeRaw);
             }),
         });
     });
 }
 
-export function saveAnalysesToLocalStorage(analyses: Analysis[]): void {
+export function saveAnalysesToLocalStorage(analyses: AnalysisSession[]): void {
     toLocalStorage(
         LS_KEY_ANALYSES,
         analyses.map((analysis) => analysis.getSnapshot()),

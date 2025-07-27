@@ -2,10 +2,10 @@
 import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "../PreviewFooter.svelte";
 import Node from "../Nodes/Node.svelte";
-import type { Analysis } from "./AnalysisClass.svelte";
+import { AnalysisSession } from "./AnalysisSessionClass.svelte";
 
 interface Props {
-    analyses: Analysis[];
+    analyses: AnalysisSession[];
     analysisIndex: number;
 }
 
@@ -15,7 +15,6 @@ let previewFooterComponent: any;
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
     await previewFooterComponent.forwardPreview(analysiId, nodeId);
 }
-$inspect("from analysis session", analyses[analysisIndex].nodes);
 </script>
 
 <TabItem open title={analyses[analysisIndex].name}>

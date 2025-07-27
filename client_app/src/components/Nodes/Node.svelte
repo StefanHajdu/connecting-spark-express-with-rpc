@@ -4,13 +4,13 @@ import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flow
 import { fetchSparkApi } from "$lib/clientApi";
 import { tryRestoreNodes, syncOutRemovedColumns } from "$lib/utils";
 import type { SparkTransformResponse } from "$lib/dtype";
-import { Analysis } from "../Analysis/AnalysisClass.svelte";
+import { AnalysisSession } from "../Analysis/AnalysisSessionClass.svelte";
 import { nodeFactory } from "./NodeClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 interface Props {
-    analyses: Analysis[];
+    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
     preview(analysiId: string, nodeId: string): void;

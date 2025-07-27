@@ -9,10 +9,10 @@ import {
     Checkbox,
     Button,
 } from "flowbite-svelte";
-import { AnalysisC } from "./AnalysisClass.svelte";
+import { AnalysisSession } from "./AnalysisSessionClass.svelte";
 
 interface Props {
-    persistedAnalyses: AnalysisC[];
+    persistedAnalyses: AnalysisSession[];
 }
 
 let { persistedAnalyses = $bindable() }: Props = $props();
@@ -21,7 +21,7 @@ let globalCheck = $derived.by(() => {
     return persistedAnalyses.every((a) => a.selected);
 });
 
-function checkboxAnalyses(analyses: AnalysisC[], flag: boolean): void {
+function checkboxAnalyses(analyses: AnalysisSession[], flag: boolean): void {
     for (let i = 0; i < analyses.length; i++) {
         analyses[i].setSelected(flag);
     }

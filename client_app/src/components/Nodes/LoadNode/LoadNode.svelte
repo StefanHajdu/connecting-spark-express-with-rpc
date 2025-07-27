@@ -1,23 +1,23 @@
 <script lang="ts">
-import { Analysis } from "../../Analysis/AnalysisClass.svelte";
+import { AnalysisSession, saveAnalysesToLocalStorage } from "../../Analysis/AnalysisSessionClass.svelte";
 import { LoadNode } from "../NodeClass.svelte";
 import LoadDatasetForm from "./LoadDatasetForm.svelte";
 
 interface Props {
-    analyses: Analysis[];
+    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
 }
 let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 
-$effect(() => {
-    if (analyses[analysisIndex].nodes[nodeIndex] instanceof LoadNode) {
-        // hit UI dynamic instance proprety to trigger effect
-        analyses[analysisIndex].nodes[nodeIndex].userInput;
-        console.log("load node is reacting id:", analyses[analysisIndex].nodes[nodeIndex].uuid);
-        console.log(analyses[analysisIndex].nodes[nodeIndex].userInput);
-    }
-});
+// $effect(() => {
+//     if (analyses[analysisIndex].nodes[nodeIndex] instanceof LoadNode) {
+//         // hit UI dynamic instance proprety to trigger effect
+//         analyses[analysisIndex].nodes[nodeIndex].userInput;
+//         // console.log("load node is reacting id:", analyses[analysisIndex].nodes[nodeIndex].userInput);
+//         saveAnalysesToLocalStorage(analyses);
+//     }
+// });
 </script>
 
 {#if analyses[analysisIndex].nodes[nodeIndex].submitted}

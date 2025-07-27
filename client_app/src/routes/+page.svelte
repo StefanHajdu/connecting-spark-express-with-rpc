@@ -4,11 +4,11 @@ import Footer from "../components/Footer.svelte";
 import NewAnalysisForm from "../components/Analysis/NewAnalysisForm.svelte";
 import AnalysisTable from "../components/Analysis/AnalysisTable.svelte";
 import { analysesMock } from "$lib/analysesMock";
-import { Analysis } from "../components/Analysis/AnalysisClass.svelte";
+import { AnalysisSession } from "../components/Analysis/AnalysisSessionClass.svelte";
 
 let persistedAnalyses = $state(
     analysesMock.analyses.map((mocked: any) => {
-        return new Analysis(mocked);
+        return new AnalysisSession(mocked);
     }),
 );
 

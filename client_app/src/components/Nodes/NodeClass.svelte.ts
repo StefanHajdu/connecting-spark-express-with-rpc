@@ -57,6 +57,19 @@ export abstract class Node {
         this.submitted = params.submitted ? params.submitted : false;
     }
 
+    public updateParent(params: any) {
+        this.title = params.title ? params.title : this.title;
+        this.colsInNode = params.colsInNode ? params.colsInDf : this.colsInNode;
+        this.colsInTransform = params.colsInTransform ? params.colsInTransform : this.colsInTransform;
+        this.uuid = params.uuid ? params.uuid : this.uuid;
+        this.nodeType = params.nodeType ? params.nodeType : this.nodeType;
+        this.colsAdded = params.colsAdded ? params.colsAdded : this.colsAdded;
+        this.colsUsed = params.colsUsed ? params.colsUsed : this.colsUsed;
+        this.active = params.active ? params.active : this.active;
+        this.invalidState = params.invalidState ? params.invalidState : this.invalidState;
+        this.submitted = params.submitted ? params.submitted : this.submitted;
+    }
+
     public setInvalidState(value: boolean, description: string) {
         this.invalidState = { value: value, description: description };
     }
@@ -82,6 +95,7 @@ export abstract class Node {
     }
 
     public abstract setNodeParams(params: any): void;
+    public abstract update(params: any): void;
     public abstract submit(params: any): Promise<boolean>;
     public abstract getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any;
     public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
@@ -99,6 +113,11 @@ export class LoadNode extends Node {
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
         this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
+    }
+
+    update(params: any): void {
+        this.updateParent(params);
+        this.userInput = params.userInput ? params.userInput : this.userInput;
     }
 
     getClassSnapshot(): LoadNodeSnapshot {
@@ -157,211 +176,211 @@ export class LoadNode extends Node {
     }
 }
 
-export class AddColumnNode extends Node {
-    expressions: any[];
+// export class AddColumnNode extends Node {
+//     expressions: any[];
 
-    constructor(title: string, colsInDf: Column[]) {
-        super(title, colsInDf);
-        this.nodeType = "sql";
-        this.expressions = [];
-    }
+//     constructor(title: string, colsInDf: Column[]) {
+//         super(title, colsInDf);
+//         this.nodeType = "sql";
+//         this.expressions = [];
+//     }
 
-    getClassSnapshot(): NodeSnapshot | any {}
+//     getClassSnapshot(): NodeSnapshot | any {}
 
-    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-        return {
-            analysisId: analysisId,
-            nodeUuid: nodesInAnalysis[nodeIndex].uuid,
-            prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-            expressions: this.expressions,
-            nodesInAnalysis: nodesInAnalysis,
-            nodeIndex: nodeIndex,
-        };
-    }
+//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+//         return {
+//             analysisId: analysisId,
+//             nodeUuid: nodesInAnalysis[nodeIndex].uuid,
+//             prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+//             expressions: this.expressions,
+//             nodesInAnalysis: nodesInAnalysis,
+//             nodeIndex: nodeIndex,
+//         };
+//     }
 
-    setNodeParams(params: any): void {}
+//     setNodeParams(params: any): void {}
 
-    async submit(params: any): Promise<boolean> {
-        let transformRes: SparkTransformResponse = await this.submitTransform({
-            session_id: params.analysisId,
-            node_id: params.nodeUuid,
-            prev_node_id: params.prevNodeUuid,
-            expressions: params.expressions,
-        });
-        if (transformRes) {
-            this.parseTransformResponse(transformRes, { expressions: params.expressions });
-            syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
-            return true;
-        } else {
-            return false;
-        }
-    }
+//     async submit(params: any): Promise<boolean> {
+//         let transformRes: SparkTransformResponse = await this.submitTransform({
+//             session_id: params.analysisId,
+//             node_id: params.nodeUuid,
+//             prev_node_id: params.prevNodeUuid,
+//             expressions: params.expressions,
+//         });
+//         if (transformRes) {
+//             this.parseTransformResponse(transformRes, { expressions: params.expressions });
+//             syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
+//             return true;
+//         } else {
+//             return false;
+//         }
+//     }
 
-    async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
-            ...params,
-            expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
-        });
-        return transformResponse;
-    }
+//     async submitTransform(params: any): Promise<SparkTransformResponse> {
+//         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
+//             ...params,
+//             expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
+//         });
+//         return transformResponse;
+//     }
 
-    parseTransformResponse(res: SparkTransformResponse, params?: any) {
-        this.colsInTransform = this.colsInNode = res.columns;
-        this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
-        this.colsUsed = new Set(
-            params.expressions
-                .flatMap((expr: Expression) => {
-                    return expr.params
-                        .filter((param: Param) => {
-                            return param.valueField.source === "col" || param.valueField.source === "cols";
-                        })
-                        .map((param: Param) => {
-                            if (param.valueField.source === "cols") {
-                                return typeof param.valueField.value === "string"
-                                    ? param.valueField.value.split(",")
-                                    : undefined;
-                            } else {
-                                return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
-                            }
-                        });
-                })
-                .flat(),
-        );
-        this.expressions = params.expressions;
-    }
+//     parseTransformResponse(res: SparkTransformResponse, params?: any) {
+//         this.colsInTransform = this.colsInNode = res.columns;
+//         this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
+//         this.colsUsed = new Set(
+//             params.expressions
+//                 .flatMap((expr: Expression) => {
+//                     return expr.params
+//                         .filter((param: Param) => {
+//                             return param.valueField.source === "col" || param.valueField.source === "cols";
+//                         })
+//                         .map((param: Param) => {
+//                             if (param.valueField.source === "cols") {
+//                                 return typeof param.valueField.value === "string"
+//                                     ? param.valueField.value.split(",")
+//                                     : undefined;
+//                             } else {
+//                                 return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
+//                             }
+//                         });
+//                 })
+//                 .flat(),
+//         );
+//         this.expressions = params.expressions;
+//     }
 
-    isInvalid(force: boolean, prevNode?: Node): boolean {
-        if (force) {
-            this.setInvalidState(true, "Invalid schema upstream");
-            return true;
-        }
+//     isInvalid(force: boolean, prevNode?: Node): boolean {
+//         if (force) {
+//             this.setInvalidState(true, "Invalid schema upstream");
+//             return true;
+//         }
 
-        if (prevNode) {
-            // invalid if node uses columns that are not present in prev node
-            const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
-            if (diff.size > 0) {
-                this.invalidState = {
-                    value: true,
-                    description: `Missing or renamed columns: [${[...diff].join(", ")}], please manually fix and submit node`,
-                };
-                return true;
-            }
-        }
+//         if (prevNode) {
+//             // invalid if node uses columns that are not present in prev node
+//             const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
+//             if (diff.size > 0) {
+//                 this.invalidState = {
+//                     value: true,
+//                     description: `Missing or renamed columns: [${[...diff].join(", ")}], please manually fix and submit node`,
+//                 };
+//                 return true;
+//             }
+//         }
 
-        return false;
-    }
-}
+//         return false;
+//     }
+// }
 
-class FilterNode extends Node {
-    constructor(title: string, colsInDf: Column[]) {
-        super(title, colsInDf);
-        this.nodeType = "sql";
-    }
+// class FilterNode extends Node {
+//     constructor(title: string, colsInDf: Column[]) {
+//         super(title, colsInDf);
+//         this.nodeType = "sql";
+//     }
 
-    getClassSnapshot(): NodeSnapshot | any {}
+//     getClassSnapshot(): NodeSnapshot | any {}
 
-    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-        return {};
-    }
+//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+//         return {};
+//     }
 
-    setNodeParams(params: any): void {}
+//     setNodeParams(params: any): void {}
 
-    async submit(params: any): Promise<boolean> {
-        return true;
-    }
+//     async submit(params: any): Promise<boolean> {
+//         return true;
+//     }
 
-    async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("/filter", {
-            session_id: params.analysisId,
-            node_id: params.nodeId,
-            prev_node_id: params.prevNodeId,
-        });
-        return transformResponse;
-    }
+//     async submitTransform(params: any): Promise<SparkTransformResponse> {
+//         let transformResponse = fetchSparkApi("/filter", {
+//             session_id: params.analysisId,
+//             node_id: params.nodeId,
+//             prev_node_id: params.prevNodeId,
+//         });
+//         return transformResponse;
+//     }
 
-    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 
-    isInvalid(force: boolean, prevNode?: Node): boolean {
-        if (force) {
-            this.setInvalidState(true, "invalid schema");
-            return true;
-        }
-        return false;
-    }
-}
+//     isInvalid(force: boolean, prevNode?: Node): boolean {
+//         if (force) {
+//             this.setInvalidState(true, "invalid schema");
+//             return true;
+//         }
+//         return false;
+//     }
+// }
 
-class JoinNode extends Node {
-    constructor(title: string, colsInDf: Column[]) {
-        super(title, colsInDf);
-        this.nodeType = "sql";
-    }
+// class JoinNode extends Node {
+//     constructor(title: string, colsInDf: Column[]) {
+//         super(title, colsInDf);
+//         this.nodeType = "sql";
+//     }
 
-    getClassSnapshot(): NodeSnapshot | any {}
+//     getClassSnapshot(): NodeSnapshot | any {}
 
-    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-        return {};
-    }
+//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+//         return {};
+//     }
 
-    setNodeParams(params: any): void {}
+//     setNodeParams(params: any): void {}
 
-    async submit(params: any): Promise<boolean> {
-        return true;
-    }
+//     async submit(params: any): Promise<boolean> {
+//         return true;
+//     }
 
-    async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("/join", {
-            session_id: params.analysisId,
-            node_id: params.nodeId,
-            prev_node_id: params.prevNodeId,
-        });
-        return transformResponse;
-    }
+//     async submitTransform(params: any): Promise<SparkTransformResponse> {
+//         let transformResponse = fetchSparkApi("/join", {
+//             session_id: params.analysisId,
+//             node_id: params.nodeId,
+//             prev_node_id: params.prevNodeId,
+//         });
+//         return transformResponse;
+//     }
 
-    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 
-    isInvalid(force: boolean, prevNode?: Node): boolean {
-        if (force) {
-            this.setInvalidState(true, "invalid schema");
-            return true;
-        }
-        return false;
-    }
-}
+//     isInvalid(force: boolean, prevNode?: Node): boolean {
+//         if (force) {
+//             this.setInvalidState(true, "invalid schema");
+//             return true;
+//         }
+//         return false;
+//     }
+// }
 
-class TableNode extends Node {
-    constructor(title: string, colsInDf: Column[]) {
-        super(title, colsInDf);
-        this.nodeType = "visualization";
-    }
+// class TableNode extends Node {
+//     constructor(title: string, colsInDf: Column[]) {
+//         super(title, colsInDf);
+//         this.nodeType = "visualization";
+//     }
 
-    getClassSnapshot(): NodeSnapshot | any {}
+//     getClassSnapshot(): NodeSnapshot | any {}
 
-    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-        return {};
-    }
+//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+//         return {};
+//     }
 
-    setNodeParams(params: any): void {}
+//     setNodeParams(params: any): void {}
 
-    async submit(params: any): Promise<boolean> {
-        return true;
-    }
+//     async submit(params: any): Promise<boolean> {
+//         return true;
+//     }
 
-    async submitTransform(params: any): Promise<SparkTransformResponse> {
-        let transformResponse = fetchSparkApi("/table", {
-            session_id: params.analysisId,
-            node_id: params.nodeId,
-            prev_node_id: params.prevNodeId,
-        });
-        return transformResponse;
-    }
+//     async submitTransform(params: any): Promise<SparkTransformResponse> {
+//         let transformResponse = fetchSparkApi("/table", {
+//             session_id: params.analysisId,
+//             node_id: params.nodeId,
+//             prev_node_id: params.prevNodeId,
+//         });
+//         return transformResponse;
+//     }
 
-    parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
 
-    isInvalid(force: boolean, prevNode?: Node): boolean {
-        if (force) {
-            this.setInvalidState(true, "invalid schema");
-            return true;
-        }
-        return false;
-    }
-}
+//     isInvalid(force: boolean, prevNode?: Node): boolean {
+//         if (force) {
+//             this.setInvalidState(true, "invalid schema");
+//             return true;
+//         }
+//         return false;
+//     }
+// }

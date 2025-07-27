@@ -2,13 +2,13 @@
 import { Label, Input, Modal, Button } from "flowbite-svelte";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
-import { Analysis, saveAnalysesToLocalStorage } from "./AnalysisClass.svelte";
+import { AnalysisSession, saveAnalysesToLocalStorage } from "./AnalysisSessionClass.svelte";
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
 
 async function initNewAnalysis() {
-    let newAnalysis = new Analysis({ name: name, selected: true });
+    let newAnalysis = new AnalysisSession({ name: name, selected: true });
 
     let createSessionResponse = await fetchSparkApi("/rpc/session/create", {
         id: newAnalysis.id,

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { Analysis } from "../../Analysis/AnalysisClass.svelte";
+import { AnalysisSession, saveAnalysesToLocalStorage } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
 import { tryRestoreNodes } from "$lib/utils";
@@ -9,7 +9,7 @@ import { tryRestoreNodes } from "$lib/utils";
 interface Props {
     name: string;
     color: ButtonColor;
-    analyses: Analysis[];
+    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
 }
@@ -52,6 +52,7 @@ async function submit() {
 
     if (submitSuccessful) {
         loadDatasetModal = false;
+        saveAnalysesToLocalStorage(analyses);
     }
 
     await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, nodeIndex + 1);
