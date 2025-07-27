@@ -66,7 +66,6 @@ export abstract class Node {
     }
 
     public getSnapshot(): NodeSnapshot {
-        // todo: Set() needs special serialization, in local storage it is represented and Object not Set
         return {
             uuid: $state.snapshot(this.uuid),
             title: $state.snapshot(this.title),
