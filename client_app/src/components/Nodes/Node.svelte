@@ -42,6 +42,7 @@ $effect(() => {
     }
 });
 
+// event
 function insertNextNode(nodeType: string) {
     let nextNode = nodeFactory({
         title: nodeType,
@@ -53,6 +54,7 @@ function insertNextNode(nodeType: string) {
     newNodeDropdownOpen = false;
 }
 
+// event
 async function removeNode(apiInvolved: boolean) {
     // todo: cannot remove node that is not present on backend
     if (apiInvolved) {
@@ -69,17 +71,7 @@ async function removeNode(apiInvolved: boolean) {
     optionsOpen = false;
 }
 
-function previewNode() {
-    preview(analyses[analysisIndex].id, analyses[analysisIndex].nodes[nodeIndex].uuid);
-}
-
-function summarizeNode() {
-    summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
-        session_id: analyses[analysisIndex].id,
-        node_id: analyses[analysisIndex].nodes[nodeIndex].uuid,
-    });
-}
-
+// event
 async function toggleNode(apiInvolved: boolean) {
     if (activeNodeStatus) {
         // enabled => disabled
@@ -131,6 +123,17 @@ async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Pro
         }
     };
     await wrapped();
+}
+
+function previewNode() {
+    preview(analyses[analysisIndex].id, analyses[analysisIndex].nodes[nodeIndex].uuid);
+}
+
+function summarizeNode() {
+    summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
+        session_id: analyses[analysisIndex].id,
+        node_id: analyses[analysisIndex].nodes[nodeIndex].uuid,
+    });
 }
 </script>
 

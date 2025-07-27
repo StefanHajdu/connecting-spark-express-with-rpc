@@ -132,7 +132,7 @@ export class LoadNode extends Node {
     }
 
     async submitTransform(params: any): Promise<SparkTransformResponse> {
-        // transform {kind: "csv", session_id: "", path: "", ...} to {session_id: "", csv: {path: ""}}, it looks better in request body
+        // transform {kind: "csv", session_id: "", path: "", ...} to {session_id: "", csv: {path: "", ...}}, it looks better in request body
         let inputType = params.kind;
         let sessionId = params.session_id;
         delete params.kind;
