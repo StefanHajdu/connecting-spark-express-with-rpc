@@ -37,7 +37,7 @@ export abstract class Node {
     title: string = $state("");
     nodeType: string = $state("");
     colsAdded: Set<string> = $state(new Set([])); // column names added by node
-    colsUsed: Set<string | undefined> = $state(new Set([])); // column names used by node
+    colsUsed: Set<string> = $state(new Set([])); // column names used by node
     colsInNode: Column[] = $state([]);
     colsInTransform: Column[] = $state([]);
     active: boolean = $state(true);
@@ -50,24 +50,11 @@ export abstract class Node {
         this.colsInTransform = params.colsInTransform ? params.colsInTransform : params.colsInNode;
         this.uuid = params.uuid ? params.uuid : "node-" + uuidv4();
         this.nodeType = params.nodeType ? params.nodeType : "";
-        this.colsAdded = params.colsAdded ? params.colsAdded : new Set([]);
-        this.colsUsed = params.colsUsed ? params.colsUsed : new Set([]);
+        this.colsAdded = params.colsAdded ? new Set(params.colsAdded) : new Set([]);
+        this.colsUsed = params.colsUsed ? new Set(params.colsUsed) : new Set([]);
         this.active = params.active ? params.active : true;
         this.invalidState = params.invalidState ? params.invalidState : { value: false, description: "" };
         this.submitted = params.submitted ? params.submitted : false;
-    }
-
-    public updateParent(params: any) {
-        this.title = params.title ? params.title : this.title;
-        this.colsInNode = params.colsInNode ? params.colsInDf : this.colsInNode;
-        this.colsInTransform = params.colsInTransform ? params.colsInTransform : this.colsInTransform;
-        this.uuid = params.uuid ? params.uuid : this.uuid;
-        this.nodeType = params.nodeType ? params.nodeType : this.nodeType;
-        this.colsAdded = params.colsAdded ? params.colsAdded : this.colsAdded;
-        this.colsUsed = params.colsUsed ? params.colsUsed : this.colsUsed;
-        this.active = params.active ? params.active : this.active;
-        this.invalidState = params.invalidState ? params.invalidState : this.invalidState;
-        this.submitted = params.submitted ? params.submitted : this.submitted;
     }
 
     public setInvalidState(value: boolean, description: string) {
@@ -84,8 +71,8 @@ export abstract class Node {
             uuid: $state.snapshot(this.uuid),
             title: $state.snapshot(this.title),
             nodeType: $state.snapshot(this.nodeType),
-            colsAdded: $state.snapshot(this.colsAdded),
-            colsUsed: $state.snapshot(this.colsUsed),
+            colsAdded: $state.snapshot(Array.from(this.colsAdded)),
+            colsUsed: $state.snapshot(Array.from(this.colsUsed)),
             colsInNode: $state.snapshot(this.colsInNode),
             colsInTransform: $state.snapshot(this.colsInTransform),
             active: $state.snapshot(this.active),
@@ -94,8 +81,7 @@ export abstract class Node {
         };
     }
 
-    public abstract setNodeParams(params: any): void;
-    public abstract update(params: any): void;
+    public abstract setUserInput(params: any): void;
     public abstract submit(params: any): Promise<boolean>;
     public abstract getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any;
     public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
@@ -115,11 +101,6 @@ export class LoadNode extends Node {
         this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
     }
 
-    update(params: any): void {
-        this.updateParent(params);
-        this.userInput = params.userInput ? params.userInput : this.userInput;
-    }
-
     getClassSnapshot(): LoadNodeSnapshot {
         return {
             ...this.getSnapshot(),
@@ -131,7 +112,7 @@ export class LoadNode extends Node {
         return {};
     }
 
-    setNodeParams(params: any): void {
+    setUserInput(params: any): void {
         this.userInput = {
             kind: params.inputType,
             ...params.userInput,

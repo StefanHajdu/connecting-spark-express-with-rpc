@@ -89,8 +89,8 @@ export interface NodeSnapshot {
     uuid: string;
     title: string;
     nodeType: string;
-    colsAdded: Set<string>;
-    colsUsed: Set<string | undefined>;
+    colsAdded: string[];
+    colsUsed: string[];
     colsInNode: Column[];
     colsInTransform: Column[];
     active: boolean;

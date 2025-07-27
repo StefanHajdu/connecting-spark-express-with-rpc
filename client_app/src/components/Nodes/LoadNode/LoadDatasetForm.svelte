@@ -44,7 +44,7 @@ async function submit() {
     loadInProgress = true;
     let userInput = getNodeUserInput(inputType);
 
-    analyses[analysisIndex].nodes[nodeIndex].setNodeParams({ inputType: inputType, userInput: userInput });
+    analyses[analysisIndex].nodes[nodeIndex].setUserInput({ inputType: inputType, userInput: userInput });
     let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
         session_id: analyses[analysisIndex].id,
         ...userInput,
