@@ -1,6 +1,6 @@
 import { Node } from "../components/Nodes/NodeClass.svelte.js";
 
-export interface Analysis {
+export interface IAnalysis {
     id: string;
     name: string;
     status: string;
@@ -115,5 +115,5 @@ export interface IParquetMetadata {
 }
 
 export interface LoadNodeSnapshot extends NodeSnapshot {
-    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata;
+    userInput: ICsvMetadata | IJsonMetadata | IParquetMetadata;
 }

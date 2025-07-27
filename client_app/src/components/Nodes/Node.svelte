@@ -3,7 +3,8 @@ import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle 
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
 import { tryRestoreNodes, syncOutRemovedColumns } from "$lib/utils";
-import type { SparkTransformResponse, Analysis } from "$lib/dtype";
+import type { SparkTransformResponse } from "$lib/dtype";
+import { Analysis } from "../Analysis/AnalysisClass.svelte";
 import { nodeFactory } from "./NodeClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";

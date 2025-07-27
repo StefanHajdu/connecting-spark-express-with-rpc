@@ -2,7 +2,7 @@
 import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "../PreviewFooter.svelte";
 import Node from "../Nodes/Node.svelte";
-import type { Analysis } from "$lib/dtype";
+import type { Analysis } from "./AnalysisClass.svelte";
 
 interface Props {
     analyses: Analysis[];

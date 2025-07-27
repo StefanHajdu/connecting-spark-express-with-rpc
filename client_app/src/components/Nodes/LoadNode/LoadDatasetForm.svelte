@@ -1,9 +1,10 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { tryRestoreNodes } from "$lib/utils";
+import { Analysis } from "../../Analysis/AnalysisClass.svelte";
+import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
-import type { Analysis, ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
+import { tryRestoreNodes } from "$lib/utils";
 
 interface Props {
     name: string;
@@ -29,7 +30,7 @@ let jsonMultiline: boolean = $state(true);
 
 let loadInProgress = $state(false);
 
-function getInputMetadata(inputType: string): ICsvMetadata | IJsonMetadata | IParquetMetadata {
+function getNodeUserInput(inputType: string): ICsvMetadata | IJsonMetadata | IParquetMetadata {
     return inputType === "csv"
         ? { kind: "csv", delimiter: csvDelimiter, include_header: csvIncludeHeader, path: datasetPath }
         : inputType === "json"
@@ -41,12 +42,12 @@ function getInputMetadata(inputType: string): ICsvMetadata | IJsonMetadata | IPa
 
 async function submit() {
     loadInProgress = true;
-    let inputMetadata = getInputMetadata(inputType);
+    let userInput = getNodeUserInput(inputType);
 
-    analyses[analysisIndex].nodes[nodeIndex].setNodeParams({ inputType: inputType, inputMetadata: inputMetadata });
+    analyses[analysisIndex].nodes[nodeIndex].setNodeParams({ inputType: inputType, userInput: userInput });
     let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
         session_id: analyses[analysisIndex].id,
-        ...inputMetadata,
+        ...userInput,
     });
 
     if (submitSuccessful) {

@@ -1,5 +1,5 @@
-import { Node, nodeFactory } from "../components/Nodes/NodeClass.svelte";
-import { type Expression, type Column, type Analysis } from "./dtype";
+import { Node } from "../components/Nodes/NodeClass.svelte";
+import type { Expression, Column, IAnalysis } from "./dtype";
 
 export function sleepNow(delay: number) {
     new Promise((resolve) => setTimeout(resolve, delay * 1000));
@@ -90,15 +90,4 @@ export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[
             nodesInAnalysis[i].setInvalidState(false, "");
         }
     }
-}
-
-export function rehydrateAnalysesFromRaw(analysesRaw: Analysis[]): Analysis[] {
-    return analysesRaw.map((analysisRaw) => {
-        return {
-            ...analysisRaw,
-            nodes: analysisRaw.nodes.map((nodeRaw) => {
-                return nodeFactory({ ...nodeRaw });
-            }),
-        };
-    });
 }

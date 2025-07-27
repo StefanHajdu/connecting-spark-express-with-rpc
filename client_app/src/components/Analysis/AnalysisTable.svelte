@@ -12,13 +12,13 @@ import {
 import { AnalysisC } from "./AnalysisClass.svelte";
 
 interface Props {
-    analyses: AnalysisC[];
+    persistedAnalyses: AnalysisC[];
 }
 
-let { analyses = $bindable() }: Props = $props();
+let { persistedAnalyses = $bindable() }: Props = $props();
 
 let globalCheck = $derived.by(() => {
-    return analyses.every((a) => a.selected);
+    return persistedAnalyses.every((a) => a.selected);
 });
 
 function checkboxAnalyses(analyses: AnalysisC[], flag: boolean): void {
@@ -40,7 +40,7 @@ function checkboxAnalyses(analyses: AnalysisC[], flag: boolean): void {
                     checked={globalCheck}
                     onchange={() => {
                         globalCheck = !globalCheck;
-                        checkboxAnalyses(analyses, globalCheck);
+                        checkboxAnalyses(persistedAnalyses, globalCheck);
                     }} />
             </form>
         </TableHeadCell>
@@ -53,7 +53,7 @@ function checkboxAnalyses(analyses: AnalysisC[], flag: boolean): void {
     </TableHead>
 
     <TableBody tableBodyClass="divide-y">
-        {#each analyses as analysis}
+        {#each persistedAnalyses as analysis, i (analysis.id)}
             <TableBodyRow>
                 <TableBodyCell class="p-4!">
                     <form autocomplete="off">

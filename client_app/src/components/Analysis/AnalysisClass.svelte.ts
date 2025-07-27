@@ -1,8 +1,10 @@
 import type { AnalysisSnapshot } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
+import type { IAnalysis } from "../../lib/dtype";
+import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
-export class AnalysisC {
+export class Analysis {
     id: string = $state("");
     name: string = $state("");
     status: string = $state("");
@@ -51,4 +53,22 @@ export class AnalysisC {
             nodes: this.nodes.map((node) => node.getClassSnapshot()),
         };
     }
+}
+
+export function rehydrateAnalysesFromLocalStorage(analysesRaw: IAnalysis[]): Analysis[] {
+    return analysesRaw.map((analysisRaw) => {
+        return new Analysis({
+            ...analysisRaw,
+            nodes: analysisRaw.nodes.map((nodeRaw) => {
+                return nodeFactory({ ...nodeRaw });
+            }),
+        });
+    });
+}
+
+export function saveAnalysesToLocalStorage(analyses: Analysis[]): void {
+    toLocalStorage(
+        LS_KEY_ANALYSES,
+        analyses.map((analysis) => analysis.getSnapshot()),
+    );
 }

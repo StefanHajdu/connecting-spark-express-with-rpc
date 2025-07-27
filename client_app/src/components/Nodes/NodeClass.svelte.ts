@@ -91,20 +91,20 @@ export abstract class Node {
 }
 
 export class LoadNode extends Node {
-    inputMetadata: ICsvMetadata | IJsonMetadata | IParquetMetadata = $state({ kind: "parquet", path: "" });
+    userInput: ICsvMetadata | IJsonMetadata | IParquetMetadata = $state({ kind: "parquet", path: "" });
 
     constructor(params: any) {
         super(params);
 
         this.uuid = MASTER_NODE_ID;
         this.nodeType = "load";
-        this.inputMetadata = params.inputMetadata ? params.inputMetadata : { kind: "parquet", path: "" };
+        this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
     }
 
     getClassSnapshot(): LoadNodeSnapshot {
         return {
             ...this.getSnapshot(),
-            inputMetadata: this.inputMetadata,
+            userInput: this.userInput,
         };
     }
 
@@ -113,9 +113,9 @@ export class LoadNode extends Node {
     }
 
     setNodeParams(params: any): void {
-        this.inputMetadata = {
+        this.userInput = {
             kind: params.inputType,
-            ...params.inputMetadata,
+            ...params.userInput,
         };
     }
 

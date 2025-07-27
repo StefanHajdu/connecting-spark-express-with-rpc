@@ -4,11 +4,15 @@ import Footer from "../components/Footer.svelte";
 import NewAnalysisForm from "../components/Analysis/NewAnalysisForm.svelte";
 import AnalysisTable from "../components/Analysis/AnalysisTable.svelte";
 import { analysesMock } from "$lib/analysesMock";
-import { AnalysisC } from "../components/Analysis/AnalysisClass.svelte";
+import { Analysis } from "../components/Analysis/AnalysisClass.svelte";
 
-let analyses = analysesMock.analyses.map((mocked: any) => {
-    return new AnalysisC(mocked);
-});
+let persistedAnalyses = $state(
+    analysesMock.analyses.map((mocked: any) => {
+        return new Analysis(mocked);
+    }),
+);
+
+$inspect(persistedAnalyses);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -16,10 +20,10 @@ let analyses = analysesMock.analyses.map((mocked: any) => {
 
     <main class="bg-white-500 space-y-4 p-4">
         <div>
-            <NewAnalysisForm bind:analyses={analyses} />
+            <NewAnalysisForm />
         </div>
         <div>
-            <AnalysisTable bind:analyses={analyses} />
+            <AnalysisTable bind:persistedAnalyses={persistedAnalyses} />
         </div>
     </main>
 

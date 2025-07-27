@@ -4,12 +4,12 @@ import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
 import type { PageProps } from "./$types";
-import { rehydrateAnalysesFromRaw } from "$lib/utils";
+import { rehydrateAnalysesFromLocalStorage } from "../../components/Analysis/AnalysisClass.svelte";
 
 let { data }: PageProps = $props();
-let analyses = $state(browser ? rehydrateAnalysesFromRaw(data.analysesRaw) : []);
+let analyses = $state(browser ? rehydrateAnalysesFromLocalStorage(data.analysesRaw) : []);
 
-$inspect("from /analyses load", analyses);
+$inspect("from /analyses", analyses);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
