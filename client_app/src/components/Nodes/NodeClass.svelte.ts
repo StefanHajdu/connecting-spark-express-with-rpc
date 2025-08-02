@@ -12,7 +12,8 @@ import type {
     LoadNodeSnapshot,
 } from "$lib/dtype";
 import { fetchSparkApi } from "$lib/clientApi";
-import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/utils";
+// import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/utils";
+import { compileExprObj } from "$lib/utils";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -23,8 +24,8 @@ export function nodeFactory(params: any): Node {
         //     return new FilterNode(params);
         // } else if (params.title.toLowerCase() === "join") {
         //     return new JoinNode(params);
-        // } else if (params.title.toLowerCase() === "add column") {
-        //     return new AddColumnNode(params);
+    } else if (params.title.toLowerCase() === "add column") {
+        return new AddColumnNode(params);
         // } else if (params.title.toLowerCase() === "table") {
         //     return new TableNode(params);
     } else {
@@ -35,6 +36,7 @@ export function nodeFactory(params: any): Node {
 export abstract class Node {
     id: string = $state("");
     title: string = $state("");
+    nodeType: string = $state("");
     prevNodeId: string = $state("");
     columnsOnNodeInput: Column[] = $state([]);
     columnsOnNodeOutput: Column[] = $state([]);
@@ -57,14 +59,11 @@ export abstract class Node {
         this.invalidState = { value: value, description: description };
     }
 
-    public colsToSet(cols: Column[]): Set<string> {
-        return new Set(cols.map((col) => col.name));
-    }
-
     public getSnapshot(): NodeSnapshot {
         return {
             uuid: $state.snapshot(this.id),
             title: $state.snapshot(this.title),
+            nodeType: $state.snapshot(this.nodeType),
             prevNodeId: $state.snapshot(this.prevNodeId),
             columnsOnNodeInput: $state.snapshot(this.columnsOnNodeInput),
             columnsOnNodeOutput: $state.snapshot(this.columnsOnNodeOutput),
@@ -75,9 +74,10 @@ export abstract class Node {
     }
 
     public abstract submit(params: any): Promise<boolean>;
+    public abstract setUserInput(params: any): void;
     public abstract fetchTransform(params: any): Promise<SparkTransformResponse>;
     public abstract isInvalid(force: boolean, prevNode?: Node): boolean;
-    public abstract getClassSnapshot(): NodeSnapshot | any;
+    public abstract getNodeSnapshot(): NodeSnapshot | any;
 }
 
 export class LoadNode extends Node {
@@ -87,10 +87,11 @@ export class LoadNode extends Node {
         super(params);
 
         this.id = MASTER_NODE_ID;
+        this.nodeType = "input";
         this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
     }
 
-    getClassSnapshot(): LoadNodeSnapshot {
+    getNodeSnapshot(): LoadNodeSnapshot {
         return {
             ...this.getSnapshot(),
             userInput: this.userInput,
@@ -105,10 +106,10 @@ export class LoadNode extends Node {
     }
 
     async submit(params: any): Promise<boolean> {
-        let transformRes = await this.fetchTransform(params);
+        let transformResponse = await this.fetchTransform(params);
 
-        if (transformRes) {
-            this.columnsOnNodeInput = this.columnsOnNodeOutput = transformRes.columns;
+        if (transformResponse) {
+            this.columnsOnNodeOutput = transformResponse.columns;
             this.submitted = true;
             return true;
         } else {
@@ -137,100 +138,103 @@ export class LoadNode extends Node {
     }
 }
 
-// export class AddColumnNode extends Node {
-//     expressions: any[];
+export class AddColumnNode extends Node {
+    expressions: any[];
 
-//     constructor(title: string, colsInDf: Column[]) {
-//         super(title, colsInDf);
-//         this.nodeType = "sql";
-//         this.expressions = [];
-//     }
+    constructor(params: any) {
+        super(params);
+        this.nodeType = "transform";
+        this.expressions = [];
+    }
 
-//     getClassSnapshot(): NodeSnapshot | any {}
+    getNodeSnapshot(): any {
+        return {};
+    }
 
-//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-//         return {
-//             analysisId: analysisId,
-//             nodeUuid: nodesInAnalysis[nodeIndex].uuid,
-//             prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-//             expressions: this.expressions,
-//             nodesInAnalysis: nodesInAnalysis,
-//             nodeIndex: nodeIndex,
-//         };
-//     }
+    // getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
+    //     return {
+    //         analysisId: analysisId,
+    //         nodeUuid: nodesInAnalysis[nodeIndex].uuid,
+    //         prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+    //         expressions: this.expressions,
+    //         nodesInAnalysis: nodesInAnalysis,
+    //         nodeIndex: nodeIndex,
+    //     };
+    // }
 
-//     setNodeParams(params: any): void {}
+    setUserInput(params: any): void {
+        this.expressions = params;
+    }
 
-//     async submit(params: any): Promise<boolean> {
-//         let transformRes: SparkTransformResponse = await this.submitTransform({
-//             session_id: params.analysisId,
-//             node_id: params.nodeUuid,
-//             prev_node_id: params.prevNodeUuid,
-//             expressions: params.expressions,
-//         });
-//         if (transformRes) {
-//             this.parseTransformResponse(transformRes, { expressions: params.expressions });
-//             syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
-//             return true;
-//         } else {
-//             return false;
-//         }
-//     }
+    async submit(params: any): Promise<boolean> {
+        let transformResponse = await this.fetchTransform({
+            session_id: params.analysisId,
+            node_id: params.nodeUuid,
+            prev_node_id: params.prevNodeUuid,
+            expressions: params.expressions,
+        });
+        if (transformResponse) {
+            this.columnsOnNodeOutput = transformResponse.columns;
+            // this.parseTransformResponse(transformRes, { expressions: params.expressions });
+            // syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-//     async submitTransform(params: any): Promise<SparkTransformResponse> {
-//         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
-//             ...params,
-//             expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
-//         });
-//         return transformResponse;
-//     }
+    async fetchTransform(params: any): Promise<SparkTransformResponse> {
+        let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
+            ...params,
+            expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
+        });
+        return transformResponse;
+    }
 
-//     parseTransformResponse(res: SparkTransformResponse, params?: any) {
-//         this.colsInTransform = this.colsInNode = res.columns;
-//         this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
-//         this.colsUsed = new Set(
-//             params.expressions
-//                 .flatMap((expr: Expression) => {
-//                     return expr.params
-//                         .filter((param: Param) => {
-//                             return param.valueField.source === "col" || param.valueField.source === "cols";
-//                         })
-//                         .map((param: Param) => {
-//                             if (param.valueField.source === "cols") {
-//                                 return typeof param.valueField.value === "string"
-//                                     ? param.valueField.value.split(",")
-//                                     : undefined;
-//                             } else {
-//                                 return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
-//                             }
-//                         });
-//                 })
-//                 .flat(),
-//         );
-//         this.expressions = params.expressions;
-//     }
+    parseTransformResponse(res: SparkTransformResponse, params?: any) {
+        // this.colsAdded = new Set(params.expressions.map((expr: Expression) => expr.newColumnName));
+        // this.colsUsed = new Set(
+        //     params.expressions
+        //         .flatMap((expr: Expression) => {
+        //             return expr.params
+        //                 .filter((param: Param) => {
+        //                     return param.valueField.source === "col" || param.valueField.source === "cols";
+        //                 })
+        //                 .map((param: Param) => {
+        //                     if (param.valueField.source === "cols") {
+        //                         return typeof param.valueField.value === "string"
+        //                             ? param.valueField.value.split(",")
+        //                             : undefined;
+        //                     } else {
+        //                         return typeof param.valueField.value === "string" ? param.valueField.value : undefined;
+        //                     }
+        //                 });
+        //         })
+        //         .flat(),
+        // );
+    }
 
-//     isInvalid(force: boolean, prevNode?: Node): boolean {
-//         if (force) {
-//             this.setInvalidState(true, "Invalid schema upstream");
-//             return true;
-//         }
+    isInvalid(force: boolean, prevNode?: Node): boolean {
+        if (force) {
+            this.setInvalidState(true, "Invalid state was forced.");
+            return true;
+        }
 
-//         if (prevNode) {
-//             // invalid if node uses columns that are not present in prev node
-//             const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
-//             if (diff.size > 0) {
-//                 this.invalidState = {
-//                     value: true,
-//                     description: `Missing or renamed columns: [${[...diff].join(", ")}], please manually fix and submit node`,
-//                 };
-//                 return true;
-//             }
-//         }
+        // if (prevNode) {
+        //     // invalid if node uses columns that are not present in prev node
+        //     const diff = this.colsUsed.difference(this.colsToSet(prevNode.colsInNode));
+        //     if (diff.size > 0) {
+        //         this.invalidState = {
+        //             value: true,
+        //             description: `Missing or renamed columns: [${[...diff].join(", ")}], please manually fix and submit node`,
+        //         };
+        //         return true;
+        //     }
+        // }
 
-//         return false;
-//     }
-// }
+        return false;
+    }
+}
 
 // class FilterNode extends Node {
 //     constructor(title: string, colsInDf: Column[]) {

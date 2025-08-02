@@ -3,24 +3,22 @@ import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from 
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
 import { v4 as uuidv4 } from "uuid";
-import { Node } from "../NodeClass.svelte";
+import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import type { Expression } from "$lib/dtype";
-import { compileExprString, tryRestoreNodes, getActivePredecessor } from "$lib/utils";
+// import { compileExprString, tryRestoreNodes, getActivePredecessor } from "$lib/utils";
+import { compileExprString } from "$lib/utils";
 
 interface Props {
-    nodesInAnalysis: Node[];
+    analyses: AnalysisSession[];
+    analysisIndex: number;
     nodeIndex: number;
-    analysisId: string;
-    activeNodeStatus: boolean;
 }
+let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 
-let { analysisId, nodesInAnalysis = $bindable(), nodeIndex, activeNodeStatus }: Props = $props();
-let node: Node = nodesInAnalysis[nodeIndex];
 let expressions: Expression[] = $state([]);
 let exprSelectionOpen = $state(false);
-let msg = $state("");
 
 function addExpression(category: string, fname: string) {
     // @ts-ignore
@@ -52,27 +50,27 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
-        analysisId: analysisId,
-        nodeUuid: nodesInAnalysis[nodeIndex].uuid,
-        prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
+    let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
+        analysisId: analyses[analysisIndex].id,
+        nodeId: analyses[analysisIndex].nodes[nodeIndex].id,
+        prevNodeId: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
         expressions: expressions,
-        nodesInAnalysis: nodesInAnalysis,
+        nodesInAnalysis: analyses[analysisIndex].nodes[nodeIndex],
         nodeIndex: nodeIndex,
     });
 
     if (submitSuccessful) {
         // invalid -> valid trigger submit on following nodes
-        if (nodesInAnalysis[nodeIndex].invalidState.value) {
-            await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
+        if (analyses[analysisIndex].nodes[nodeIndex].invalidState.value) {
+            // await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
         }
-        nodesInAnalysis[nodeIndex].setInvalidState(false, "");
+        analyses[analysisIndex].nodes[nodeIndex].setInvalidState(false, "");
     }
 }
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-    {node.title}
+    {analyses[analysisIndex].nodes[nodeIndex].title}
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as expr, i (expr.uuid)}
@@ -81,7 +79,7 @@ async function submit() {
             <ExpressionFrom
                 bind:exprs={expressions}
                 idx={i}
-                colsInPrevDf={nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].colsInNode}
+                colsInPrevDf={analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput}
                 nodeIndex={nodeIndex} />
             <div class="mt-6 ml-4">
                 <Button
@@ -162,5 +160,5 @@ async function submit() {
     </Dropdown>
 </div>
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-    <Button disabled={!activeNodeStatus} onclick={submit}>Submit</Button>
+    <Button disabled={!analyses[analysisIndex].nodes[nodeIndex].active} onclick={submit}>Submit</Button>
 </div>

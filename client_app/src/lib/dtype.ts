@@ -88,6 +88,7 @@ export interface AnalysisSnapshot {
 export interface NodeSnapshot {
     uuid: string;
     title: string;
+    nodeType: string;
     prevNodeId: string;
     columnsOnNodeInput: Column[];
     columnsOnNodeOutput: Column[];

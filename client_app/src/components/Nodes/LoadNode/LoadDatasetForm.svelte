@@ -4,7 +4,7 @@ import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { AnalysisSession, saveAnalysesToLocalStorage } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
-import { tryRestoreNodes } from "$lib/utils";
+// import { tryRestoreNodes } from "$lib/utils";
 
 interface Props {
     name: string;
@@ -55,7 +55,7 @@ async function submit() {
         saveAnalysesToLocalStorage(analyses);
     }
 
-    await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, nodeIndex + 1);
+    // await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, nodeIndex + 1);
 
     loadInProgress = false;
 }

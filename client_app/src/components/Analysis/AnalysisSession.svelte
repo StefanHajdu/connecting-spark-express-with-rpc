@@ -24,7 +24,7 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
                 <b>{analyses[analysisIndex].name}</b>
             </p>
 
-            {#each analyses[analysisIndex].nodes as node, i (node.uuid)}
+            {#each analyses[analysisIndex].nodes as node, i (node.id)}
                 <Node
                     bind:analyses={analyses}
                     analysisIndex={analysisIndex}

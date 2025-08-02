@@ -33,7 +33,7 @@ export class AnalysisSession {
             : [
                   nodeFactory({
                       title: "Load",
-                      colsInNode: [],
+                      columnsOnNodeInput: [],
                       sumitted: false,
                   }),
               ];
@@ -52,8 +52,19 @@ export class AnalysisSession {
             resources: $state.snapshot(this.resources),
             rest: $state.snapshot(this.rest),
             selected: $state.snapshot(this.selected),
-            nodes: this.nodes.map((node) => node.getClassSnapshot()),
+            nodes: this.nodes.map((node) => node.getNodeSnapshot()),
         };
+    }
+
+    public getIndexOfActivePrevNode(nodeIndex: number): number {
+        let index = 0;
+        for (let i = nodeIndex - 1; i >= 0; i--) {
+            if (this.nodes[i].active) {
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 }
 

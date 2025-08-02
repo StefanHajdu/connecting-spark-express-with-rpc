@@ -71,34 +71,28 @@ class NewSessionRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class CsvInput(_message.Message):
-    __slots__ = ("kind", "delimiter", "include_header", "path")
-    KIND_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("delimiter", "include_header", "path")
     DELIMITER_FIELD_NUMBER: _ClassVar[int]
     INCLUDE_HEADER_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
-    kind: str
     delimiter: str
     include_header: bool
     path: str
-    def __init__(self, kind: _Optional[str] = ..., delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ...) -> None: ...
+    def __init__(self, delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ...) -> None: ...
 
 class JsonInput(_message.Message):
-    __slots__ = ("kind", "multiline", "path")
-    KIND_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("multiline", "path")
     MULTILINE_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
-    kind: str
     multiline: bool
     path: str
-    def __init__(self, kind: _Optional[str] = ..., multiline: bool = ..., path: _Optional[str] = ...) -> None: ...
+    def __init__(self, multiline: bool = ..., path: _Optional[str] = ...) -> None: ...
 
 class ParquetInput(_message.Message):
-    __slots__ = ("kind", "path")
-    KIND_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("path",)
     PATH_FIELD_NUMBER: _ClassVar[int]
-    kind: str
     path: str
-    def __init__(self, kind: _Optional[str] = ..., path: _Optional[str] = ...) -> None: ...
+    def __init__(self, path: _Optional[str] = ...) -> None: ...
 
 class LoadDatasetNodeRequest(_message.Message):
     __slots__ = ("session_id", "csv", "json", "parquet")
