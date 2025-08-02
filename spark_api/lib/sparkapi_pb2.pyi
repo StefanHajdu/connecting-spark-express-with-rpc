@@ -71,34 +71,34 @@ class NewSessionRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class CsvInput(_message.Message):
-    __slots__ = ("delimiter", "include_header", "path")
+    __slots__ = ("kind", "delimiter", "include_header", "path")
+    KIND_FIELD_NUMBER: _ClassVar[int]
     DELIMITER_FIELD_NUMBER: _ClassVar[int]
     INCLUDE_HEADER_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
+    kind: str
     delimiter: str
     include_header: bool
     path: str
-    def __init__(self, delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ...) -> None: ...
+    def __init__(self, kind: _Optional[str] = ..., delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ...) -> None: ...
 
 class JsonInput(_message.Message):
-    __slots__ = ("multiline", "path")
+    __slots__ = ("kind", "multiline", "path")
+    KIND_FIELD_NUMBER: _ClassVar[int]
     MULTILINE_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
+    kind: str
     multiline: bool
     path: str
-    def __init__(self, multiline: bool = ..., path: _Optional[str] = ...) -> None: ...
+    def __init__(self, kind: _Optional[str] = ..., multiline: bool = ..., path: _Optional[str] = ...) -> None: ...
 
 class ParquetInput(_message.Message):
-    __slots__ = ("path",)
+    __slots__ = ("kind", "path")
+    KIND_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
+    kind: str
     path: str
-    def __init__(self, path: _Optional[str] = ...) -> None: ...
-
-class SessionInput(_message.Message):
-    __slots__ = ("session_id",)
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
+    def __init__(self, kind: _Optional[str] = ..., path: _Optional[str] = ...) -> None: ...
 
 class LoadDatasetNodeRequest(_message.Message):
     __slots__ = ("session_id", "csv", "json", "parquet")
@@ -111,6 +111,12 @@ class LoadDatasetNodeRequest(_message.Message):
     json: JsonInput
     parquet: ParquetInput
     def __init__(self, session_id: _Optional[str] = ..., csv: _Optional[_Union[CsvInput, _Mapping]] = ..., json: _Optional[_Union[JsonInput, _Mapping]] = ..., parquet: _Optional[_Union[ParquetInput, _Mapping]] = ...) -> None: ...
+
+class SessionInput(_message.Message):
+    __slots__ = ("session_id",)
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
 
 class PreviewDatasetRequest(_message.Message):
     __slots__ = ("session_id", "node_id", "limit")

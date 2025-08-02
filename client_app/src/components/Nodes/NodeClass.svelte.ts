@@ -33,25 +33,21 @@ export function nodeFactory(params: any): Node {
 }
 
 export abstract class Node {
-    uuid: string = $state("");
+    id: string = $state("");
     title: string = $state("");
-    nodeType: string = $state("");
-    colsAdded: Set<string> = $state(new Set([])); // column names added by node
-    colsUsed: Set<string> = $state(new Set([])); // column names used by node
-    colsInNode: Column[] = $state([]);
-    colsInTransform: Column[] = $state([]);
+    prevNodeId: string = $state("");
+    columnsOnNodeInput: Column[] = $state([]);
+    columnsOnNodeOutput: Column[] = $state([]);
     active: boolean = $state(true);
     invalidState: InvalidState = $state({ value: false, description: "" });
     submitted: boolean = $state(false);
 
     constructor(params: any) {
+        this.id = params.id ? params.id : "node-" + uuidv4();
         this.title = params.title;
-        this.colsInNode = params.colsInNode;
-        this.colsInTransform = params.colsInTransform ? params.colsInTransform : params.colsInNode;
-        this.uuid = params.uuid ? params.uuid : "node-" + uuidv4();
-        this.nodeType = params.nodeType ? params.nodeType : "";
-        this.colsAdded = params.colsAdded ? new Set(params.colsAdded) : new Set([]);
-        this.colsUsed = params.colsUsed ? new Set(params.colsUsed) : new Set([]);
+        this.prevNodeId = params.prevNodeId;
+        this.columnsOnNodeInput = params.columnsOnNodeInput;
+        this.columnsOnNodeOutput = params.columnsOnNodeOutput ? params.columnsOnNodeOutput : params.columnsOnNodeInput;
         this.active = params.active ? params.active : true;
         this.invalidState = params.invalidState ? params.invalidState : { value: false, description: "" };
         this.submitted = params.submitted ? params.submitted : false;
@@ -67,24 +63,19 @@ export abstract class Node {
 
     public getSnapshot(): NodeSnapshot {
         return {
-            uuid: $state.snapshot(this.uuid),
+            uuid: $state.snapshot(this.id),
             title: $state.snapshot(this.title),
-            nodeType: $state.snapshot(this.nodeType),
-            colsAdded: $state.snapshot(Array.from(this.colsAdded)),
-            colsUsed: $state.snapshot(Array.from(this.colsUsed)),
-            colsInNode: $state.snapshot(this.colsInNode),
-            colsInTransform: $state.snapshot(this.colsInTransform),
+            prevNodeId: $state.snapshot(this.prevNodeId),
+            columnsOnNodeInput: $state.snapshot(this.columnsOnNodeInput),
+            columnsOnNodeOutput: $state.snapshot(this.columnsOnNodeOutput),
             active: $state.snapshot(this.active),
             invalidState: $state.snapshot(this.invalidState),
             submitted: $state.snapshot(this.submitted),
         };
     }
 
-    public abstract setUserInput(params: any): void;
     public abstract submit(params: any): Promise<boolean>;
-    public abstract getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any;
-    public abstract submitTransform(params: any): Promise<SparkTransformResponse>;
-    public abstract parseTransformResponse(res: SparkTransformResponse, params?: any): void;
+    public abstract fetchTransform(params: any): Promise<SparkTransformResponse>;
     public abstract isInvalid(force: boolean, prevNode?: Node): boolean;
     public abstract getClassSnapshot(): NodeSnapshot | any;
 }
@@ -95,8 +86,7 @@ export class LoadNode extends Node {
     constructor(params: any) {
         super(params);
 
-        this.uuid = MASTER_NODE_ID;
-        this.nodeType = "load";
+        this.id = MASTER_NODE_ID;
         this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
     }
 
@@ -107,10 +97,6 @@ export class LoadNode extends Node {
         };
     }
 
-    getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-        return {};
-    }
-
     setUserInput(params: any): void {
         this.userInput = {
             kind: params.inputType,
@@ -119,10 +105,10 @@ export class LoadNode extends Node {
     }
 
     async submit(params: any): Promise<boolean> {
-        let transformRes = await this.submitTransform(params);
+        let transformRes = await this.fetchTransform(params);
 
         if (transformRes) {
-            this.parseTransformResponse(transformRes);
+            this.columnsOnNodeInput = this.columnsOnNodeOutput = transformRes.columns;
             this.submitted = true;
             return true;
         } else {
@@ -131,8 +117,8 @@ export class LoadNode extends Node {
         }
     }
 
-    async submitTransform(params: any): Promise<SparkTransformResponse> {
-        // transform {kind: "csv", session_id: "", path: "", ...} to {session_id: "", csv: {path: "", ...}}, it looks better in request body
+    async fetchTransform(params: any): Promise<SparkTransformResponse> {
+        // transform {kind: "csv", session_id: "", path: "", ...} to {session_id: "", csv: {path: "", ...}}
         let inputType = params.kind;
         let sessionId = params.session_id;
         delete params.kind;
@@ -142,14 +128,9 @@ export class LoadNode extends Node {
         return transformResponse;
     }
 
-    parseTransformResponse(res: SparkTransformResponse, params?: any) {
-        this.colsInTransform = this.colsInNode = res.columns;
-        this.colsAdded = new Set(res.columns.map((col: Column) => col.name));
-    }
-
     isInvalid(force: boolean, prevNode?: Node): boolean {
         if (force) {
-            this.setInvalidState(true, "invalid schema");
+            this.setInvalidState(true, "Invalid state was forced.");
             return true;
         }
         return false;

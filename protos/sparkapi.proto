@@ -91,10 +91,6 @@ message ParquetInput {
     string path = 1;
 }
 
-message SessionInput {
-    string session_id = 1;
-}
-
 message LoadDatasetNodeRequest {
     string session_id = 1;
     oneof user_input {
@@ -103,6 +99,11 @@ message LoadDatasetNodeRequest {
         ParquetInput parquet = 4;
     }
 }
+
+message SessionInput {
+    string session_id = 1;
+}
+
 
 message PreviewDatasetRequest {
     string session_id = 1;
