@@ -43,14 +43,23 @@ $effect(() => {
 });
 
 // event
-function insertNextNode(title: string) {
-    let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex);
+function insertNode(title: string) {
+    // current node = nodeIndex, inserted node = nodeIndex + 1
+    let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex + 1);
+
     let node = nodeFactory({
         title: title,
         prevNodeId: analyses[analysisIndex].nodes[prevNodeIndex].id,
         columnsOnNodeInput: analyses[analysisIndex].nodes[prevNodeIndex].columnsOnNodeOutput,
     });
     analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, node);
+
+    // submit empty node, empty node returns 'select * from df'
+    let _ = node.submit({
+        analysisId: analyses[analysisIndex].id,
+        nodeId: node.id,
+        prevNodeId: node.prevNodeId,
+    });
 
     // update widgets
     nodeIdDOM = node.id;
@@ -220,11 +229,10 @@ function summarizeNode() {
         disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Filter")}>Filter</DropdownItem>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Add Column")}
-            >Add Column</DropdownItem>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Join")}>Join</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Filter")}>Filter</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Add Column")}>Add Column</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Join")}>Join</DropdownItem>
         <DropdownDivider />
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNextNode("Table")}>Table</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Table")}>Table</DropdownItem>
     </Dropdown>
 </div>

@@ -94,7 +94,6 @@ export interface NodeSnapshot {
     columnsOnNodeOutput: Column[];
     active: boolean;
     invalidState: InvalidState;
-    submitted: boolean;
 }
 
 export interface ICsvMetadata {

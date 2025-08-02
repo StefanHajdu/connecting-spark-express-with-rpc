@@ -229,8 +229,11 @@ class NewColumnNode(TransformNode):
 
     @property
     def query(self) -> str:
-        expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
-        return self.query_template.format(expressions=expressions, df='{df}')
+        if self.expressions:
+            expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
+            return self.query_template.format(expressions=expressions, df='{df}')
+        else:
+            return 'select * from {df}'
 
     @property
     def query_kwargs(self) -> dict:

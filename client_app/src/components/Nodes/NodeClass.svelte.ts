@@ -42,7 +42,6 @@ export abstract class Node {
     columnsOnNodeOutput: Column[] = $state([]);
     active: boolean = $state(true);
     invalidState: InvalidState = $state({ value: false, description: "" });
-    submitted: boolean = $state(false);
 
     constructor(params: any) {
         this.id = params.id ? params.id : "node-" + uuidv4();
@@ -52,7 +51,6 @@ export abstract class Node {
         this.columnsOnNodeOutput = params.columnsOnNodeOutput ? params.columnsOnNodeOutput : params.columnsOnNodeInput;
         this.active = params.active ? params.active : true;
         this.invalidState = params.invalidState ? params.invalidState : { value: false, description: "" };
-        this.submitted = params.submitted ? params.submitted : false;
     }
 
     public setInvalidState(value: boolean, description: string) {
@@ -69,7 +67,6 @@ export abstract class Node {
             columnsOnNodeOutput: $state.snapshot(this.columnsOnNodeOutput),
             active: $state.snapshot(this.active),
             invalidState: $state.snapshot(this.invalidState),
-            submitted: $state.snapshot(this.submitted),
         };
     }
 
@@ -110,10 +107,8 @@ export class LoadNode extends Node {
 
         if (transformResponse) {
             this.columnsOnNodeOutput = transformResponse.columns;
-            this.submitted = true;
             return true;
         } else {
-            this.submitted = false;
             return false;
         }
     }
@@ -169,8 +164,8 @@ export class AddColumnNode extends Node {
     async submit(params: any): Promise<boolean> {
         let transformResponse = await this.fetchTransform({
             session_id: params.analysisId,
-            node_id: params.nodeUuid,
-            prev_node_id: params.prevNodeUuid,
+            node_id: params.nodeId,
+            prev_node_id: params.prevNodeId,
             expressions: params.expressions,
         });
         if (transformResponse) {
@@ -186,7 +181,7 @@ export class AddColumnNode extends Node {
     async fetchTransform(params: any): Promise<SparkTransformResponse> {
         let transformResponse = fetchSparkApi("rpc/sessionNode/transform/submitNewColumnNode", {
             ...params,
-            expressions: params.expressions.map((expr: any) => compileExprObj(expr)),
+            expressions: params.expressions ? params.expressions.map((expr: any) => compileExprObj(expr)) : [],
         });
         return transformResponse;
     }
