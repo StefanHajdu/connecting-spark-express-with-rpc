@@ -97,7 +97,7 @@ message SessionInput {
 
 message LoadDatasetNodeRequest {
     string session_id = 1;
-    oneof input_metadata {
+    oneof user_input {
         CsvInput csv = 2;
         JsonInput json = 3;
         ParquetInput parquet = 4;

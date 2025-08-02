@@ -21,9 +21,7 @@ class SparkRpcApi(SparkApiServicer):
     def submit_LoadDatasetNode(self, req: sparkapi_pb2.LoadDatasetNodeRequest, unused_context) -> sparkapi_pb2.SparkTransformResponse:
         session = clientSessionTable.get_session(req.session_id)
 
-        node = session.submit_node(
-            node_class='LoadNode', session_id=session.id, input_metadata=getattr(req, req.WhichOneof('input_metadata'))
-        )
+        node = session.submit_node(node_class='LoadNode', session_id=session.id, user_input=getattr(req, req.WhichOneof('user_input')))
 
         session.plan = SessionPlanner(req.session_id, node)
         return sparkapi_pb2.SparkTransformResponse(

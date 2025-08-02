@@ -128,11 +128,11 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
+    def __init__(self, session_id: str, user_input: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
-        self._input_metadata = input_metadata
+        self._user_input = user_input
         self.df = self.run_transform()
 
     @property
@@ -152,10 +152,10 @@ class LoadNode(TransformNode):
         self._path = val
 
     def __str__(self):
-        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self._input_metadata.path}'
+        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self._user_input.path}'  # noqa
 
     def run_transform(self, **kwargs):
-        return load_data_for_spark(input_metadata=self._input_metadata)
+        return load_data_for_spark(input_metadata=self._user_input)
 
 
 class LoadFromSessionNode(TransformNode):
