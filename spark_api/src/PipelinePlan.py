@@ -35,7 +35,7 @@ class SessionPlanner:
             idx -= 1
         return self.nodes[idx]
 
-    def process_node(self, spark: SparkSession, node: Nodes.SparkNode):
+    def insert_node(self, spark: SparkSession, node: Nodes.SparkNode):
         if self.is_node_present(node):
             self.edit_node(spark, node)
         else:
@@ -53,16 +53,11 @@ class SessionPlanner:
             # insert
             self.nodes.insert(curr_position, new_node)
             self.nodes[next_position].prev_node_id = new_node.node_id
-            # rerun from next node
-            self.reapply_plan(spark, next_position)
 
     def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode):
         # get node index
         node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
-        if node_position != -1:
-            # rerun from edited
-            self.reapply_plan(spark, node_position + 1)
 
     def remove_node(self, spark: SparkSession, node_id: str):
         del_position = self.get_node_index(node_id)
@@ -74,15 +69,13 @@ class SessionPlanner:
             if not isinstance(ex := self.is_removal_safe(spark, del_position), InvalidRemovalException):
                 self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
                 self._delete_node(del_position)
-                # rerun from removed
-                self.reapply_plan(spark, del_position)
             else:
                 raise ex
 
     def _delete_node(self, position: int):
         del self.nodes[position]
 
-    def reapply_plan(self, spark: SparkSession, start: int):
+    def sync_dataframes(self, spark: SparkSession, start: int):
         for node_position in range(start, len(self.nodes)):
             node = self.nodes[node_position]
             node.df = node.run_transform(

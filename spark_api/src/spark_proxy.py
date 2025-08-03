@@ -56,7 +56,7 @@ class SparkRpcApi(SparkApiServicer):
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
 
-        session.plan.process_node(spark, node)
+        session.plan.insert_node(spark, node)
         session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
@@ -75,7 +75,7 @@ class SparkRpcApi(SparkApiServicer):
             expressions=list(req.expressions),
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
-        session.plan.process_node(spark, node)
+        session.plan.insert_node(spark, node)
         session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
@@ -95,7 +95,7 @@ class SparkRpcApi(SparkApiServicer):
             joinParams=req.joinParams,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
-        session.plan.process_node(spark, node)
+        session.plan.insert_node(spark, node)
         session.notify_transformation_change()
 
         return sparkapi_pb2.SparkTransformResponse(
@@ -113,7 +113,7 @@ class SparkRpcApi(SparkApiServicer):
             prev_node_id=req.prev_node_id,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
-        session.plan.process_node(spark, node)
+        session.plan.insert_node(spark, node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,
@@ -134,7 +134,7 @@ class SparkRpcApi(SparkApiServicer):
             expression=req.expression,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
-        session.plan.process_node(spark, node)
+        session.plan.insert_node(spark, node)
 
         return sparkapi_pb2.SparkTransformResponse(
             session_id=req.session_id,

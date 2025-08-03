@@ -104,6 +104,10 @@ class TransformNode(SparkNode):
         )
 
     @property
+    def default_query(self) -> str:
+        return 'select * from {df}'
+
+    @property
     @abstractmethod
     def query(self) -> str:
         pass
@@ -233,7 +237,7 @@ class NewColumnNode(TransformNode):
             expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
             return self.query_template.format(expressions=expressions, df='{df}')
         else:
-            return 'select * from {df}'
+            return self.default_query
 
     @property
     def query_kwargs(self) -> dict:
