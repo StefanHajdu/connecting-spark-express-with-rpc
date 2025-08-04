@@ -60,6 +60,9 @@ async function submit() {
     });
 
     if (submitSuccessful) {
+        analyses[analysisIndex].syncNodeColumnsWhenAddingColumns(nodeIndex);
+        console.log(analyses[analysisIndex].nodes);
+
         // invalid -> valid trigger submit on following nodes
         if (analyses[analysisIndex].nodes[nodeIndex].invalidState.value) {
             // await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);

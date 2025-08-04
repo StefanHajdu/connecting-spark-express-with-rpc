@@ -58,13 +58,27 @@ export class AnalysisSession {
 
     public getIndexOfActivePrevNode(nodeIndex: number): number {
         let index = 0;
-        for (let i = nodeIndex - 1; i >= 0; i--) {
+        for (let i = nodeIndex; i >= 0; i--) {
             if (this.nodes[i].active) {
-                index = i;
-                break;
+                return i;
             }
         }
         return index;
+    }
+
+    public syncNodeColumnsWhenAddingColumns(startFromNodeIndex: number): void {
+        // nodes[startIndex].columnsOnNodeOutput - nodes[startIndex].columnsOnNodeInput
+        let newColumns = this.nodes[startFromNodeIndex].columnsOnNodeOutput.filter(
+            (colOut) =>
+                !this.nodes[startFromNodeIndex].columnsOnNodeInput.some(
+                    (colIn) => colIn.name === colOut.name && colIn.dtype === colOut.dtype,
+                ),
+        );
+        console.log("newCols", newColumns);
+        for (let i = startFromNodeIndex + 1; i < this.nodes.length; i++) {
+            this.nodes[i].columnsOnNodeInput = [...this.nodes[i].columnsOnNodeInput, ...newColumns];
+            this.nodes[i].columnsOnNodeOutput = [...this.nodes[i].columnsOnNodeOutput, ...newColumns];
+        }
     }
 }
 

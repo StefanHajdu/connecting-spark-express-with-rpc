@@ -45,14 +45,16 @@ $effect(() => {
 // event
 function insertNode(title: string) {
     // current node = nodeIndex, inserted node = nodeIndex + 1
-    let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex + 1);
-
+    let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex);
     let node = nodeFactory({
         title: title,
         prevNodeId: analyses[analysisIndex].nodes[prevNodeIndex].id,
         columnsOnNodeInput: analyses[analysisIndex].nodes[prevNodeIndex].columnsOnNodeOutput,
     });
-    analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, node);
+
+    if (analyses[analysisIndex].nodes[nodeIndex + 1]) {
+        analyses[analysisIndex].nodes[nodeIndex + 1].prevNodeId = node.id;
+    }
 
     // submit empty node, empty node returns 'select * from df'
     let _ = node.submit({
@@ -60,6 +62,7 @@ function insertNode(title: string) {
         nodeId: node.id,
         prevNodeId: node.prevNodeId,
     });
+    analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, node);
 
     // update widgets
     nodeIdDOM = node.id;
@@ -179,6 +182,11 @@ function summarizeNode() {
 
         <div class="mb-4 mt-4 flex items-center justify-between">
             <p>id: {analyses[analysisIndex].nodes[nodeIndex].id.slice(-5)}</p>
+            <p>
+                prev_id: {analyses[analysisIndex].nodes[nodeIndex].prevNodeId
+                    ? analyses[analysisIndex].nodes[nodeIndex].prevNodeId.slice(-5)
+                    : "no prev id"}
+            </p>
         </div>
 
         {#if analyses[analysisIndex].nodes[nodeIndex].title === "Load"}<LoadNode

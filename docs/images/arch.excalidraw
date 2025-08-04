@@ -68772,20 +68772,20 @@
       "index": "bRv",
       "roundness": null,
       "seed": 950102793,
-      "version": 1364,
-      "versionNonce": 1902640199,
+      "version": 1366,
+      "versionNonce": 951789127,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1754340721917,
+      "updated": 1754341028852,
       "link": null,
       "locked": false,
-      "text": "for each index from failed_index:\n    node = nodes[index]\n    \n    updated_nodes.append(\n        {\n            id: node.id\n            columns: node.columns\n            valid: {value: False, reason: \"Missing Columns in node id {node.id}\"}\n        }\n    )\n",
+      "text": "for each index from failed_index:\n    node = nodes[index]\n    \n    updated_nodes.append(\n        {\n            id: node.id\n            columns: node.columns\n            valid: {value: False, reason: \"Missing columns in node id {node.id}\"}\n        }\n    )\n",
       "fontSize": 28,
       "fontFamily": 8,
       "textAlign": "left",
       "verticalAlign": "top",
       "containerId": "VQ4t0ZhsS1mNRKqJNxFcL",
-      "originalText": "for each index from failed_index:\n    node = nodes[index]\n    \n    updated_nodes.append(\n        {\n            id: node.id\n            columns: node.columns\n            valid: {value: False, reason: \"Missing Columns in node id {node.id}\"}\n        }\n    )\n",
+      "originalText": "for each index from failed_index:\n    node = nodes[index]\n    \n    updated_nodes.append(\n        {\n            id: node.id\n            columns: node.columns\n            valid: {value: False, reason: \"Missing columns in node id {node.id}\"}\n        }\n    )\n",
       "autoResize": true,
       "lineHeight": 1.25
     },
@@ -68886,9 +68886,9 @@
       "id": "NCJrGmGuUOFizxoJDDsPg",
       "type": "rectangle",
       "x": 8823.451068403136,
-      "y": 4354.2892388364235,
+      "y": 4391.0136854510065,
       "width": 769.8593139648438,
-      "height": 66.7388916015625,
+      "height": 30.014444986979473,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -68904,8 +68904,8 @@
         "type": 3
       },
       "seed": 517038761,
-      "version": 142,
-      "versionNonce": 277880969,
+      "version": 167,
+      "versionNonce": 21932071,
       "isDeleted": false,
       "boundElements": [
         {
@@ -68913,17 +68913,17 @@
           "type": "arrow"
         }
       ],
-      "updated": 1754340774554,
+      "updated": 1754340992838,
       "link": null,
       "locked": false
     },
     {
       "id": "aoEs0gbs315txCXy_4nHJ",
       "type": "arrow",
-      "x": 9595.745481651835,
-      "y": 4384.303683823402,
-      "width": 545.9053548177089,
-      "height": 130.66375732421875,
+      "x": 9597.052142492154,
+      "y": 4403.817549303747,
+      "width": 545.2500444820398,
+      "height": 140.73745230651275,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -68939,11 +68939,11 @@
         "type": 2
       },
       "seed": 286892457,
-      "version": 65,
-      "versionNonce": 481109865,
+      "version": 112,
+      "versionNonce": 1124188615,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1754340774554,
+      "updated": 1754340998433,
       "link": null,
       "locked": false,
       "points": [
@@ -68952,20 +68952,20 @@
           0
         ],
         [
-          545.9053548177089,
-          -130.66375732421875
+          545.2500444820398,
+          -140.73745230651275
         ]
       ],
       "lastCommittedPoint": null,
       "startBinding": {
         "elementId": "NCJrGmGuUOFizxoJDDsPg",
-        "focus": 0.7120266595003075,
-        "gap": 2.4350992838553793
+        "focus": 0.857954907661025,
+        "gap": 3.7417601241741067
       },
       "endBinding": {
         "elementId": "KMkjgHpZxmR7ndLVM5nxj",
-        "focus": 0.37562300327657844,
-        "gap": 5.7853245150217845
+        "focus": 0.39669336240596803,
+        "gap": 5.133974010372185
       },
       "startArrowhead": null,
       "endArrowhead": "arrow",
