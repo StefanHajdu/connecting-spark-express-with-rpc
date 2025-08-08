@@ -8,7 +8,6 @@ service SparkApi {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
-    rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
     rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
@@ -60,7 +59,8 @@ message InvalidState {
 message SparkTransformResponse {
     string session_id = 1;
     string node_id = 2;
-    repeated Column columns = 2;
+    InvalidState invalid_state = 3;
+    repeated Column columns = 4;
 }
 
 message DatasetResponse {
@@ -187,10 +187,6 @@ message NodeRemovalRequest {
 message LoadFromSessionNodeRequest {
     string session_id = 1;
     string input_session_id = 2;
-}
-
-message RebuildRequest {
-    string session_id = 1;
 }
 
 message SessionStatusRequest {

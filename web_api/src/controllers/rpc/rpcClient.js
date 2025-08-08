@@ -99,13 +99,19 @@ export class RpcClient {
     });
   }
 
-  submitNewColumnNode(body, httpResponse, next) {
-    return this.client.submit_NewColumnNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
+  submitNewColumnNode(body, httpResponseStream, next) {
+    httpResponseStream.writeHead(200, {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    });
+    const previewStream = this.client.submit_NewColumnNode(body);
+    previewStream.on("data", (chunk) => {
+      console.log(chunk);
+      httpResponseStream.write(JSON.stringify(chunk));
+    });
+    previewStream.on("end", () => {
+      httpResponseStream.end();
+      next();
     });
   }
 
@@ -140,13 +146,19 @@ export class RpcClient {
   }
 
   // REMOVE NODE
-  removeNode(body, httpResponse, next) {
-    return this.client.removeNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
+  removeNode(body, httpResponseStream, next) {
+    httpResponseStream.writeHead(200, {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    });
+    const previewStream = this.client.removeNode(body);
+    previewStream.on("data", (chunk) => {
+      console.log(chunk);
+      httpResponseStream.write(JSON.stringify(chunk));
+    });
+    previewStream.on("end", () => {
+      httpResponseStream.end();
+      next();
     });
   }
 

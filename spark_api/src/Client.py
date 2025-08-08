@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sparkapi_pb2
+
 import Nodes
 import PipelinePlan
 from api_logging import log_plan_execution
@@ -52,22 +54,23 @@ class ClientSession:
         for child_session in self.child_sessions:
             child_session.update_status.trigger('Plan changed, operation add/edit/remove applied')
 
-    def submit_node(self, node_class: str, **kwargs):
+    def submit_node(self, node_class: str, **kwargs) -> Nodes.SparkNode:
         self._log(f'/addNode/{node_class}')
         node_constructor = getattr(Nodes, node_class)
         node = node_constructor(**kwargs)
         return node
 
-    def remove_node(self, node):
+    def remove_node(self, node) -> list[sparkapi_pb2.SparkTransformResponse]:
         self._log(f'/removeNode: {node.node_id}')
         if isinstance(node, Nodes.TransformNode):
             self.notify_transformation_change()
-        self.plan.remove_node(spark, node.node_id)
+        return self.plan.remove_node(spark, node.node_id)
 
     @log_plan_execution('/rebuildSession')
     def rebuild(self):
-        self.plan.update_plan(spark, start=0)
-        self.update_status.reset()
+        # self.plan.update_plan(spark, start=0)
+        # self.update_status.reset()
+        pass
 
     @log_plan_execution('/summarize')
     def summarize(self, node_id: str) -> SparkActionMetadata:
