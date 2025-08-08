@@ -18,7 +18,7 @@ export async function post(transformRoute: string, body: Object): Promise<Respon
     return response;
 }
 
-export async function bufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
+export async function textBufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
     const reader = streamingResponse.body?.getReader();
     let decoder = new TextDecoder();
     let jsonText = "";
@@ -29,5 +29,20 @@ export async function bufferSparkStreamingApi(streamingResponse: Response): Prom
             return jsonText;
         }
         jsonText += decoder.decode(chunk?.value, { stream: true });
+    }
+}
+
+export async function objectBufferSparkStreamingApi(streamingResponse: Response): Promise<any[]> {
+    const reader = streamingResponse.body?.getReader();
+    let decoder = new TextDecoder();
+    let objects: any = [];
+
+    while (true) {
+        let chunk = await reader?.read();
+        if (chunk?.done) {
+            return objects;
+        }
+        // objects += decoder.decode(chunk?.value, { stream: true });
+        objects.push(JSON.parse(decoder.decode(chunk?.value, { stream: true })));
     }
 }

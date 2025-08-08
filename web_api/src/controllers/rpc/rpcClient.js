@@ -104,12 +104,15 @@ export class RpcClient {
       "Content-Type": "application/json",
       "Transfer-Encoding": "chunked",
     });
+
+    httpResponseStream.write("[");
+
     const previewStream = this.client.submit_NewColumnNode(body);
     previewStream.on("data", (chunk) => {
-      console.log(chunk);
-      httpResponseStream.write(JSON.stringify(chunk));
+      httpResponseStream.write(`${JSON.stringify(chunk)},`);
     });
     previewStream.on("end", () => {
+      httpResponseStream.write("{}]");
       httpResponseStream.end();
       next();
     });

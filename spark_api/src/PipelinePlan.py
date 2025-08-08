@@ -89,7 +89,7 @@ class SessionPlanner:
                 node.df = node.run_transform(spark=spark, df=self.nodes[node_positions[idx - 1]].df)
             return EmptyException()
         except PySparkException as ex:
-            msg = f'Error: {ex.getErrorClass()}, params: {ex.getMessageParameters()}, recorded on node: {self.nodes[node_positions[idx]].node_id}'
+            msg = f'Error: {ex.getErrorClass()}, params: {ex.getMessageParameters()}, recorded on node: {self.nodes[node_positions[idx]].node_id}'  # noqa
             return InvalidRemovalException(msg)
 
     def _delete_node(self, position: int):

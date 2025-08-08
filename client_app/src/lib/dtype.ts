@@ -12,8 +12,8 @@ export interface IAnalysis {
 }
 
 export interface InvalidState {
-    value: boolean;
-    description: string;
+    active: boolean;
+    error_msg: string;
 }
 
 export type SparkActionlResponse = {

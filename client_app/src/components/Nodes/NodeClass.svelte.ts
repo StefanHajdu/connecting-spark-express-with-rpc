@@ -11,7 +11,7 @@ import type {
     IParquetMetadata,
     LoadNodeSnapshot,
 } from "$lib/dtype";
-import { fetchSparkApi } from "$lib/clientApi";
+import { post, textBufferSparkStreamingApi, fetchSparkApi } from "$lib/clientApi";
 // import { compileExprObj, syncInNewColumns, getActivePredecessor } from "$lib/utils";
 import { compileExprObj } from "$lib/utils";
 
@@ -41,7 +41,7 @@ export abstract class Node {
     columnsOnNodeInput: Column[] = $state([]);
     columnsOnNodeOutput: Column[] = $state([]);
     active: boolean = $state(true);
-    invalidState: InvalidState = $state({ value: false, description: "" });
+    invalidState: InvalidState = $state({ active: false, error_msg: "" });
 
     constructor(params: any) {
         this.id = params.id ? params.id : "node-" + uuidv4();
@@ -50,11 +50,11 @@ export abstract class Node {
         this.columnsOnNodeInput = params.columnsOnNodeInput;
         this.columnsOnNodeOutput = params.columnsOnNodeOutput ? params.columnsOnNodeOutput : params.columnsOnNodeInput;
         this.active = params.active ? params.active : true;
-        this.invalidState = params.invalidState ? params.invalidState : { value: false, description: "" };
+        this.invalidState = params.invalidState ? params.invalidState : { active: false, error_msg: "" };
     }
 
     public setInvalidState(value: boolean, description: string) {
-        this.invalidState = { value: value, description: description };
+        this.invalidState = { active: value, error_msg: description };
     }
 
     public getSnapshot(): NodeSnapshot {
@@ -162,20 +162,18 @@ export class AddColumnNode extends Node {
     }
 
     async submit(params: any): Promise<boolean> {
-        let transformResponse = await this.fetchTransform({
+        const streamingResponse = await post("rpc/sessionNode/transform/submitNewColumnNode", {
             session_id: params.analysisId,
             node_id: params.nodeId,
             prev_node_id: params.prevNodeId,
             expressions: params.expressions,
         });
-        if (transformResponse) {
-            this.columnsOnNodeOutput = transformResponse.columns;
-            // this.parseTransformResponse(transformRes, { expressions: params.expressions });
-            // syncInNewColumns(params.nodesInAnalysis, params.nodeIndex);
-            return true;
-        } else {
-            return false;
-        }
+
+        const objs = await textBufferSparkStreamingApi(streamingResponse);
+
+        console.log(JSON.parse(objs));
+
+        return true;
     }
 
     async fetchTransform(params: any): Promise<SparkTransformResponse> {

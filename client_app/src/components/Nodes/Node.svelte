@@ -171,10 +171,10 @@ function summarizeNode() {
             </Dropdown>
         </div>
 
-        {#if analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
+        {#if analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
             <div>
                 <Button id="invalid-state" outline color="red" size="xs"
-                    >{analyses[analysisIndex].nodes[nodeIndex].invalidState.description}</Button>
+                    >{analyses[analysisIndex].nodes[nodeIndex].invalidState.error_msg}</Button>
                 <!-- <Tooltip arrow={false} triggeredBy="#invalid-state"
                     >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip> -->
             </div>
@@ -203,12 +203,12 @@ function summarizeNode() {
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
+                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={previewNode}>Preview</Button>
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
+                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={summarizeNode}>Summarize</Button>
             {#if analyses[analysisIndex].nodes[nodeIndex].title !== "Load"}
                 <!-- <Toggle
@@ -234,7 +234,7 @@ function summarizeNode() {
     <Button
         size="xs"
         color="dark"
-        disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.value}
+        disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
         <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Filter")}>Filter</DropdownItem>

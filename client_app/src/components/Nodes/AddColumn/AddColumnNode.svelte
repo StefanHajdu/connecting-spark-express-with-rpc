@@ -64,7 +64,7 @@ async function submit() {
         console.log(analyses[analysisIndex].nodes);
 
         // invalid -> valid trigger submit on following nodes
-        if (analyses[analysisIndex].nodes[nodeIndex].invalidState.value) {
+        if (analyses[analysisIndex].nodes[nodeIndex].invalidState.active) {
             // await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
         }
         analyses[analysisIndex].nodes[nodeIndex].setInvalidState(false, "");
