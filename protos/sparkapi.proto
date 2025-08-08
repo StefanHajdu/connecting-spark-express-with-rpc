@@ -18,7 +18,7 @@ service SparkApi {
     rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
     
     // add column node
-    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (stream SparkTransformResponse) {}
     
     // join node
     rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
@@ -28,7 +28,7 @@ service SparkApi {
     rpc submit_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
     
     // all nodes
-    rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
+    rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
 }
 
 
@@ -52,10 +52,15 @@ message Column {
     string dtype = 2;
 }
 
+message InvalidState {
+    bool active = 1;
+    string error_msg = 2;
+}
+
 message SparkTransformResponse {
     string session_id = 1;
-    string msg = 2;
-    repeated Column columns = 3;
+    string node_id = 2;
+    repeated Column columns = 2;
 }
 
 message DatasetResponse {

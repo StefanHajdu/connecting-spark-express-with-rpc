@@ -20,15 +20,6 @@ class SessionPlanner:
                 return self.nodes[idx]
         raise NodeMissingException()
 
-    def is_node_present(self, node: Nodes.SparkNode) -> bool:
-        return any(n.node_id == node.node_id for n in self.nodes)
-
-    def get_node_index(self, node_id: str) -> int:
-        for idx, node in enumerate(self.nodes):
-            if node.node_id == node_id:
-                return -1 if idx == len(self.nodes) - 1 else idx
-        raise NodeMissingException()
-
     def get_last_spark_node(self) -> Nodes.SparkNode:
         idx = -1
         while not isinstance(self.nodes[idx], Nodes.SparkNode):
@@ -36,28 +27,32 @@ class SessionPlanner:
         return self.nodes[idx]
 
     def insert_node(self, spark: SparkSession, node: Nodes.SparkNode):
-        if self.is_node_present(node):
+        if self.node_present_in_plan(node):
             self.edit_node(spark, node)
         else:
-            self.add_node(spark, node)
+            self.append_node(node)
 
-    def add_node(self, spark: SparkSession, new_node: Nodes.SparkNode):
-        prev_position = self.get_node_index(new_node.prev_node_id)
-
-        if prev_position == -1:
-            # append
-            self.nodes.append(new_node)
-        else:
-            curr_position = prev_position + 1
-            next_position = prev_position + 2
-            # insert
-            self.nodes.insert(curr_position, new_node)
-            self.nodes[next_position].prev_node_id = new_node.node_id
+    def node_present_in_plan(self, node: Nodes.SparkNode) -> bool:
+        return any(n.node_id == node.node_id for n in self.nodes)
 
     def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode):
         # get node index
         node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
+        if node_position != -1:
+            self.update_plan(spark, node_position + 1)
+
+    def append_node(self, new_node: Nodes.SparkNode):
+        prev_position = self.get_node_index(new_node.prev_node_id)
+        if prev_position == -1:
+            # append
+            self.nodes.append(new_node)
+        else:
+            # insert
+            curr_position = prev_position + 1
+            next_position = prev_position + 2
+            self.nodes.insert(curr_position, new_node)
+            self.nodes[next_position].prev_node_id = new_node.node_id
 
     def remove_node(self, spark: SparkSession, node_id: str):
         del_position = self.get_node_index(node_id)
@@ -69,19 +64,15 @@ class SessionPlanner:
             if not isinstance(ex := self.is_removal_safe(spark, del_position), InvalidRemovalException):
                 self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
                 self._delete_node(del_position)
+                self.update_plan(spark, del_position)
             else:
                 raise ex
 
-    def _delete_node(self, position: int):
-        del self.nodes[position]
-
-    def sync_dataframes(self, spark: SparkSession, start: int):
-        for node_position in range(start, len(self.nodes)):
-            node = self.nodes[node_position]
-            node.df = node.run_transform(
-                spark=spark,
-                df=self.nodes[node_position - 1].df,
-            )
+    def get_node_index(self, node_id: str) -> int:
+        for idx, node in enumerate(self.nodes):
+            if node.node_id == node_id:
+                return -1 if idx == len(self.nodes) - 1 else idx
+        raise NodeMissingException()
 
     def is_removal_safe(self, spark: SparkSession, to_remove_idx: int) -> Exception:
         node_positions = [to_remove_idx - 1] + list(range(to_remove_idx + 1, len(self.nodes)))
@@ -96,3 +87,14 @@ class SessionPlanner:
         except PySparkException as ex:
             msg = f'Error: {ex.getErrorClass()}, params: {ex.getMessageParameters()}, recorded on node: {self.nodes[node_positions[idx]].node_id}'
             return InvalidRemovalException(msg)
+
+    def _delete_node(self, position: int):
+        del self.nodes[position]
+
+    def update_plan(self, spark: SparkSession, start: int):
+        for node_position in range(start, len(self.nodes)):
+            node = self.nodes[node_position]
+            node.df = node.run_transform(
+                spark=spark,
+                df=self.nodes[node_position - 1].df,
+            )

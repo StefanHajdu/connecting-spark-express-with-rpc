@@ -70,7 +70,6 @@ export class RpcClient {
 
   // ADD NODES
   submitLoadDatasetNode(body, httpResponse, next) {
-    console.log(body);
     return this.client.submit_LoadDatasetNode(body, (err, rpcResponse) => {
       if (err) {
         return next(new ApplicationError({ message: err.message, code: 500 }));

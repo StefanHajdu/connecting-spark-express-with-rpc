@@ -66,18 +66,16 @@ class ClientSession:
 
     @log_plan_execution('/rebuildSession')
     def rebuild(self):
-        self.plan.sync_dataframes(spark, start=0)
+        self.plan.update_plan(spark, start=0)
         self.update_status.reset()
 
     @log_plan_execution('/summarize')
     def summarize(self, node_id: str) -> SparkActionMetadata:
-        self.plan.sync_dataframes(spark, start=1)
         node = self.plan.get_node_by_id(node_id)
         return node.summarize()
 
     @log_plan_execution('/preview')
     def preview(self, node: Nodes.SparkNode, limit: int):
-        self.plan.sync_dataframes(spark, start=1)
         if isinstance(node, Nodes.VisualizationNode):
             prev_df = self.plan.get_node_by_id(node.prev_node_id).df
             return node.preview(limit=limit, prev_df=prev_df)
