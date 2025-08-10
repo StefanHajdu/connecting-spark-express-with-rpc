@@ -1,5 +1,5 @@
 <script lang="ts">
-import { AnalysisSession, saveAnalysesToLocalStorage } from "../../Analysis/AnalysisSessionClass.svelte";
+import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
 import { LoadNode } from "../NodeClass.svelte";
 import LoadDatasetForm from "./LoadDatasetForm.svelte";
 

@@ -7,8 +7,7 @@ import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
 import ExpressionFrom from "./ExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import type { Expression } from "$lib/dtype";
-// import { compileExprString, tryRestoreNodes, getActivePredecessor } from "$lib/utils";
-import { compileExprString } from "$lib/utils";
+import { compileExprString, compileExprObj } from "$lib/utils";
 
 interface Props {
     analyses: AnalysisSession[];
@@ -50,25 +49,12 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
-        analysisId: analyses[analysisIndex].id,
-        nodeId: analyses[analysisIndex].nodes[nodeIndex].id,
-        prevNodeId: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
-        expressions: expressions,
-        nodesInAnalysis: analyses[analysisIndex].nodes[nodeIndex],
-        nodeIndex: nodeIndex,
+    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
+        session_id: analyses[analysisIndex].id,
+        node_id: analyses[analysisIndex].nodes[nodeIndex].id,
+        prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
+        expressions: expressions.map((expr: any) => compileExprObj(expr)),
     });
-
-    if (submitSuccessful) {
-        analyses[analysisIndex].syncNodeColumnsWhenAddingColumns(nodeIndex);
-        console.log(analyses[analysisIndex].nodes);
-
-        // invalid -> valid trigger submit on following nodes
-        if (analyses[analysisIndex].nodes[nodeIndex].invalidState.active) {
-            // await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
-        }
-        analyses[analysisIndex].nodes[nodeIndex].setInvalidState(false, "");
-    }
 }
 </script>
 

@@ -1,10 +1,9 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { AnalysisSession, saveAnalysesToLocalStorage } from "../../Analysis/AnalysisSessionClass.svelte";
+import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
-// import { tryRestoreNodes } from "$lib/utils";
 
 interface Props {
     name: string;
@@ -45,18 +44,12 @@ async function submit() {
     let userInput = getNodeUserInput(inputType);
 
     analyses[analysisIndex].nodes[nodeIndex].setUserInput({ inputType: inputType, userInput: userInput });
-    let submitSuccessful = await analyses[analysisIndex].nodes[nodeIndex].submit({
+    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
         session_id: analyses[analysisIndex].id,
         ...userInput,
     });
 
-    if (submitSuccessful) {
-        loadDatasetModal = false;
-        saveAnalysesToLocalStorage(analyses);
-    }
-
-    // await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, nodeIndex + 1);
-
+    loadDatasetModal = false;
     loadInProgress = false;
 }
 </script>

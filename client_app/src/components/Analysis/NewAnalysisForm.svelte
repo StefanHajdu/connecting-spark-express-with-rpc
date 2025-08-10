@@ -2,7 +2,7 @@
 import { Label, Input, Modal, Button } from "flowbite-svelte";
 import { fetchSparkApi } from "$lib/clientApi";
 import { goto } from "$app/navigation";
-import { AnalysisSession, saveAnalysesToLocalStorage } from "./AnalysisSessionClass.svelte";
+import { AnalysisSession } from "./AnalysisSessionClass.svelte";
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
@@ -15,7 +15,6 @@ async function initNewAnalysis() {
         name: newAnalysis.name,
     });
     if (createSessionResponse) {
-        saveAnalysesToLocalStorage([newAnalysis]);
         await goto("http://localhost:5173/analyses");
     }
 }

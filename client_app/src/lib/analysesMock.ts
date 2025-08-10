@@ -1,6 +1,6 @@
-import type { Analysis } from "./dtype";
+import type { IAnalysis } from "./dtype";
 
-export type AnalysesMock = Record<string, Analysis[]>;
+export type AnalysesMock = Record<string, IAnalysis[]>;
 
 export const analysesMock: any = {
     analyses: [
@@ -11,7 +11,7 @@ export const analysesMock: any = {
             buildTime: "10 min 10 sec",
             resources: "4 cores, 32gb",
             rest: "...",
-            selected: false,
+            selected: true,
         },
         {
             id: "id-analysis-#2",

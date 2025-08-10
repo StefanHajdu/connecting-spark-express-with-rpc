@@ -11,8 +11,6 @@ let persistedAnalyses = $state(
         return new AnalysisSession(mocked);
     }),
 );
-
-$inspect(persistedAnalyses);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">

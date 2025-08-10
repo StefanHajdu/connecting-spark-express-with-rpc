@@ -1,8 +1,5 @@
-import type { AnalysisSnapshot } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
-import type { IAnalysis } from "../../lib/dtype";
-import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
 export class AnalysisSession {
     id: string = $state("");
@@ -43,19 +40,6 @@ export class AnalysisSession {
         this.selected = selected;
     }
 
-    public getSnapshot(): AnalysisSnapshot {
-        return {
-            id: $state.snapshot(this.id),
-            name: $state.snapshot(this.name),
-            status: $state.snapshot(this.status),
-            buildTime: $state.snapshot(this.buildTime),
-            resources: $state.snapshot(this.resources),
-            rest: $state.snapshot(this.rest),
-            selected: $state.snapshot(this.selected),
-            nodes: this.nodes.map((node) => node.getNodeSnapshot()),
-        };
-    }
-
     public getIndexOfActivePrevNode(nodeIndex: number): number {
         let index = 0;
         for (let i = nodeIndex; i >= 0; i--) {
@@ -64,6 +48,11 @@ export class AnalysisSession {
             }
         }
         return index;
+    }
+
+    public async submitNode(node: Node, params: any): Promise<void> {
+        const recordedTransforms = await node.submit(params);
+        console.log(`[SUBMIT] ${node.id} -> ${recordedTransforms.length}`);
     }
 
     public syncNodeColumnsWhenAddingColumns(startFromNodeIndex: number): void {
@@ -80,22 +69,4 @@ export class AnalysisSession {
             this.nodes[i].columnsOnNodeOutput = [...this.nodes[i].columnsOnNodeOutput, ...newColumns];
         }
     }
-}
-
-export function rehydrateAnalysesFromLocalStorage(analysesRaw: IAnalysis[]): AnalysisSession[] {
-    return analysesRaw.map((analysisRaw) => {
-        return new AnalysisSession({
-            ...analysisRaw,
-            nodes: analysisRaw.nodes.map((nodeRaw) => {
-                return nodeFactory(nodeRaw);
-            }),
-        });
-    });
-}
-
-export function saveAnalysesToLocalStorage(analyses: AnalysisSession[]): void {
-    toLocalStorage(
-        LS_KEY_ANALYSES,
-        analyses.map((analysis) => analysis.getSnapshot()),
-    );
 }

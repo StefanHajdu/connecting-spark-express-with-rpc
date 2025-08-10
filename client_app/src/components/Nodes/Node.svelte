@@ -3,7 +3,6 @@ import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle 
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
 // import { tryRestoreNodes, syncOutRemovedColumns, getIndexOfActivePrevNode } from "$lib/utils";
-import type { SparkTransformResponse } from "$lib/dtype";
 import { AnalysisSession } from "../Analysis/AnalysisSessionClass.svelte";
 import { nodeFactory } from "./NodeClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
@@ -42,7 +41,6 @@ $effect(() => {
     }
 });
 
-// event
 function insertNode(title: string) {
     // current node = nodeIndex, inserted node = nodeIndex + 1
     let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex);
@@ -58,9 +56,9 @@ function insertNode(title: string) {
 
     // submit empty node, empty node returns 'select * from df'
     let _ = node.submit({
-        analysisId: analyses[analysisIndex].id,
-        nodeId: node.id,
-        prevNodeId: node.prevNodeId,
+        session_id: analyses[analysisIndex].id,
+        node_id: node.id,
+        prev_node_id: node.prevNodeId,
     });
     analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, node);
 

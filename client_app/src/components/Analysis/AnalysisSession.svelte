@@ -10,10 +10,10 @@ interface Props {
 }
 
 let { analyses = $bindable(), analysisIndex }: Props = $props();
-let previewFooterComponent: any;
+let previewFooter: any;
 
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
-    await previewFooterComponent.forwardPreview(analysiId, nodeId);
+    await previewFooter.forwardPreview(analysiId, nodeId);
 }
 </script>
 
@@ -35,5 +35,5 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
             {/each}
         </div>
     </main>
-    <PreviewFooter bind:this={previewFooterComponent} />
+    <PreviewFooter bind:this={previewFooter} />
 </TabItem>
