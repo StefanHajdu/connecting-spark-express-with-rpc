@@ -40,10 +40,6 @@ export abstract class Node {
         this.invalidState = params.invalidState ? params.invalidState : { active: false, error_msg: "" };
     }
 
-    public setInvalidState(value: boolean, description: string) {
-        this.invalidState = { active: value, error_msg: description };
-    }
-
     public abstract submit(params: any): Promise<SparkTransform[]>;
     public abstract setUserInput(params: any): void;
 }
@@ -100,7 +96,7 @@ export class AddColumnNode extends Node {
         const objs = await textBufferSparkStreamingApi(streamingResponse);
         const transforms: SparkTransform[] = JSON.parse(objs);
 
-        return transforms;
+        return transforms.filter((t) => t.node_id);
     }
 }
 

@@ -53,6 +53,17 @@ export class AnalysisSession {
     public async submitNode(node: Node, params: any): Promise<void> {
         const recordedTransforms = await node.submit(params);
         console.log(`[SUBMIT] ${node.id} -> ${recordedTransforms.length}`);
+
+        for (let i = 0; i < recordedTransforms.length; i++) {
+            let nodeIndex = this.nodes.map((n) => n.id).indexOf(recordedTransforms[i].node_id);
+            if (nodeIndex > 0) {
+                let node = this.nodes[nodeIndex];
+                let prevNode = this.nodes[nodeIndex - 1];
+                node.columnsOnNodeInput = prevNode.columnsOnNodeOutput;
+                node.columnsOnNodeOutput = recordedTransforms[i].columns;
+                node.invalidState = recordedTransforms[i].invalid_state;
+            }
+        }
     }
 
     public syncNodeColumnsWhenAddingColumns(startFromNodeIndex: number): void {
