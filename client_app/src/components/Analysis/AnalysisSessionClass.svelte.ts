@@ -65,19 +65,4 @@ export class AnalysisSession {
             }
         }
     }
-
-    public syncNodeColumnsWhenAddingColumns(startFromNodeIndex: number): void {
-        // nodes[startIndex].columnsOnNodeOutput - nodes[startIndex].columnsOnNodeInput
-        let newColumns = this.nodes[startFromNodeIndex].columnsOnNodeOutput.filter(
-            (colOut) =>
-                !this.nodes[startFromNodeIndex].columnsOnNodeInput.some(
-                    (colIn) => colIn.name === colOut.name && colIn.dtype === colOut.dtype,
-                ),
-        );
-        console.log("newCols", newColumns);
-        for (let i = startFromNodeIndex + 1; i < this.nodes.length; i++) {
-            this.nodes[i].columnsOnNodeInput = [...this.nodes[i].columnsOnNodeInput, ...newColumns];
-            this.nodes[i].columnsOnNodeOutput = [...this.nodes[i].columnsOnNodeOutput, ...newColumns];
-        }
-    }
 }
