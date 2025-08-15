@@ -13,7 +13,8 @@
   "python-envs.pythonProjects": [],
   "ruff.nativeServer": "on",
   "python.testing.pytestArgs": [
-    "spark_api/test"
+    "spark_api/test",
+    "-s"
   ],
   "python.analysis.extraPaths": [
     "../lib",
