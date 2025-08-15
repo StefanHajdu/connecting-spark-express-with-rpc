@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import deque
 
 import sparkapi_pb2
-from exceptions import EmptyException, InvalidRemovalException, LoadNodeRemovalException, NodeMissingException
+from exceptions import LoadNodeRemovalException, NodeMissingException
 from pyspark.errors import PySparkException
 from pyspark.sql import SparkSession
 
@@ -65,12 +65,9 @@ class SessionPlanner:
             self._delete_node(del_position)
             return self.update_plan(spark, self.nodes[del_position - 1])
         else:
-            if not isinstance(ex := self.is_removal_safe(spark, del_position), InvalidRemovalException):
-                self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
-                self._delete_node(del_position)
-                return self.update_plan(spark, self.nodes[del_position])
-            else:
-                raise ex
+            self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
+            self._delete_node(del_position)
+            return self.update_plan(spark, self.nodes[del_position])
 
     def get_node_index(self, node_id: str) -> int:
         for idx, node in enumerate(self.nodes):
@@ -80,17 +77,6 @@ class SessionPlanner:
 
     def _is_position_last(self, node_position: int) -> bool:
         return node_position == len(self.nodes) - 1
-
-    def is_removal_safe(self, spark: SparkSession, to_remove_idx: int) -> Exception:
-        node_positions = [to_remove_idx - 1] + list(range(to_remove_idx + 1, len(self.nodes)))
-        try:
-            for idx in range(1, len(node_positions)):
-                node = self.nodes[node_positions[idx]]
-                node.df = node.run_transform(spark=spark, df=self.nodes[node_positions[idx - 1]].df)
-            return EmptyException()
-        except PySparkException as ex:
-            msg = f'Error: {ex.getErrorClass()}, params: {ex.getMessageParameters()}, recorded on node: {self.nodes[node_positions[idx]].node_id}'  # noqa
-            return InvalidRemovalException(msg)
 
     def _delete_node(self, position: int):
         del self.nodes[position]
@@ -127,6 +113,6 @@ class SessionPlanner:
                             columns=node.columns,
                         )
                     )
-                    break
+                break
 
         return recorded_spark_transforms

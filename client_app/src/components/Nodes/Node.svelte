@@ -2,9 +2,7 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-// import { tryRestoreNodes, syncOutRemovedColumns, getIndexOfActivePrevNode } from "$lib/utils";
 import { AnalysisSession } from "../Analysis/AnalysisSessionClass.svelte";
-import { nodeFactory } from "./NodeClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
@@ -41,48 +39,19 @@ $effect(() => {
     }
 });
 
-function insertNode(title: string) {
-    // current node = nodeIndex, inserted node = nodeIndex + 1
-    let prevNodeIndex = analyses[analysisIndex].getIndexOfActivePrevNode(nodeIndex);
-    let node = nodeFactory({
-        title: title,
-        prevNodeId: analyses[analysisIndex].nodes[prevNodeIndex].id,
-        columnsOnNodeInput: analyses[analysisIndex].nodes[prevNodeIndex].columnsOnNodeOutput,
-    });
+async function insertNode(title: string) {
+    let node = analyses[analysisIndex].createNode(title, nodeIndex);
+    await analyses[analysisIndex].insertNode(node, nodeIndex);
 
-    if (analyses[analysisIndex].nodes[nodeIndex + 1]) {
-        analyses[analysisIndex].nodes[nodeIndex + 1].prevNodeId = node.id;
-    }
-
-    // submit empty node, empty node returns 'select * from df'
-    let _ = node.submit({
-        session_id: analyses[analysisIndex].id,
-        node_id: node.id,
-        prev_node_id: node.prevNodeId,
-    });
-    analyses[analysisIndex].nodes = analyses[analysisIndex].nodes.toSpliced(nodeIndex + 1, 0, node);
-
-    // update widgets
     nodeIdDOM = node.id;
     newNodeDropdownOpen = false;
 }
 
-// event
-// async function removeNode(apiInvolved: boolean) {
-//     // todo: cannot remove node that is not present on backend
-//     if (apiInvolved) {
-//         let transformResponse: SparkTransformResponse = await fetchSparkApi("rpc/sessionNode/transform/removeNode", {
-//             session_id: analyses[analysisIndex].id,
-//             node_id: analyses[analysisIndex].nodes[nodeIndex].id,
-//         });
-//         if (transformResponse) {
-//             syncOutRemovedColumns(analyses[analysisIndex].nodes, nodeIndex);
-//         }
-//     }
+async function removeNode() {
+    await analyses[analysisIndex].removeNode(nodeIndex);
 
-//     analyses[analysisIndex].nodes.splice(nodeIndex, 1);
-//     optionsOpen = false;
-// }
+    optionsOpen = false;
+}
 
 // event
 // async function toggleNode(apiInvolved: boolean) {
@@ -157,13 +126,10 @@ function summarizeNode() {
             <Dropdown class="w-36" bind:open={optionsOpen}>
                 {#if analyses[analysisIndex].nodes[nodeIndex].nodeType !== "input"}
                     <div class="flex items-stretch">
-                        <!-- <DropdownItem
-                            class="flex items-center"
-                            disabled={!activeNodeStatus}
-                            onclick={() => reactWhenSourceChangedWrapper(removeNode)}>
+                        <DropdownItem class="flex items-center" disabled={!activeNodeStatus} onclick={removeNode}>
                             <TrashBinOutline class="mr-2" />
                             Remove
-                        </DropdownItem> -->
+                        </DropdownItem>
                     </div>
                 {/if}
             </Dropdown>
