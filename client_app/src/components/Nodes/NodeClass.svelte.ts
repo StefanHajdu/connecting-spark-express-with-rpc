@@ -96,7 +96,7 @@ export class AddColumnNode extends Node {
         const objs = await textBufferSparkStreamingApi(streamingResponse);
         const transforms: SparkTransform[] = JSON.parse(objs);
 
-        return transforms.filter((t) => t.node_id);
+        return transforms;
     }
 }
 

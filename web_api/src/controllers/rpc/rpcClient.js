@@ -27,6 +27,35 @@ export class RpcClient {
     );
   }
 
+  forwardStream(stream, httpResponse, next) {
+    httpResponse.writeHead(200, {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    });
+
+    let cnt = 0;
+    stream.on("data", (chunk) => {
+      if (cnt === 0) {
+        httpResponse.write("[");
+        httpResponse.write(JSON.stringify(chunk));
+      } else {
+        httpResponse.write(",");
+        httpResponse.write(JSON.stringify(chunk));
+      }
+      cnt += 1;
+    });
+
+    stream.on("end", () => {
+      httpResponse.write("]");
+      httpResponse.end();
+      next();
+    });
+
+    stream.on("error", (err) => {
+      console.log(`ERROR: ${err}`);
+    });
+  }
+
   // HANDLE SESSIONS
   createSession(body, httpResponse, next) {
     return this.client.createSession(body, (err, rpcResponse) => {
@@ -99,23 +128,9 @@ export class RpcClient {
     });
   }
 
-  submitNewColumnNode(body, httpResponseStream, next) {
-    httpResponseStream.writeHead(200, {
-      "Content-Type": "application/json",
-      "Transfer-Encoding": "chunked",
-    });
-
-    httpResponseStream.write("[");
-
-    const previewStream = this.client.submit_NewColumnNode(body);
-    previewStream.on("data", (chunk) => {
-      httpResponseStream.write(`${JSON.stringify(chunk)},`);
-    });
-    previewStream.on("end", () => {
-      httpResponseStream.write("{}]");
-      httpResponseStream.end();
-      next();
-    });
+  submitNewColumnNode(body, httpResponse, next) {
+    const stream = this.client.submit_NewColumnNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   submitTableNode(body, httpResponse, next) {
@@ -149,20 +164,9 @@ export class RpcClient {
   }
 
   // REMOVE NODE
-  removeNode(body, httpResponseStream, next) {
-    httpResponseStream.writeHead(200, {
-      "Content-Type": "application/json",
-      "Transfer-Encoding": "chunked",
-    });
-    const previewStream = this.client.removeNode(body);
-    previewStream.on("data", (chunk) => {
-      console.log(chunk);
-      httpResponseStream.write(JSON.stringify(chunk));
-    });
-    previewStream.on("end", () => {
-      httpResponseStream.end();
-      next();
-    });
+  removeNode(body, httpResponse, next) {
+    const stream = this.client.removeNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   // ACTIONS
@@ -171,6 +175,7 @@ export class RpcClient {
       "Content-Type": "application/json",
       "Transfer-Encoding": "chunked",
     });
+
     const previewStream = this.client.previewDataset(body);
     previewStream.on("data", (chunk) => {
       httpResponseStream.write(chunk.data);
