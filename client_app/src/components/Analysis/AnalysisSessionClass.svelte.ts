@@ -90,6 +90,19 @@ export class AnalysisSession {
         this.updateNodes(recordedTransforms);
     }
 
+    public async toggleNode(nodeIndex: number, toggle: boolean): Promise<void> {
+        const params = {
+            session_id: this.id,
+            node_id: this.nodes[nodeIndex].id,
+            toggle: toggle,
+        };
+        const streamingResponse = await post("rpc/sessionNode/transform/toggleNode", params);
+        const objs = await textBufferSparkStreamingApi(streamingResponse);
+        const recordedTransforms: SparkTransform[] = JSON.parse(objs);
+
+        this.updateNodes(recordedTransforms);
+    }
+
     public async submitNode(node: Node, params: any): Promise<void> {
         const recordedTransforms = await node.submit(params);
         this.updateNodes(recordedTransforms);

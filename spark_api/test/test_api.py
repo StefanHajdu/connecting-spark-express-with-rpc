@@ -82,6 +82,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
                 {
                     'columns': [
@@ -100,6 +101,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
                 {
                     'columns': [
@@ -119,6 +121,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
             ],
         ),
@@ -148,6 +151,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(2),
                     'node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
                 {
                     'columns': [
@@ -167,6 +171,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(2),
                     'node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
             ],
         ),
@@ -197,6 +202,7 @@ def add_column_dependency(session_id):
                     'session_id': u.to_session_id(3),
                     'node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 },
             ],
         ),
@@ -241,6 +247,7 @@ def test_column_adding(session_id, node_request_body, expected):
                     'session_id': u.to_session_id(3),
                     'node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 }
             ],
         ),
@@ -267,6 +274,7 @@ def test_column_adding(session_id, node_request_body, expected):
                     'session_id': u.to_session_id(4),
                     'node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
                 }
             ],
         ),
@@ -315,6 +323,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",
                     },
+                    'active': True,
                 },
                 {
                     'columns': [
@@ -337,6 +346,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0002",
                     },
+                    'active': True,
                 },
             ],
         ),

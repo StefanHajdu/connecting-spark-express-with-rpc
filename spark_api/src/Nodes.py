@@ -300,7 +300,7 @@ class NewColumnNode(TransformNode):
 
     @property
     def node_input_submitted(self) -> bool:
-        return self.expressions is not None
+        return len(self.expressions) > 0
 
     @property
     def query_template(self) -> str:

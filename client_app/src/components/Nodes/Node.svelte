@@ -53,39 +53,9 @@ async function removeNode() {
     optionsOpen = false;
 }
 
-// event
-// async function toggleNode(apiInvolved: boolean) {
-//     if (activeNodeStatus) {
-//         // enabled => disabled
-//         if (apiInvolved) {
-//             let transformResponse: SparkTransformResponse = await fetchSparkApi(
-//                 "rpc/sessionNode/transform/removeNode",
-//                 {
-//                     session_id: analyses[analysisIndex].id,
-//                     node_id: analyses[analysisIndex].nodes[nodeIndex].id,
-//                 },
-//             );
-//             if (transformResponse) {
-//                 syncOutRemovedColumns(analyses[analysisIndex].nodes, nodeIndex);
-//             }
-//         }
-
-//         analyses[analysisIndex].nodes[nodeIndex].active = false;
-//     } else {
-//         // disabled => enabled
-//         if (apiInvolved) {
-//             let _ = await analyses[analysisIndex].nodes[nodeIndex].submit(
-//                 analyses[analysisIndex].nodes[nodeIndex].getSubmitParams(
-//                     analyses[analysisIndex].id,
-//                     analyses[analysisIndex].nodes,
-//                     nodeIndex,
-//                 ),
-//             );
-//         }
-
-//         analyses[analysisIndex].nodes[nodeIndex].active = true;
-//     }
-// }
+async function toggleNode() {
+    await analyses[analysisIndex].toggleNode(nodeIndex, !activeNodeStatus);
+}
 
 // async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Promise<void>): Promise<void> {
 //     const wrapped = async () => {
@@ -139,8 +109,6 @@ function summarizeNode() {
             <div>
                 <Button id="invalid-state" outline color="red" size="xs"
                     >{analyses[analysisIndex].nodes[nodeIndex].invalidState.error_msg}</Button>
-                <!-- <Tooltip arrow={false} triggeredBy="#invalid-state"
-                    >{nodesInAnalysis[nodeIndex].invalidState.description}</Tooltip> -->
             </div>
         {/if}
 
@@ -175,13 +143,7 @@ function summarizeNode() {
                 disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={summarizeNode}>Summarize</Button>
             {#if analyses[analysisIndex].nodes[nodeIndex].title !== "Load"}
-                <!-- <Toggle
-                    size="small"
-                    class="pt-1"
-                    bind:checked={activeNodeStatus}
-                    onclick={() => {
-                        reactWhenSourceChangedWrapper(toggleNode);
-                    }} /> -->
+                <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
             {/if}
         </div>
 
