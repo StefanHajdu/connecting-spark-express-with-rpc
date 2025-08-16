@@ -45,16 +45,18 @@ class InvalidState(_message.Message):
     def __init__(self, active: bool = ..., error_msg: _Optional[str] = ...) -> None: ...
 
 class SparkTransformResponse(_message.Message):
-    __slots__ = ("session_id", "node_id", "invalid_state", "columns")
+    __slots__ = ("session_id", "node_id", "invalid_state", "active", "columns")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     INVALID_STATE_FIELD_NUMBER: _ClassVar[int]
+    ACTIVE_FIELD_NUMBER: _ClassVar[int]
     COLUMNS_FIELD_NUMBER: _ClassVar[int]
     session_id: str
     node_id: str
     invalid_state: InvalidState
+    active: bool
     columns: _containers.RepeatedCompositeFieldContainer[Column]
-    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
 
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)
@@ -245,6 +247,16 @@ class NodeRemovalRequest(_message.Message):
     session_id: str
     node_id: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ...) -> None: ...
+
+class NodeToggleRequest(_message.Message):
+    __slots__ = ("session_id", "node_id", "toggle")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOGGLE_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    node_id: str
+    toggle: bool
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., toggle: bool = ...) -> None: ...
 
 class LoadFromSessionNodeRequest(_message.Message):
     __slots__ = ("session_id", "input_session_id")

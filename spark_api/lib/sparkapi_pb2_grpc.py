@@ -94,6 +94,11 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.NodeRemovalRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
+        self.toggleNode = channel.unary_stream(
+                '/sparkapi.SparkApi/toggleNode',
+                request_serializer=sparkapi__pb2.NodeToggleRequest.SerializeToString,
+                response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
+                _registered_method=True)
 
 
 class SparkApiServicer(object):
@@ -177,6 +182,12 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def toggleNode(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_SparkApiServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -238,6 +249,11 @@ def add_SparkApiServicer_to_server(servicer, server):
             'removeNode': grpc.unary_stream_rpc_method_handler(
                     servicer.removeNode,
                     request_deserializer=sparkapi__pb2.NodeRemovalRequest.FromString,
+                    response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
+            ),
+            'toggleNode': grpc.unary_stream_rpc_method_handler(
+                    servicer.toggleNode,
+                    request_deserializer=sparkapi__pb2.NodeToggleRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
     }
@@ -564,6 +580,33 @@ class SparkApi(object):
             target,
             '/sparkapi.SparkApi/removeNode',
             sparkapi__pb2.NodeRemovalRequest.SerializeToString,
+            sparkapi__pb2.SparkTransformResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def toggleNode(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/sparkapi.SparkApi/toggleNode',
+            sparkapi__pb2.NodeToggleRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

@@ -37,7 +37,6 @@ class SessionPlanner:
         return any(n.node_id == node.node_id for n in self.nodes)
 
     def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
-        # get node index
         node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
 
@@ -96,6 +95,7 @@ class SessionPlanner:
                         session_id='',
                         node_id=node.node_id,
                         invalid_state=sparkapi_pb2.InvalidState(active=False, error_msg=''),
+                        active=node.active,
                         columns=node.columns,
                     )
                 )
@@ -110,6 +110,7 @@ class SessionPlanner:
                             invalid_state=sparkapi_pb2.InvalidState(
                                 active=True, error_msg=f'{ex.getErrorClass()} with {ex.getMessageParameters()} in node: {node.node_id}'
                             ),
+                            active=node.active,
                             columns=node.columns,
                         )
                     )

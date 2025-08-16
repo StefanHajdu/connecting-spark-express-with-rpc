@@ -60,11 +60,16 @@ class ClientSession:
         node = node_constructor(**kwargs)
         return node
 
-    def remove_node(self, node) -> list[sparkapi_pb2.SparkTransformResponse]:
+    def remove_node(self, node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
         self._log(f'/removeNode: {node.node_id}')
         if isinstance(node, Nodes.TransformNode):
             self.notify_transformation_change()
         return self.plan.remove_node(spark, node.node_id)
+
+    def toggle_node(self, node: Nodes.SparkNode, toggle: bool) -> list[sparkapi_pb2.SparkTransformResponse]:
+        self._log(f'/toggleNode: {node.node_id}')
+        node.active = toggle
+        return self.plan.edit_node(spark, node)
 
     @log_plan_execution('/rebuildSession')
     def rebuild(self):

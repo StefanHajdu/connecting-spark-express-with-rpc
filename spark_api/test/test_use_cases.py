@@ -420,7 +420,13 @@ def test_07_submit_filterNode_before_summarize():
     df_session_1 = u.summarize(session_id=session_0, node_id=node_1)
 
     node_2 = u.submit_filterNode(
-        **{'session_id': session_0, 'node_id': node_1, 'prev_node_id': TEST_STATE.root_node_id, 'expressions': ["tld = '.com'"], 'matching': ''}
+        **{
+            'session_id': session_0,
+            'node_id': node_1,
+            'prev_node_id': TEST_STATE.root_node_id,
+            'expressions': ["tld = '.com'"],
+            'matching': '',
+        }
     )
     df_session_2 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_1['count'] > df_session_2['count']

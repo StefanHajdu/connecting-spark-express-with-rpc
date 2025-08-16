@@ -88,7 +88,7 @@ class SparkRpcApi(SparkApiServicer):
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
             input_metadata=getattr(req, req.WhichOneof('input_metadata')),
-            joinParams=req.joinParams,
+            join_params=req.joinParams,
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
         session.plan.insert_node(spark, node)
@@ -126,11 +126,19 @@ class SparkRpcApi(SparkApiServicer):
 
         return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, node_id=node.node_id, columns=node.columns)
 
-    # remove node
     def removeNode(self, req: sparkapi_pb2.NodeRemovalRequest, unused_context) -> Generator[sparkapi_pb2.SparkTransformResponse]:
         session = clientSessionTable.get_session(req.session_id)
         node = session.plan.get_node_by_id(req.node_id)
         recorded_spark_transforms = session.remove_node(node)
+
+        for transform in recorded_spark_transforms:
+            transform.session_id = session.id
+            yield transform
+
+    def toggleNode(self, req: sparkapi_pb2.NodeToggleRequest, unused_context) -> Generator[sparkapi_pb2.SparkTransformResponse]:
+        session = clientSessionTable.get_session(req.session_id)
+        node = session.plan.get_node_by_id(req.node_id)
+        recorded_spark_transforms = session.toggle_node(node, req.toggle)
 
         for transform in recorded_spark_transforms:
             transform.session_id = session.id

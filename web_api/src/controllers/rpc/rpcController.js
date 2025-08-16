@@ -52,6 +52,10 @@ export const removeNode = asyncHandler(async (req, res, next) => {
   rpcClient.removeNode(req.body, res, next);
 });
 
+export const toggleNode = asyncHandler(async (req, res, next) => {
+  rpcClient.toggleNode(req.body, res, next);
+});
+
 // ACTIONS
 export const summarizeDataset = asyncHandler(async (req, res, next) => {
   rpcClient.summarizeDataset(req.body, res, next);

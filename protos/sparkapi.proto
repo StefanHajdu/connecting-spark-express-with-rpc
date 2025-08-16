@@ -28,6 +28,7 @@ service SparkApi {
     
     // all nodes
     rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
+    rpc toggleNode(NodeToggleRequest) returns (stream SparkTransformResponse) {}
 }
 
 
@@ -60,7 +61,8 @@ message SparkTransformResponse {
     string session_id = 1;
     string node_id = 2;
     InvalidState invalid_state = 3;
-    repeated Column columns = 4;
+    bool active = 4;
+    repeated Column columns = 5;
 }
 
 message DatasetResponse {
@@ -182,6 +184,12 @@ message JoinNodeRequest {
 message NodeRemovalRequest {
     string session_id = 1;
     string node_id = 2;
+}
+
+message NodeToggleRequest {
+    string session_id = 1;
+    string node_id = 2;
+    bool toggle = 3;
 }
 
 message LoadFromSessionNodeRequest {

@@ -169,6 +169,11 @@ export class RpcClient {
     this.forwardStream(stream, httpResponse, next);
   }
 
+  toggleNode(body, httpResponse, next) {
+    const stream = this.client.toggleNode(body);
+    this.forwardStream(stream, httpResponse, next);
+  }
+
   // ACTIONS
   previewDataset(body, httpResponseStream, next) {
     httpResponseStream.writeHead(200, {
