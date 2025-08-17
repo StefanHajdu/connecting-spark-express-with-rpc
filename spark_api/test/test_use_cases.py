@@ -527,6 +527,8 @@ def test_08_removeNode_before_summarize():
 def test_12_toggle():
     session_0 = u.create_session(session_id=u.to_session_id(0))
     u.submit_loadNode({'session_id': session_0, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
+    df_session_0 = u.summarize(session_id=session_0, node_id=TEST_STATE.root_node_id)
+
     node_1 = u.submit_filterNode(
         **{
             'session_id': session_0,
@@ -551,46 +553,17 @@ def test_12_toggle():
     )
     df_session_1 = u.summarize(session_id=session_0, node_id=node_2)
 
-    u.removeNode(
-        **{
-            'session_id': session_0,
-            'node_id': node_1,
-        }
-    )
-    u.removeNode(
-        **{
-            'session_id': session_0,
-            'node_id': node_2,
-        }
-    )
-    res = u.summarize(session_id=session_0, node_id=node_2)
-    assert NODE_MISSING_EXCEPTION.__str__() in res['error']['message']
+    u.toggleNode(**{'session_id': session_0, 'node_id': node_1, 'toggle': False})
+    u.toggleNode(**{'session_id': session_0, 'node_id': node_2, 'toggle': False})
 
-    node_2 = u.submit_filterNode(
-        **{
-            'session_id': session_0,
-            'node_id': u.to_node_id(2),
-            'prev_node_id': TEST_STATE.root_node_id,
-            'expressions': [
-                "registrar = 'GoDaddy.com, LLC'",
-                "registrar = 'NameCheap, Inc.'",
-                "registrar = 'unknown'",
-            ],
-            'matching': 'or',
-        }
-    )
+    res_all_disabled = u.summarize(session_id=session_0, node_id=node_2)
+    assert df_session_0['count'] == res_all_disabled['count']
+
+    u.toggleNode(**{'session_id': session_0, 'node_id': node_2, 'toggle': True})
     df_session_3 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_3['count'] > df_session_1['count']
 
-    node_1 = u.submit_filterNode(
-        **{
-            'session_id': session_0,
-            'node_id': u.to_node_id(1),
-            'prev_node_id': TEST_STATE.root_node_id,
-            'expressions': ["tld = '.com'"],
-            'matching': '',
-        }
-    )
+    u.toggleNode(**{'session_id': session_0, 'node_id': node_1, 'toggle': True})
     df_session_4 = u.summarize(session_id=session_0, node_id=node_2)
     assert df_session_4['count'] == df_session_1['count']
 

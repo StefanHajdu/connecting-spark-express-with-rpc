@@ -217,7 +217,7 @@ def test_column_adding(session_id, node_request_body, expected):
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected):
+    for a, b in zip(res.json(), expected, strict=True):
         assert json.dumps(a) == json.dumps(b)
 
 
@@ -289,7 +289,7 @@ def test_column_removing(session_id, removal_request_body, expected):
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected):
+    for a, b in zip(res.json(), expected, strict=True):
         assert json.dumps(a) == json.dumps(b)
 
 
@@ -321,7 +321,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                     'node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                 },
@@ -344,7 +344,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                     'node_id': u.to_node_id(2),
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0002",
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0002",  # noqa
                     },
                     'active': True,
                 },
@@ -352,7 +352,7 @@ def test_column_removing(session_id, removal_request_body, expected):
         ),
     ],
 )
-def test_column_removing_and_checking_invalid_status(session_id, removal_request_body, expected):
+def test_columns_removal_and_check_invalid_status(session_id, removal_request_body, expected):
     _ = session(session_id)
     _ = u.submit_loadNode({'session_id': session_id, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
     add_some_columns(session_id)
@@ -362,5 +362,247 @@ def test_column_removing_and_checking_invalid_status(session_id, removal_request
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected):
+    for a, b in zip(res.json(), expected, strict=True):
+        assert json.dumps(a) == json.dumps(b)
+
+
+@pytest.mark.parametrize(
+    'session_id, toggle_request_body, expected',
+    [
+        (
+            u.to_session_id(6),
+            {'session_id': u.to_session_id(6), 'node_id': u.to_node_id(1), 'active': False},
+            [
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                    ],
+                    'session_id': u.to_session_id(6),
+                    'node_id': u.to_node_id(1),
+                    'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': False,
+                },
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'b2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(6),
+                    'node_id': u.to_node_id(2),
+                    'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
+                },
+            ],
+        ),
+        (
+            u.to_session_id(7),
+            {'session_id': u.to_session_id(7), 'node_id': u.to_node_id(2), 'active': False},
+            [
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'a2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(7),
+                    'node_id': u.to_node_id(2),
+                    'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': False,
+                }
+            ],
+        ),
+    ],
+)
+def test_node_disable(session_id, toggle_request_body, expected):
+    _ = session(session_id)
+    _ = u.submit_loadNode({'session_id': session_id, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
+    add_some_columns(session_id)
+
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+
+    assert res.status_code == 200
+
+    for a, b in zip(res.json(), expected, strict=True):
+        assert json.dumps(a) == json.dumps(b)
+
+
+@pytest.mark.parametrize(
+    'session_id, add_dependecy, toggle_request_body, expected_excluded, expected_included',
+    [
+        (
+            u.to_session_id(8),
+            True,
+            {'session_id': u.to_session_id(8), 'node_id': u.to_node_id(5), 'toggle': False},
+            [
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(5),
+                    'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': False,
+                },
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'x', 'dtype': 'string'},
+                        {'name': 'a2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(1),
+                    'invalid_state': {
+                        'active': True,
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
+                    },
+                    'active': True,
+                },
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'x', 'dtype': 'string'},
+                        {'name': 'a2', 'dtype': 'string'},
+                        {'name': 'b2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(2),
+                    'invalid_state': {
+                        'active': True,
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0002",  # noqa
+                    },
+                    'active': True,
+                },
+            ],
+            [
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'x', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(5),
+                    'invalid_state': {'active': False, 'error_msg': ''},
+                    'active': True,
+                },
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'x', 'dtype': 'string'},
+                        {'name': 'a2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(1),
+                    'invalid_state': {
+                        'active': False,
+                        'error_msg': '',
+                    },
+                    'active': True,
+                },
+                {
+                    'columns': [
+                        {'name': 'domain', 'dtype': 'string'},
+                        {'name': 'tld', 'dtype': 'string'},
+                        {'name': 'dnssec', 'dtype': 'string'},
+                        {'name': 'registrar', 'dtype': 'string'},
+                        {'name': 'created_at', 'dtype': 'date'},
+                        {'name': 'records_ns', 'dtype': 'string'},
+                        {'name': 'records_ds', 'dtype': 'string'},
+                        {'name': 'records_dnskey', 'dtype': 'string'},
+                        {'name': 'analyzed_at', 'dtype': 'date'},
+                        {'name': 'x', 'dtype': 'string'},
+                        {'name': 'a2', 'dtype': 'string'},
+                        {'name': 'b2', 'dtype': 'string'},
+                    ],
+                    'session_id': u.to_session_id(8),
+                    'node_id': u.to_node_id(2),
+                    'invalid_state': {
+                        'active': False,
+                        'error_msg': '',
+                    },
+                    'active': True,
+                },
+            ],
+        ),
+    ],
+)
+def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_excluded, expected_included):
+    _ = session(session_id)
+    _ = u.submit_loadNode({'session_id': session_id, 'csv': {'delimiter': ';', 'include_header': True, 'path': TEST_STATE.path}})
+    add_some_columns(session_id)
+
+    if add_dependecy:
+        add_column_dependency(session_id)
+
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+    assert res.status_code == 200
+    for a, b in zip(res.json(), expected_excluded, strict=True):
+        assert json.dumps(a) == json.dumps(b)
+
+    toggle_request_body['toggle'] = True
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+    assert res.status_code == 200
+    for a, b in zip(res.json(), expected_included, strict=True):
         assert json.dumps(a) == json.dumps(b)

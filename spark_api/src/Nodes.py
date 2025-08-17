@@ -374,7 +374,7 @@ class VisualizationNode(SparkNode):
         self._active = True
 
     def __str__(self):
-        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'  # noqa
 
     @property
     def query(self) -> str:
