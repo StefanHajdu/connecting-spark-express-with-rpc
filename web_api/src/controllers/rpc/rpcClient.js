@@ -99,13 +99,8 @@ export class RpcClient {
 
   // ADD NODES
   submitLoadDatasetNode(body, httpResponse, next) {
-    return this.client.submit_LoadDatasetNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
-    });
+    const stream = this.client.submit_LoadDatasetNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   submitLoadFromSessionNode(body, httpResponse, next) {

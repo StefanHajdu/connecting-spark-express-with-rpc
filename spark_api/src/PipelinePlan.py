@@ -11,9 +11,9 @@ import Nodes
 
 
 class SessionPlanner:
-    def __init__(self, session_id: str, root_node: Nodes.SparkNode):
+    def __init__(self, session_id: str):
         self.session_id = session_id
-        self.nodes = deque([root_node])
+        self.nodes = deque([])
 
     def get_node_by_id(self, node_id: str) -> Nodes.SparkNode:
         for node in self.nodes:
@@ -39,21 +39,22 @@ class SessionPlanner:
     def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
         node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
-
         return self.update_plan(spark, edited_node)
 
     def append_node(self, spark: SparkSession, new_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
-        prev_position = self.get_node_index(new_node.prev_node_id)
-        if self._is_position_last(prev_position):
-            # append
+        if isinstance(new_node, Nodes.LoadNode):
             self.nodes.append(new_node)
         else:
-            # insert
-            curr_position = prev_position + 1
-            next_position = prev_position + 2
-            self.nodes.insert(curr_position, new_node)
-            self.nodes[next_position].prev_node_id = new_node.node_id
-
+            prev_position = self.get_node_index(new_node.prev_node_id)
+            if self._is_position_last(prev_position):
+                # append
+                self.nodes.append(new_node)
+            else:
+                # insert
+                curr_position = prev_position + 1
+                next_position = prev_position + 2
+                self.nodes.insert(curr_position, new_node)
+                self.nodes[next_position].prev_node_id = new_node.node_id
         return self.update_plan(spark, new_node)
 
     def remove_node(self, spark: SparkSession, node_id: str) -> list[sparkapi_pb2.SparkTransformResponse]:
@@ -68,7 +69,7 @@ class SessionPlanner:
             self._delete_node(del_position)
             return self.update_plan(spark, self.nodes[del_position])
 
-    def get_node_index(self, node_id: str) -> int:
+    def get_node_index(self, node_id: str | None) -> int:
         for idx, node in enumerate(self.nodes):
             if node.node_id == node_id:
                 return idx
@@ -115,5 +116,4 @@ class SessionPlanner:
                         )
                     )
                 break
-
         return recorded_spark_transforms

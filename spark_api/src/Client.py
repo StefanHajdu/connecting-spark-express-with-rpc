@@ -32,6 +32,7 @@ class ClientSession:
         self.name = name
         self.child_sessions = set()
         self.update_status = UpdateStatus()
+        self.plan = PipelinePlan.SessionPlanner(id)
 
     def __hash__(self):
         return hash(self.id)

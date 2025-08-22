@@ -10,7 +10,7 @@ service SparkApi {
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (stream SparkTransformResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node

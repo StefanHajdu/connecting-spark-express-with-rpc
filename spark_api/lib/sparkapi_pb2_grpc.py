@@ -54,7 +54,7 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.SessionStatusRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.StatusResponse.FromString,
                 _registered_method=True)
-        self.submit_LoadDatasetNode = channel.unary_unary(
+        self.submit_LoadDatasetNode = channel.unary_stream(
                 '/sparkapi.SparkApi/submit_LoadDatasetNode',
                 request_serializer=sparkapi__pb2.LoadDatasetNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
@@ -211,7 +211,7 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.SessionStatusRequest.FromString,
                     response_serializer=sparkapi__pb2.StatusResponse.SerializeToString,
             ),
-            'submit_LoadDatasetNode': grpc.unary_unary_rpc_method_handler(
+            'submit_LoadDatasetNode': grpc.unary_stream_rpc_method_handler(
                     servicer.submit_LoadDatasetNode,
                     request_deserializer=sparkapi__pb2.LoadDatasetNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
@@ -386,7 +386,7 @@ class SparkApi(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(
+        return grpc.experimental.unary_stream(
             request,
             target,
             '/sparkapi.SparkApi/submit_LoadDatasetNode',

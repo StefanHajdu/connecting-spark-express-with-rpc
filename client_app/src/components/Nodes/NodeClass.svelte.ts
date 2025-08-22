@@ -68,12 +68,13 @@ export class LoadNode extends Node {
         delete params.session_id;
         let body = { session_id: sessionId, [inputType]: params };
 
-        const response = await post("rpc/sessionNode/transform/submitLoadDatasetNode", body);
-        const transform: SparkTransform = await response.json();
+        const streamingResponse = await post("rpc/sessionNode/transform/submitLoadDatasetNode", body);
+        const objs = await textBufferSparkStreamingApi(streamingResponse);
+        const transforms: SparkTransform[] = JSON.parse(objs);
 
-        this.columnsOnNodeOutput = transform.columns;
+        this.columnsOnNodeOutput = transforms[0].columns;
 
-        return [transform];
+        return transforms;
     }
 }
 
@@ -92,7 +93,6 @@ export class AddColumnNode extends Node {
 
     async submit(params: any): Promise<SparkTransform[]> {
         const streamingResponse = await post("rpc/sessionNode/transform/submitNewColumnNode", params);
-
         const objs = await textBufferSparkStreamingApi(streamingResponse);
         const transforms: SparkTransform[] = JSON.parse(objs);
 
