@@ -109,7 +109,8 @@ class SessionPlanner:
                             session_id='',
                             node_id=node.node_id,
                             invalid_state=sparkapi_pb2.InvalidState(
-                                active=True, error_msg=f'{ex.getErrorClass()} with {ex.getMessageParameters()} in node: {node.node_id}'
+                                active=True,
+                                error_msg=f'{ex.getErrorClass()} with {ex.getMessageParameters()} in node: {self.nodes[node_position].node_id}',  # noqa
                             ),
                             active=node.active,
                             columns=node.columns,
