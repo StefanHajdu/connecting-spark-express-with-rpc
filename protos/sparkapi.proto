@@ -8,17 +8,16 @@ service SparkApi {
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
-    rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (stream SparkTransformResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node
     rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
     
     // add column node
-    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (stream SparkTransformResponse) {}
     
     // join node
     rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
@@ -28,7 +27,8 @@ service SparkApi {
     rpc submit_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
     
     // all nodes
-    rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
+    rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
+    rpc toggleNode(NodeToggleRequest) returns (stream SparkTransformResponse) {}
 }
 
 
@@ -52,10 +52,17 @@ message Column {
     string dtype = 2;
 }
 
+message InvalidState {
+    bool active = 1;
+    string error_msg = 2;
+}
+
 message SparkTransformResponse {
     string session_id = 1;
-    string msg = 2;
-    repeated Column columns = 3;
+    string node_id = 2;
+    InvalidState invalid_state = 3;
+    bool active = 4;
+    repeated Column columns = 5;
 }
 
 message DatasetResponse {
@@ -91,18 +98,19 @@ message ParquetInput {
     string path = 1;
 }
 
-message SessionInput {
-    string session_id = 1;
-}
-
 message LoadDatasetNodeRequest {
     string session_id = 1;
-    oneof input_metadata {
+    oneof user_input {
         CsvInput csv = 2;
         JsonInput json = 3;
         ParquetInput parquet = 4;
     }
 }
+
+message SessionInput {
+    string session_id = 1;
+}
+
 
 message PreviewDatasetRequest {
     string session_id = 1;
@@ -178,13 +186,15 @@ message NodeRemovalRequest {
     string node_id = 2;
 }
 
+message NodeToggleRequest {
+    string session_id = 1;
+    string node_id = 2;
+    bool toggle = 3;
+}
+
 message LoadFromSessionNodeRequest {
     string session_id = 1;
     string input_session_id = 2;
-}
-
-message RebuildRequest {
-    string session_id = 1;
 }
 
 message SessionStatusRequest {

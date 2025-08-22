@@ -1,8 +1,7 @@
-import type { AnalysisSnapshot } from "$lib/dtype";
+import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import type { SparkTransform } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
-import type { IAnalysis } from "../../lib/dtype";
-import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
 
 export class AnalysisSession {
     id: string = $state("");
@@ -33,7 +32,7 @@ export class AnalysisSession {
             : [
                   nodeFactory({
                       title: "Load",
-                      colsInNode: [],
+                      columnsOnNodeInput: [],
                       sumitted: false,
                   }),
               ];
@@ -43,34 +42,82 @@ export class AnalysisSession {
         this.selected = selected;
     }
 
-    public getSnapshot(): AnalysisSnapshot {
-        return {
-            id: $state.snapshot(this.id),
-            name: $state.snapshot(this.name),
-            status: $state.snapshot(this.status),
-            buildTime: $state.snapshot(this.buildTime),
-            resources: $state.snapshot(this.resources),
-            rest: $state.snapshot(this.rest),
-            selected: $state.snapshot(this.selected),
-            nodes: this.nodes.map((node) => node.getClassSnapshot()),
-        };
+    public getIndexOfActivePrevNode(nodeIndex: number): number {
+        let index = 0;
+        for (let i = nodeIndex; i >= 0; i--) {
+            if (this.nodes[i].active) {
+                return i;
+            }
+        }
+        return index;
     }
-}
 
-export function rehydrateAnalysesFromLocalStorage(analysesRaw: IAnalysis[]): AnalysisSession[] {
-    return analysesRaw.map((analysisRaw) => {
-        return new AnalysisSession({
-            ...analysisRaw,
-            nodes: analysisRaw.nodes.map((nodeRaw) => {
-                return nodeFactory(nodeRaw);
-            }),
+    public createNode(title: string, nodeIndex: number): Node {
+        let prevNodeIndex = this.getIndexOfActivePrevNode(nodeIndex);
+        let node = nodeFactory({
+            title: title,
+            prevNodeId: this.nodes[prevNodeIndex].id,
+            columnsOnNodeInput: this.nodes[prevNodeIndex].columnsOnNodeOutput,
         });
-    });
-}
 
-export function saveAnalysesToLocalStorage(analyses: AnalysisSession[]): void {
-    toLocalStorage(
-        LS_KEY_ANALYSES,
-        analyses.map((analysis) => analysis.getSnapshot()),
-    );
+        // current node = nodeIndex, inserted node = nodeIndex + 1
+        if (this.nodes[nodeIndex + 1]) {
+            this.nodes[nodeIndex + 1].prevNodeId = node.id;
+        }
+        return node;
+    }
+
+    public async insertNode(node: Node, nodeIndex: number): Promise<void> {
+        // submit empty node, empty node returns 'select * from df'
+        let _ = await node.submit({
+            session_id: this.id,
+            node_id: node.id,
+            prev_node_id: node.prevNodeId,
+        });
+        this.nodes = this.nodes.toSpliced(nodeIndex + 1, 0, node);
+    }
+
+    public async removeNode(nodeIndex: number): Promise<void> {
+        const params = {
+            session_id: this.id,
+            node_id: this.nodes[nodeIndex].id,
+        };
+        const streamingResponse = await post("rpc/sessionNode/transform/removeNode", params);
+        const objs = await textBufferSparkStreamingApi(streamingResponse);
+        const recordedTransforms: SparkTransform[] = JSON.parse(objs);
+
+        this.nodes.splice(nodeIndex, 1);
+        this.updateNodes(recordedTransforms);
+    }
+
+    public async toggleNode(nodeIndex: number, toggle: boolean): Promise<void> {
+        const params = {
+            session_id: this.id,
+            node_id: this.nodes[nodeIndex].id,
+            toggle: toggle,
+        };
+        const streamingResponse = await post("rpc/sessionNode/transform/toggleNode", params);
+        const objs = await textBufferSparkStreamingApi(streamingResponse);
+        const recordedTransforms: SparkTransform[] = JSON.parse(objs);
+
+        this.updateNodes(recordedTransforms);
+    }
+
+    public async submitNode(node: Node, params: any): Promise<void> {
+        const recordedTransforms = await node.submit(params);
+        this.updateNodes(recordedTransforms);
+    }
+
+    public updateNodes(transforms: SparkTransform[]): void {
+        for (let i = 0; i < transforms.length; i++) {
+            let nodeIndex = this.nodes.map((n) => n.id).indexOf(transforms[i].node_id);
+            if (nodeIndex > 0) {
+                let node = this.nodes[nodeIndex];
+                let prevNode = this.nodes[nodeIndex - 1];
+                node.columnsOnNodeInput = prevNode.columnsOnNodeOutput;
+                node.columnsOnNodeOutput = transforms[i].columns;
+                node.invalidState = transforms[i].invalid_state;
+            }
+        }
+    }
 }

@@ -1,13 +1,17 @@
 <script lang="ts">
-import { browser } from "$app/environment";
 import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
-import type { PageProps } from "./$types";
-import { rehydrateAnalysesFromLocalStorage } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { AnalysisSession as AnalysisSessionConstructor } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { analysesMock } from "$lib/analysesMock";
 
-let { data }: PageProps = $props();
-let analyses = $state(browser ? rehydrateAnalysesFromLocalStorage(data.analysesRaw) : []);
+let analyses = $state(
+    analysesMock.analyses
+        .filter((analysis: any) => analysis.selected)
+        .map((mocked: any) => {
+            return new AnalysisSessionConstructor(mocked);
+        }),
+);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -15,7 +19,7 @@ let analyses = $state(browser ? rehydrateAnalysesFromLocalStorage(data.analysesR
 
     <main class="bg-white-500 space-y-4 p-4">
         <Tabs>
-            {#each analyses.filter((analysis) => analysis.selected) as analysis, i (analysis.id)}
+            {#each analyses as analysis, i (analysis.id)}
                 <AnalysisSession bind:analyses={analyses} analysisIndex={i} />
             {/each}
         </Tabs>

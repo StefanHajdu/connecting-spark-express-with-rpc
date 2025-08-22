@@ -9,7 +9,7 @@ export function concatMap(map: Map<string, any>): string {
     return map.values().reduce((acc, item) => acc + String(item));
 }
 
-export function getActivePredecessor(nodesInAnalysis: Node[], nodeIndex: number): number {
+export function getIndexOfActivePrevNode(nodesInAnalysis: Node[], nodeIndex: number): number {
     let index = 0;
     for (let i = nodeIndex - 1; i >= 0; i--) {
         if (nodesInAnalysis[i].active) {
@@ -48,46 +48,4 @@ export function compileExprString(expr: Expression): string {
 export function compileExprObj(expr: Expression): { expression: string; col_name: string } {
     const params = compileExpr(expr);
     return { expression: `${expr.fname}(${params.join(", ")})`, col_name: expr.newColumnName };
-}
-
-export function syncInNewColumns(nodesInAnalysis: Node[], nodeIndex: number): void {
-    // add dtype to each of added columns
-    let colsAdded = nodesInAnalysis[nodeIndex].colsInNode.filter((col: Column) =>
-        nodesInAnalysis[nodeIndex].colsAdded.has(col.name),
-    );
-    for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
-        let colsInTransformSnapshot = nodesInAnalysis[i].colsInTransform;
-        nodesInAnalysis[i].colsInNode = [...colsInTransformSnapshot, ...colsAdded];
-    }
-}
-
-export function syncOutRemovedColumns(nodesInAnalysis: Node[], nodeIndex: number): void {
-    let colsToRemove = nodesInAnalysis[nodeIndex].colsAdded;
-    if (colsToRemove.size > 0) {
-        for (let i = nodeIndex + 1; i < nodesInAnalysis.length; i++) {
-            let colsReduced = nodesInAnalysis[i].colsInNode.filter((col: Column) => !colsToRemove.has(col.name));
-            nodesInAnalysis[i].colsInNode = colsReduced;
-        }
-    }
-}
-
-export async function tryRestoreNodes(analysisId: string, nodesInAnalysis: Node[], restoreFrom: number): Promise<void> {
-    for (let i = restoreFrom; i < nodesInAnalysis.length; i++) {
-        let invalid = nodesInAnalysis[i].isInvalid(
-            false,
-            nodesInAnalysis[getActivePredecessor(nodesInAnalysis, restoreFrom)],
-        );
-        if (invalid) {
-            for (let j = i + 1; j < nodesInAnalysis.length; j++) {
-                nodesInAnalysis[j].setInvalidState(
-                    true,
-                    "Invalid schema, cannot apply this node. Fix errors in previous node.",
-                );
-            }
-            break;
-        } else {
-            let _ = await nodesInAnalysis[i].submit(nodesInAnalysis[i].getSubmitParams(analysisId, nodesInAnalysis, i));
-            nodesInAnalysis[i].setInvalidState(false, "");
-        }
-    }
 }

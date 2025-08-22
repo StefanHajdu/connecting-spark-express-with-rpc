@@ -36,15 +36,27 @@ class Column(_message.Message):
     dtype: str
     def __init__(self, name: _Optional[str] = ..., dtype: _Optional[str] = ...) -> None: ...
 
+class InvalidState(_message.Message):
+    __slots__ = ("active", "error_msg")
+    ACTIVE_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MSG_FIELD_NUMBER: _ClassVar[int]
+    active: bool
+    error_msg: str
+    def __init__(self, active: bool = ..., error_msg: _Optional[str] = ...) -> None: ...
+
 class SparkTransformResponse(_message.Message):
-    __slots__ = ("session_id", "msg", "columns")
+    __slots__ = ("session_id", "node_id", "invalid_state", "active", "columns")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    MSG_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    INVALID_STATE_FIELD_NUMBER: _ClassVar[int]
+    ACTIVE_FIELD_NUMBER: _ClassVar[int]
     COLUMNS_FIELD_NUMBER: _ClassVar[int]
     session_id: str
-    msg: str
+    node_id: str
+    invalid_state: InvalidState
+    active: bool
     columns: _containers.RepeatedCompositeFieldContainer[Column]
-    def __init__(self, session_id: _Optional[str] = ..., msg: _Optional[str] = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
 
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)
@@ -94,12 +106,6 @@ class ParquetInput(_message.Message):
     path: str
     def __init__(self, path: _Optional[str] = ...) -> None: ...
 
-class SessionInput(_message.Message):
-    __slots__ = ("session_id",)
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
-
 class LoadDatasetNodeRequest(_message.Message):
     __slots__ = ("session_id", "csv", "json", "parquet")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -111,6 +117,12 @@ class LoadDatasetNodeRequest(_message.Message):
     json: JsonInput
     parquet: ParquetInput
     def __init__(self, session_id: _Optional[str] = ..., csv: _Optional[_Union[CsvInput, _Mapping]] = ..., json: _Optional[_Union[JsonInput, _Mapping]] = ..., parquet: _Optional[_Union[ParquetInput, _Mapping]] = ...) -> None: ...
+
+class SessionInput(_message.Message):
+    __slots__ = ("session_id",)
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
 
 class PreviewDatasetRequest(_message.Message):
     __slots__ = ("session_id", "node_id", "limit")
@@ -236,6 +248,16 @@ class NodeRemovalRequest(_message.Message):
     node_id: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ...) -> None: ...
 
+class NodeToggleRequest(_message.Message):
+    __slots__ = ("session_id", "node_id", "toggle")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOGGLE_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    node_id: str
+    toggle: bool
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., toggle: bool = ...) -> None: ...
+
 class LoadFromSessionNodeRequest(_message.Message):
     __slots__ = ("session_id", "input_session_id")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -243,12 +265,6 @@ class LoadFromSessionNodeRequest(_message.Message):
     session_id: str
     input_session_id: str
     def __init__(self, session_id: _Optional[str] = ..., input_session_id: _Optional[str] = ...) -> None: ...
-
-class RebuildRequest(_message.Message):
-    __slots__ = ("session_id",)
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
 
 class SessionStatusRequest(_message.Message):
     __slots__ = ("session_id",)

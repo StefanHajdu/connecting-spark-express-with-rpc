@@ -12,8 +12,8 @@ export interface IAnalysis {
 }
 
 export interface InvalidState {
-    value: boolean;
-    description: string;
+    active: boolean;
+    error_msg: string;
 }
 
 export type SparkActionlResponse = {
@@ -34,10 +34,11 @@ export type Column = {
     dtype: string;
 };
 
-export type SparkTransformResponse = {
+export type SparkTransform = {
     session_id: string;
-    msg: string;
+    node_id: string;
     columns: Column[];
+    invalid_state: InvalidState;
 };
 
 type ValueType = "col" | "input" | "cols";
@@ -74,30 +75,6 @@ export type DataFrame = {
     data: string[][];
 };
 
-export interface AnalysisSnapshot {
-    id: string;
-    name: string;
-    status: string;
-    buildTime: string;
-    resources: string;
-    rest: string;
-    selected: boolean;
-    nodes: NodeSnapshot[];
-}
-
-export interface NodeSnapshot {
-    uuid: string;
-    title: string;
-    nodeType: string;
-    colsAdded: string[];
-    colsUsed: string[];
-    colsInNode: Column[];
-    colsInTransform: Column[];
-    active: boolean;
-    invalidState: InvalidState;
-    submitted: boolean;
-}
-
 export interface ICsvMetadata {
     kind: "csv";
     path: string;
@@ -112,8 +89,4 @@ export interface IJsonMetadata {
 export interface IParquetMetadata {
     kind: "parquet";
     path: string;
-}
-
-export interface LoadNodeSnapshot extends NodeSnapshot {
-    userInput: ICsvMetadata | IJsonMetadata | IParquetMetadata;
 }

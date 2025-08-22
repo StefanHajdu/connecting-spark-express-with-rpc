@@ -67,6 +67,12 @@ def removeNode(**kwargs):
     assert res.status_code == 200
 
 
+def toggleNode(**kwargs):
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=kwargs)
+
+    assert res.status_code == 200
+
+
 def summarize(session_id: str, node_id: str) -> dict:
     json_data = {
         'session_id': session_id,

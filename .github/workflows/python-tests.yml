@@ -2,48 +2,48 @@ name: Python Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master, dev ]
+    branches: [master, dev]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '21'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "21"
 
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '18'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        cd spark_api && pip install -e .
-        cd ../web_api && npm install
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-    - name: Start services
-      run: |
-        chmod +x start-backend.sh
-        ./start-backend.sh &
-        sleep 20
+      - name: Install dependencies
+        run: |
+          cd spark_api && pip install -e .
+          cd ../web_api && npm install
 
-    - name: Run tests
-      run: cd spark_api && pytest test/test_use_cases.py -v
-      env:
-        PYTHONPATH: ${{ github.workspace }}/spark_api/src
+      - name: Start services
+        run: |
+          chmod +x start-backend.sh
+          ./start-backend.sh &
+          sleep 20
 
-    - name: Stop services
-      if: always()
-      run: |
-        [ -f spark_api.pid ] && kill $(cat spark_api.pid) || true
-        [ -f web_api.pid ] && kill $(cat web_api.pid) || true
+      - name: Run tests
+        run: cd spark_api && pytest test/test_use_cases.py test/test_api.py -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}/spark_api/src
+
+      - name: Stop services
+        if: always()
+        run: |
+          [ -f spark_api.pid ] && kill $(cat spark_api.pid) || true
+          [ -f web_api.pid ] && kill $(cat web_api.pid) || true
