@@ -7,14 +7,14 @@ const MASTER_NODE_ID = "0000-0000-0000";
 export function nodeFactory(params: any): Node {
     if (params.title.toLowerCase() === "load") {
         return new LoadNode(params);
-        // } else if (params.title.toLowerCase() === "filter") {
-        //     return new FilterNode(params);
-        // } else if (params.title.toLowerCase() === "join") {
-        //     return new JoinNode(params);
+    } else if (params.title.toLowerCase() === "filter") {
+        return new FilterNode(params);
+    } else if (params.title.toLowerCase() === "join") {
+        return new JoinNode(params);
     } else if (params.title.toLowerCase() === "add column") {
         return new AddColumnNode(params);
-        // } else if (params.title.toLowerCase() === "table") {
-        //     return new TableNode(params);
+    } else if (params.title.toLowerCase() === "table") {
+        return new TableNode(params);
     } else {
         return new LoadNode(params);
     }
@@ -100,116 +100,41 @@ export class AddColumnNode extends Node {
     }
 }
 
-// class FilterNode extends Node {
-//     constructor(title: string, colsInDf: Column[]) {
-//         super(title, colsInDf);
-//         this.nodeType = "sql";
-//     }
+class FilterNode extends Node {
+    constructor(params: any) {
+        super(params);
+        this.nodeType = "sql";
+    }
 
-//     getClassSnapshot(): NodeSnapshot | any {}
+    setUserInput(params: any): void {}
 
-//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-//         return {};
-//     }
+    async submit(params: any): Promise<SparkTransform[]> {
+        return [];
+    }
+}
 
-//     setNodeParams(params: any): void {}
+class JoinNode extends Node {
+    constructor(params: any) {
+        super(params);
+        this.nodeType = "sql";
+    }
 
-//     async submit(params: any): Promise<boolean> {
-//         return true;
-//     }
+    setUserInput(params: any): void {}
 
-//     async submitTransform(params: any): Promise<SparkTransformResponse> {
-//         let transformResponse = fetchSparkApi("/filter", {
-//             session_id: params.analysisId,
-//             node_id: params.nodeId,
-//             prev_node_id: params.prevNodeId,
-//         });
-//         return transformResponse;
-//     }
+    async submit(params: any): Promise<SparkTransform[]> {
+        return [];
+    }
+}
 
-//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
+class TableNode extends Node {
+    constructor(params: any) {
+        super(params);
+        this.nodeType = "sql";
+    }
 
-//     isInvalid(force: boolean, prevNode?: Node): boolean {
-//         if (force) {
-//             this.setInvalidState(true, "invalid schema");
-//             return true;
-//         }
-//         return false;
-//     }
-// }
+    setUserInput(params: any): void {}
 
-// class JoinNode extends Node {
-//     constructor(title: string, colsInDf: Column[]) {
-//         super(title, colsInDf);
-//         this.nodeType = "sql";
-//     }
-
-//     getClassSnapshot(): NodeSnapshot | any {}
-
-//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-//         return {};
-//     }
-
-//     setNodeParams(params: any): void {}
-
-//     async submit(params: any): Promise<boolean> {
-//         return true;
-//     }
-
-//     async submitTransform(params: any): Promise<SparkTransformResponse> {
-//         let transformResponse = fetchSparkApi("/join", {
-//             session_id: params.analysisId,
-//             node_id: params.nodeId,
-//             prev_node_id: params.prevNodeId,
-//         });
-//         return transformResponse;
-//     }
-
-//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
-
-//     isInvalid(force: boolean, prevNode?: Node): boolean {
-//         if (force) {
-//             this.setInvalidState(true, "invalid schema");
-//             return true;
-//         }
-//         return false;
-//     }
-// }
-
-// class TableNode extends Node {
-//     constructor(title: string, colsInDf: Column[]) {
-//         super(title, colsInDf);
-//         this.nodeType = "visualization";
-//     }
-
-//     getClassSnapshot(): NodeSnapshot | any {}
-
-//     getSubmitParams(analysisId: string, nodesInAnalysis: Node[], nodeIndex: number): any {
-//         return {};
-//     }
-
-//     setNodeParams(params: any): void {}
-
-//     async submit(params: any): Promise<boolean> {
-//         return true;
-//     }
-
-//     async submitTransform(params: any): Promise<SparkTransformResponse> {
-//         let transformResponse = fetchSparkApi("/table", {
-//             session_id: params.analysisId,
-//             node_id: params.nodeId,
-//             prev_node_id: params.prevNodeId,
-//         });
-//         return transformResponse;
-//     }
-
-//     parseTransformResponse(res: SparkTransformResponse, params?: any) {}
-
-//     isInvalid(force: boolean, prevNode?: Node): boolean {
-//         if (force) {
-//             this.setInvalidState(true, "invalid schema");
-//             return true;
-//         }
-//         return false;
-//     }
-// }
+    async submit(params: any): Promise<SparkTransform[]> {
+        return [];
+    }
+}
