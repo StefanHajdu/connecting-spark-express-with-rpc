@@ -69,9 +69,9 @@ class SparkApiStub(object):
                 request_serializer=sparkapi__pb2.FilterNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
-        self.submit_NewColumnNode = channel.unary_stream(
-                '/sparkapi.SparkApi/submit_NewColumnNode',
-                request_serializer=sparkapi__pb2.NewColumnNodeRequest.SerializeToString,
+        self.submit_AddColumnNode = channel.unary_stream(
+                '/sparkapi.SparkApi/submit_AddColumnNode',
+                request_serializer=sparkapi__pb2.AddColumnNodeRequest.SerializeToString,
                 response_deserializer=sparkapi__pb2.SparkTransformResponse.FromString,
                 _registered_method=True)
         self.submit_JoinNode = channel.unary_unary(
@@ -148,7 +148,7 @@ class SparkApiServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def submit_NewColumnNode(self, request, context):
+    def submit_AddColumnNode(self, request, context):
         """add column node
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -226,9 +226,9 @@ def add_SparkApiServicer_to_server(servicer, server):
                     request_deserializer=sparkapi__pb2.FilterNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
-            'submit_NewColumnNode': grpc.unary_stream_rpc_method_handler(
-                    servicer.submit_NewColumnNode,
-                    request_deserializer=sparkapi__pb2.NewColumnNodeRequest.FromString,
+            'submit_AddColumnNode': grpc.unary_stream_rpc_method_handler(
+                    servicer.submit_AddColumnNode,
+                    request_deserializer=sparkapi__pb2.AddColumnNodeRequest.FromString,
                     response_serializer=sparkapi__pb2.SparkTransformResponse.SerializeToString,
             ),
             'submit_JoinNode': grpc.unary_unary_rpc_method_handler(
@@ -457,7 +457,7 @@ class SparkApi(object):
             _registered_method=True)
 
     @staticmethod
-    def submit_NewColumnNode(request,
+    def submit_AddColumnNode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -470,8 +470,8 @@ class SparkApi(object):
         return grpc.experimental.unary_stream(
             request,
             target,
-            '/sparkapi.SparkApi/submit_NewColumnNode',
-            sparkapi__pb2.NewColumnNodeRequest.SerializeToString,
+            '/sparkapi.SparkApi/submit_AddColumnNode',
+            sparkapi__pb2.AddColumnNodeRequest.SerializeToString,
             sparkapi__pb2.SparkTransformResponse.FromString,
             options,
             channel_credentials,

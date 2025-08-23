@@ -1,5 +1,4 @@
 import { Node } from "../components/Nodes/NodeClass.svelte";
-import type { Expression, Column, IAnalysis } from "./dtype";
 
 export function sleepNow(delay: number) {
     new Promise((resolve) => setTimeout(resolve, delay * 1000));

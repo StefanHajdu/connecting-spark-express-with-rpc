@@ -1,4 +1,5 @@
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
+import { compile } from "svelte/compiler";
 import { v4 as uuidv4 } from "uuid";
 
 type CustomInputType = "number" | "text";
@@ -79,5 +80,21 @@ export class AddColumnExpression extends Expression {
     public toString(): string {
         const params = this.compileParams();
         return `${this.methodName}(${params.join(", ")}) as ${this.newColumnName}`;
+    }
+
+    public pack(): any {
+        return {
+            expression: {
+                method_name: this.methodName,
+                return_value_type: this.returnValueType,
+                params: this.params.map((param) => {
+                    return {
+                        ...param,
+                        value_json: JSON.stringify(param.valueField),
+                    };
+                }),
+                compiled: this.toString(),
+            },
+        };
     }
 }

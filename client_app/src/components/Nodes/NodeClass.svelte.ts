@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import type { Column, SparkTransform, InvalidState, ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import { AddColumnExpression } from "../Expression/Expression.svelte";
 
 const MASTER_NODE_ID = "0000-0000-0000";
 
@@ -79,20 +80,21 @@ export class LoadNode extends Node {
 }
 
 export class AddColumnNode extends Node {
-    expressions: any[];
+    userInput: AddColumnExpression[];
 
     constructor(params: any) {
         super(params);
         this.nodeType = "transform";
-        this.expressions = [];
+        this.userInput = params.userInput ? params.userInput : [];
     }
 
-    setUserInput(params: any): void {
-        this.expressions = params;
+    setUserInput(expressions: AddColumnExpression[]): void {
+        this.userInput = expressions;
     }
 
     async submit(params: any): Promise<SparkTransform[]> {
-        const streamingResponse = await post("rpc/sessionNode/transform/submitNewColumnNode", params);
+        const body = { ...params, user_input: this.userInput.map((u) => u.pack()) };
+        const streamingResponse = await post("rpc/sessionNode/transform/submitAddColumnNode", body);
         const objs = await textBufferSparkStreamingApi(streamingResponse);
         const transforms: SparkTransform[] = JSON.parse(objs);
 

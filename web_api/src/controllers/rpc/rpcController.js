@@ -31,8 +31,8 @@ export const submitFilterNode = asyncHandler(async (req, res, next) => {
   rpcClient.submitFilterNode(req.body, res, next);
 });
 
-export const submitNewColumnNode = asyncHandler(async (req, res, next) => {
-  rpcClient.submitNewColumnNode(req.body, res, next);
+export const submitAddColumnNode = asyncHandler(async (req, res, next) => {
+  rpcClient.submitAddColumnNode(req.body, res, next);
 });
 
 export const submitJoinNode = asyncHandler(async (req, res, next) => {

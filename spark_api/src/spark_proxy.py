@@ -42,16 +42,16 @@ class SparkRpcApi(SparkApiServicer):
         session.plan = SessionPlanner(req.session_id)
         return sparkapi_pb2.SparkTransformResponse(session_id=req.session_id, node_id=node.node_id, columns=node.columns)
 
-    def submit_NewColumnNode(
-        self, req: sparkapi_pb2.NewColumnNodeRequest, unused_context
+    def submit_AddColumnNode(
+        self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context
     ) -> Generator[sparkapi_pb2.SparkTransformResponse]:
         session = clientSessionTable.get_session(req.session_id)
         node = session.submit_node(
-            node_class='NewColumnNode',
+            node_class='AddColumnNode',
             session_id=session.id,
             node_id=req.node_id,
             prev_node_id=req.prev_node_id,
-            expressions=list(req.expressions),
+            user_input=list(req.user_input),
             prev_df=session.plan.get_node_by_id(req.prev_node_id).df,
         )
 

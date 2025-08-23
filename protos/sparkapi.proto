@@ -17,7 +17,7 @@ service SparkApi {
     rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
     
     // add column node
-    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (stream SparkTransformResponse) {}
+    rpc submit_AddColumnNode(AddColumnNodeRequest) returns (stream SparkTransformResponse) {}
     
     // join node
     rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
@@ -147,16 +147,29 @@ message AddHistogramNodeRequest {
     string expression = 7;
 }
 
-message AddColumnExpression {
-    string expression = 1;
-    string col_name = 2;
+message Param {
+    string name = 1;
+    string dtype = 2;
+    string value_json = 3;
 }
 
-message NewColumnNodeRequest {
+message Expression {
+    string method_name = 1;
+    string return_value_type = 2;
+    repeated Param params = 3;
+    string compiled = 4;
+}
+
+message AddColumnExpression {
+    Expression expression = 1;
+    string new_column_name = 2;
+}
+
+message AddColumnNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    repeated AddColumnExpression expressions = 4;
+    repeated AddColumnExpression user_input = 4;
 }
 
 message JoinParams {

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+from typing import Any
 
 import sparkapi_pb2
 from constants import PLAN_NODE_ROOT_ID
@@ -90,7 +91,7 @@ class SparkNode(ABC):
         return self._user_input
 
     @user_input.setter
-    def user_input(self, val: Message):
+    def user_input(self, val: Any):
         self._user_input = val
 
     @property
@@ -149,7 +150,12 @@ class TransformNode(SparkNode):
         pass
 
     def user_input_to_json(self) -> str:
-        return json.dumps(MessageToDict(self.user_input))
+        if isinstance(self.user_input, Message):
+            return json.dumps(MessageToDict(self.user_input))
+        elif isinstance(self.user_input, list):
+            return json.dumps([MessageToDict(i) for i in self.user_input])
+        else:
+            return ''
 
     def preview(self, limit: int) -> str:
         df_pandas = self.df.limit(limit).toPandas()
@@ -166,7 +172,7 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, user_input: Message):
+    def __init__(self, session_id: str, user_input: Any):
         super().__init__()
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
@@ -258,20 +264,20 @@ class FilterNode(TransformNode):
         return {}
 
 
-class NewColumnNode(TransformNode):
+class AddColumnNode(TransformNode):
     def __init__(
-        self, session_id: str, node_id: str, prev_node_id: str, expressions: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame
+        self, session_id: str, node_id: str, prev_node_id: str, user_input: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame
     ):
         super().__init__()
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.expressions = expressions
+        self.user_input = user_input
         self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
     def node_input_submitted(self) -> bool:
-        return len(self.expressions) > 0
+        return len(self.user_input) > 0
 
     @property
     def query_template(self) -> str:
@@ -279,7 +285,7 @@ class NewColumnNode(TransformNode):
 
     @property
     def query(self) -> str:
-        expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
+        expressions = ', '.join([expr.expression.compiled for expr in self.user_input])
         return self.query_template.format(expressions=expressions, df='{df}')
 
     @property

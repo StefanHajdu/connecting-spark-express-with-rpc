@@ -184,25 +184,47 @@ class AddHistogramNodeRequest(_message.Message):
     expression: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., y_axis_col: _Optional[str] = ..., order_by: _Optional[str] = ..., sort_by: _Optional[str] = ..., expression: _Optional[str] = ...) -> None: ...
 
-class AddColumnExpression(_message.Message):
-    __slots__ = ("expression", "col_name")
-    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
-    COL_NAME_FIELD_NUMBER: _ClassVar[int]
-    expression: str
-    col_name: str
-    def __init__(self, expression: _Optional[str] = ..., col_name: _Optional[str] = ...) -> None: ...
+class Param(_message.Message):
+    __slots__ = ("name", "dtype", "value_json")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DTYPE_FIELD_NUMBER: _ClassVar[int]
+    VALUE_JSON_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    dtype: str
+    value_json: str
+    def __init__(self, name: _Optional[str] = ..., dtype: _Optional[str] = ..., value_json: _Optional[str] = ...) -> None: ...
 
-class NewColumnNodeRequest(_message.Message):
-    __slots__ = ("session_id", "node_id", "prev_node_id", "expressions")
+class Expression(_message.Message):
+    __slots__ = ("method_name", "return_value_type", "params", "compiled")
+    METHOD_NAME_FIELD_NUMBER: _ClassVar[int]
+    RETURN_VALUE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    PARAMS_FIELD_NUMBER: _ClassVar[int]
+    COMPILED_FIELD_NUMBER: _ClassVar[int]
+    method_name: str
+    return_value_type: str
+    params: _containers.RepeatedCompositeFieldContainer[Param]
+    compiled: str
+    def __init__(self, method_name: _Optional[str] = ..., return_value_type: _Optional[str] = ..., params: _Optional[_Iterable[_Union[Param, _Mapping]]] = ..., compiled: _Optional[str] = ...) -> None: ...
+
+class AddColumnExpression(_message.Message):
+    __slots__ = ("expression", "new_column_name")
+    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    NEW_COLUMN_NAME_FIELD_NUMBER: _ClassVar[int]
+    expression: Expression
+    new_column_name: str
+    def __init__(self, expression: _Optional[_Union[Expression, _Mapping]] = ..., new_column_name: _Optional[str] = ...) -> None: ...
+
+class AddColumnNodeRequest(_message.Message):
+    __slots__ = ("session_id", "node_id", "prev_node_id", "user_input")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     PREV_NODE_ID_FIELD_NUMBER: _ClassVar[int]
-    EXPRESSIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_INPUT_FIELD_NUMBER: _ClassVar[int]
     session_id: str
     node_id: str
     prev_node_id: str
-    expressions: _containers.RepeatedCompositeFieldContainer[AddColumnExpression]
-    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., expressions: _Optional[_Iterable[_Union[AddColumnExpression, _Mapping]]] = ...) -> None: ...
+    user_input: _containers.RepeatedCompositeFieldContainer[AddColumnExpression]
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., user_input: _Optional[_Iterable[_Union[AddColumnExpression, _Mapping]]] = ...) -> None: ...
 
 class JoinParams(_message.Message):
     __slots__ = ("join_relation", "columns_to_keep", "columns_to_add", "prefix_for_added_columns", "join_criteria", "criteria_matching")

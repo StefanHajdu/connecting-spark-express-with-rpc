@@ -123,8 +123,8 @@ export class RpcClient {
     });
   }
 
-  submitNewColumnNode(body, httpResponse, next) {
-    const stream = this.client.submit_NewColumnNode(body);
+  submitAddColumnNode(body, httpResponse, next) {
+    const stream = this.client.submit_AddColumnNode(body);
     this.forwardStream(stream, httpResponse, next);
   }
 

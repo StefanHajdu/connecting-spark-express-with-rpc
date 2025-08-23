@@ -29,9 +29,6 @@ function addExpression(returnValueType: string, methodName: string) {
 
 function duplicateExpr(exprId: number) {
     const exprClone = expressions[exprId].clone();
-
-    console.log($state.snapshot(exprClone.params));
-
     expressions.splice(exprId + 1, 0, exprClone);
 }
 
@@ -40,12 +37,12 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    // await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
-    //     session_id: analyses[analysisIndex].id,
-    //     node_id: analyses[analysisIndex].nodes[nodeIndex].id,
-    //     prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
-    //     expressions: expressions.map((expr: any) => compileExprObj(expr)),
-    // });
+    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
+    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
+        session_id: analyses[analysisIndex].id,
+        node_id: analyses[analysisIndex].nodes[nodeIndex].id,
+        prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
+    });
 }
 </script>
 
