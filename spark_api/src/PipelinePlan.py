@@ -39,7 +39,7 @@ class SessionPlanner:
     def edit_node(self, spark: SparkSession, edited_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
         node_position = self.get_node_index(edited_node.node_id)
         self.nodes[node_position] = edited_node
-        return self.update_plan(spark, edited_node)
+        return self.refresh_plan(spark, edited_node)
 
     def append_node(self, spark: SparkSession, new_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
         if isinstance(new_node, Nodes.LoadNode):
@@ -55,7 +55,7 @@ class SessionPlanner:
                 next_position = prev_position + 2
                 self.nodes.insert(curr_position, new_node)
                 self.nodes[next_position].prev_node_id = new_node.node_id
-        return self.update_plan(spark, new_node)
+        return self.refresh_plan(spark, new_node)
 
     def remove_node(self, spark: SparkSession, node_id: str) -> list[sparkapi_pb2.SparkTransformResponse]:
         del_position = self.get_node_index(node_id)
@@ -63,11 +63,11 @@ class SessionPlanner:
             raise LoadNodeRemovalException()
         elif self._is_position_last(del_position):
             self._delete_node(del_position)
-            return self.update_plan(spark, self.nodes[del_position - 1])
+            return self.refresh_plan(spark, self.nodes[del_position - 1])
         else:
             self.nodes[del_position + 1].prev_node_id = self.nodes[del_position - 1].node_id
             self._delete_node(del_position)
-            return self.update_plan(spark, self.nodes[del_position])
+            return self.refresh_plan(spark, self.nodes[del_position])
 
     def get_node_index(self, node_id: str | None) -> int:
         for idx, node in enumerate(self.nodes):
@@ -81,7 +81,7 @@ class SessionPlanner:
     def _delete_node(self, position: int):
         del self.nodes[position]
 
-    def update_plan(self, spark: SparkSession, starting_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
+    def refresh_plan(self, spark: SparkSession, starting_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
         node_index = self.get_node_index(starting_node.node_id)
 
         recorded_spark_transforms = []

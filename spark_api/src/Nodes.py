@@ -6,47 +6,15 @@ from abc import ABC, abstractmethod
 import sparkapi_pb2
 from constants import PLAN_NODE_ROOT_ID
 from google.protobuf.json_format import MessageToDict
+from google.protobuf.message import Message
 from pyspark.sql import DataFrame
 
 import NodeExtensions
 import PipelinePlan
 from misc_types import SparkActionMetadata
+from NodeQuery import node_query_factory
 from spark_session_init import spark
 from utils import load_data_for_spark
-
-
-class NodeQuery(ABC):
-    @property
-    def default_query(self) -> str:
-        return 'select * from {df}'
-
-    @abstractmethod
-    def get_query(self) -> str:
-        pass
-
-
-class ExcludedQuery(NodeQuery):
-    def get_query(self) -> str:
-        return self.default_query
-
-
-class IncludedQuery(NodeQuery):
-    def __init__(self, active: bool, node_specific_query: str):
-        self.active = active
-        self.node_specific_query = node_specific_query
-
-    def get_query(self) -> str:
-        if self.active:
-            return self.node_specific_query
-        else:
-            return self.default_query
-
-
-def node_query_factory(active: bool, node_input_submitted: bool, node_specific_query: str) -> NodeQuery:
-    if active and node_input_submitted:
-        return IncludedQuery(active, node_specific_query)
-    else:
-        return ExcludedQuery()
 
 
 class SparkNode(ABC):
@@ -118,6 +86,14 @@ class SparkNode(ABC):
         self._node_input_submitted = val
 
     @property
+    def user_input(self):
+        return self._user_input
+
+    @user_input.setter
+    def user_input(self, val: Message):
+        self._user_input = val
+
+    @property
     def query_kwargs(self) -> dict:
         return self._query_kwargs
 
@@ -172,6 +148,9 @@ class TransformNode(SparkNode):
     def node_input_submitted(self) -> bool:
         pass
 
+    def user_input_to_json(self) -> str:
+        return json.dumps(MessageToDict(self.user_input))
+
     def preview(self, limit: int) -> str:
         df_pandas = self.df.limit(limit).toPandas()
         # orient='values' translate easiest to html table
@@ -187,7 +166,7 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, user_input: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
+    def __init__(self, session_id: str, user_input: Message):
         super().__init__()
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
@@ -197,7 +176,7 @@ class LoadNode(TransformNode):
 
     @property
     def node_input_submitted(self) -> bool:
-        return self._user_input is not None
+        return self.user_input is not None
 
     @property
     def query_template(self) -> str:
@@ -207,19 +186,11 @@ class LoadNode(TransformNode):
     def query(self) -> str:
         return ''
 
-    @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, val: str):
-        self._path = val
-
     def __str__(self):
-        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self._user_input.path}'  # noqa
+        return f'[{self.__class__.__name__}] -> id: {self.node_id} | {self.user_input_to_json()}'
 
     def run_transform(self, **kwargs):
-        return load_data_for_spark(input_metadata=self._user_input)
+        return load_data_for_spark(input_metadata=self.user_input)
 
 
 class LoadFromSessionNode(TransformNode):

@@ -57,26 +57,6 @@ async function toggleNode() {
     await analyses[analysisIndex].toggleNode(nodeIndex, !activeNodeStatus);
 }
 
-// async function reactWhenSourceChangedWrapper(func: (apiInvolved: boolean) => Promise<void>): Promise<void> {
-//     const wrapped = async () => {
-//         if (!analyses[analysisIndex].nodes[nodeIndex].invalidState.value) {
-//             await func(true);
-//         } else {
-//             await func(false);
-
-//             // trigger restore on following nodes when:
-//             // 1. removing invalid node
-//             // 2. disabling invalid node
-//             let index =
-//                 func.name === "removeNode" || (func.name === "toggleNode" && !activeNodeStatus)
-//                     ? nodeIndex
-//                     : nodeIndex + 1;
-//             await tryRestoreNodes(analyses[analysisIndex].id, analyses[analysisIndex].nodes, index);
-//         }
-//     };
-//     await wrapped();
-// }
-
 function previewNode() {
     preview(analyses[analysisIndex].id, analyses[analysisIndex].nodes[nodeIndex].id);
 }

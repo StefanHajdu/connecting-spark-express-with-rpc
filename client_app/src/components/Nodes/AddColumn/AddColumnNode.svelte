@@ -37,6 +37,8 @@ function addExpression(category: string, fname: string) {
     exprSelectionOpen = false;
 }
 
+$inspect(expressions);
+
 function duplicateExpr(exprId: number) {
     const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
     exprToDuplicate.newColumnName = "new_" + exprToDuplicate.newColumnName;
@@ -68,8 +70,7 @@ async function submit() {
             <ExpressionFrom
                 bind:exprs={expressions}
                 idx={i}
-                colsInPrevDf={analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput}
-                nodeIndex={nodeIndex} />
+                columnsOnNodeInput={analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput} />
             <div class="mt-6 ml-4">
                 <Button
                     color="alternative"
