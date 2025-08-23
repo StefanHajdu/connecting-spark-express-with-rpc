@@ -2,12 +2,10 @@
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
-import { v4 as uuidv4 } from "uuid";
 import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
-import ExpressionFrom from "./ExpressionFrom.svelte";
+import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import type { Expression } from "$lib/dtype";
-import { compileExprString, compileExprObj } from "$lib/utils";
+import { AddColumnExpression } from "../../Expression/Expression.svelte";
 
 interface Props {
     analyses: AnalysisSession[];
@@ -16,34 +14,25 @@ interface Props {
 }
 let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 
-let expressions: Expression[] = $state([]);
+let expressions: AddColumnExpression[] = $state([]);
 let exprSelectionOpen = $state(false);
 
-function addExpression(category: string, fname: string) {
-    // @ts-ignore
-    let expr = sparkColumnFunctions[category].exprs[fname];
-    expressions.push({
-        uuid: "add_col_expr-" + uuidv4(),
-        fname: fname,
-        params: expr["params"].map((param: any) => {
-            return { ...param, valueField: { value: "", source: "input" } };
+function addExpression(returnValueType: string, methodName: string) {
+    expressions.push(
+        new AddColumnExpression({
+            returnValueType: returnValueType,
+            methodName: methodName,
         }),
-        newColumnName: "",
-        // @ts-ignore
-        sparkTypes: new Set(sparkColumnFunctions[category].sparkTypes),
-        // @ts-ignore
-        customInput: sparkColumnFunctions[category].customInput,
-    });
+    );
     exprSelectionOpen = false;
 }
 
-$inspect(expressions);
-
 function duplicateExpr(exprId: number) {
-    const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
-    exprToDuplicate.newColumnName = "new_" + exprToDuplicate.newColumnName;
-    exprToDuplicate.uuid = "add_col_expr-" + uuidv4();
-    expressions.splice(exprId + 1, 0, exprToDuplicate);
+    const exprClone = expressions[exprId].clone();
+
+    console.log($state.snapshot(exprClone.params));
+
+    expressions.splice(exprId + 1, 0, exprClone);
 }
 
 function removeExpr(exprId: number) {
@@ -51,12 +40,12 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
-        session_id: analyses[analysisIndex].id,
-        node_id: analyses[analysisIndex].nodes[nodeIndex].id,
-        prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
-        expressions: expressions.map((expr: any) => compileExprObj(expr)),
-    });
+    // await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
+    //     session_id: analyses[analysisIndex].id,
+    //     node_id: analyses[analysisIndex].nodes[nodeIndex].id,
+    //     prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
+    //     expressions: expressions.map((expr: any) => compileExprObj(expr)),
+    // });
 }
 </script>
 
@@ -86,7 +75,7 @@ async function submit() {
                     }}><FileCopyOutline /></Button>
             </div>
         </div>
-        <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i])}</p>
+        <p class="mt-2 font-mono text-xs">{expressions[i].toString()}</p>
     </div>
 {/each}
 <div class="mt-4 flex justify-center">
