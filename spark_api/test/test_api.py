@@ -19,7 +19,9 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': TEST_STATE.root_node_id,
-            'expressions': [{'expression': 'upper(domain)', 'col_name': 'a2'}],
+            'user_input': [
+                {'expression': {'compiled': 'upper(domain) as a2', 'method_name': 'upper', 'params': [], 'new_column_name': 'a2'}}
+            ],
         }
     )
 
@@ -28,28 +30,30 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_id_1,
-            'expressions': [{'expression': 'upper(tld)', 'col_name': 'b2'}],
+            'user_input': [{'expression': {'compiled': 'upper(tld) as b2', 'method_name': 'upper', 'params': [], 'new_column_name': 'b2'}}],
         }
     )
 
 
 def add_column_dependency(session_id):
     _ = requests.post(
-        'http://localhost:4444/rpc/sessionNode/transform/submitNewColumnNode',
+        'http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode',
         json={
             'session_id': session_id,
             'node_id': u.to_node_id(5),
             'prev_node_id': TEST_STATE.root_node_id,
-            'expressions': [{'expression': 'upper(domain)', 'col_name': 'x'}],
+            'user_input': [
+                {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
+            ],
         },
     )
     _ = requests.post(
-        'http://localhost:4444/rpc/sessionNode/transform/submitNewColumnNode',
+        'http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode',
         json={
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': u.to_node_id(5),
-            'expressions': [{'expression': 'upper(x)', 'col_name': 'a2'}],
+            'user_input': [{'expression': {'compiled': 'upper(x) as a2', 'method_name': 'upper', 'params': [], 'new_column_name': 'a2'}}],
         },
     )
 
@@ -63,7 +67,9 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(1),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': TEST_STATE.root_node_id,
-                'expressions': [{'expression': 'upper(domain)', 'col_name': 'x'}],
+                'user_input': [
+                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
+                ],
             },
             [
                 {
@@ -81,6 +87,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(5),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -100,6 +107,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -120,6 +128,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(1),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -131,7 +140,9 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(2),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(1),
-                'expressions': [{'expression': 'upper(domain)', 'col_name': 'x'}],
+                'user_input': [
+                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
+                ],
             },
             [
                 {
@@ -150,6 +161,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(2),
                     'node_id': u.to_node_id(5),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -170,6 +182,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(2),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -181,7 +194,9 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(3),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(2),
-                'expressions': [{'expression': 'upper(domain)', 'col_name': 'x'}],
+                'user_input': [
+                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
+                ],
             },
             [
                 {
@@ -201,6 +216,7 @@ def add_column_dependency(session_id):
                     ],
                     'session_id': u.to_session_id(3),
                     'node_id': u.to_node_id(5),
+                    'prev_node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -213,7 +229,7 @@ def test_column_adding(session_id, node_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitNewColumnNode', json=node_request_body)
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode', json=node_request_body)
 
     assert res.status_code == 200
 
@@ -246,6 +262,7 @@ def test_column_adding(session_id, node_request_body, expected):
                     ],
                     'session_id': u.to_session_id(30),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 }
@@ -273,6 +290,7 @@ def test_column_adding(session_id, node_request_body, expected):
                     ],
                     'session_id': u.to_session_id(4),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 }
@@ -319,6 +337,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                     ],
                     'session_id': u.to_session_id(5),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
@@ -342,6 +361,7 @@ def test_column_removing(session_id, removal_request_body, expected):
                     ],
                     'session_id': u.to_session_id(5),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
@@ -387,6 +407,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     ],
                     'session_id': u.to_session_id(6),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
                 },
@@ -405,6 +426,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     ],
                     'session_id': u.to_session_id(6),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -429,6 +451,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     ],
                     'session_id': u.to_session_id(7),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
                 }
@@ -471,6 +494,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(5),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
                 },
@@ -490,6 +514,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': u.to_node_id(5),
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
@@ -513,6 +538,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
@@ -536,6 +562,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(5),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -555,6 +582,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': u.to_node_id(5),
                     'invalid_state': {
                         'active': False,
                         'error_msg': '',
@@ -578,6 +606,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     ],
                     'session_id': u.to_session_id(8),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': False,
                         'error_msg': '',
@@ -619,6 +648,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'columns': [{'name': 'id', 'dtype': 'long'}, {'name': 'name', 'dtype': 'string'}],
                     'session_id': u.to_session_id(9),
                     'node_id': TEST_STATE.root_node_id,
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': False,
                         'error_msg': '',
@@ -640,6 +670,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     ],
                     'session_id': u.to_session_id(9),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
@@ -662,6 +693,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     ],
                     'session_id': u.to_session_id(9),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
@@ -688,6 +720,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     ],
                     'session_id': u.to_session_id(90),
                     'node_id': TEST_STATE.root_node_id,
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -706,6 +739,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     ],
                     'session_id': u.to_session_id(90),
                     'node_id': u.to_node_id(1),
+                    'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },
@@ -725,6 +759,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     ],
                     'session_id': u.to_session_id(90),
                     'node_id': u.to_node_id(2),
+                    'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                 },

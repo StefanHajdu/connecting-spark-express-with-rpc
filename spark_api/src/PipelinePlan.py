@@ -87,7 +87,8 @@ class SessionPlanner:
         recorded_spark_transforms = []
         for node_position in range(node_index, len(self.nodes)):
             node = self.nodes[node_position]
-            prev_node = self.nodes[node_position - 1]
+            prev_node_index = node_position - 1 if node_position > 0 else 0
+            prev_node = self.nodes[prev_node_index]
 
             try:
                 node.df = node.run_transform(spark=spark, df=prev_node.df)
@@ -105,7 +106,8 @@ class SessionPlanner:
                 # invalidate rest of nodes
                 for position_of_invalid in range(node_position, len(self.nodes)):
                     node = self.nodes[position_of_invalid]
-                    prev_node = self.nodes[position_of_invalid - 1]
+                    prev_node_index = position_of_invalid - 1 if position_of_invalid > 0 else 0
+                    prev_node = self.nodes[prev_node_index]
                     recorded_spark_transforms.append(
                         sparkapi_pb2.SparkTransformResponse(
                             session_id='',

@@ -94,6 +94,7 @@ export class AddColumnExpression extends Expression {
                     };
                 }),
                 compiled: this.toString(),
+                new_column_name: this.newColumnName,
             },
         };
     }

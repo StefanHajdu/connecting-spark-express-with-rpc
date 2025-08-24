@@ -48,7 +48,7 @@ def submit_filterNode(**kwargs) -> str:
 
 
 def submit_newColumnNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitNewColumnNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
