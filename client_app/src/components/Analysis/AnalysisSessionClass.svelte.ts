@@ -116,6 +116,7 @@ export class AnalysisSession {
                 let prevNode = this.nodes[nodeIndex - 1];
                 node.columnsOnNodeInput = prevNode.columnsOnNodeOutput;
                 node.columnsOnNodeOutput = transforms[i].columns;
+                node.prevNodeId = transforms[i].prev_node_id;
                 node.invalidState = transforms[i].invalid_state;
             }
         }

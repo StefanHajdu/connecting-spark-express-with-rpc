@@ -95,6 +95,7 @@ class SessionPlanner:
                     sparkapi_pb2.SparkTransformResponse(
                         session_id='',
                         node_id=node.node_id,
+                        prev_node_id=prev_node.node_id,
                         invalid_state=sparkapi_pb2.InvalidState(active=False, error_msg=''),
                         active=node.active,
                         columns=node.columns,
@@ -104,10 +105,12 @@ class SessionPlanner:
                 # invalidate rest of nodes
                 for position_of_invalid in range(node_position, len(self.nodes)):
                     node = self.nodes[position_of_invalid]
+                    prev_node = self.nodes[position_of_invalid - 1]
                     recorded_spark_transforms.append(
                         sparkapi_pb2.SparkTransformResponse(
                             session_id='',
                             node_id=node.node_id,
+                            prev_node_id=prev_node.node_id,
                             invalid_state=sparkapi_pb2.InvalidState(
                                 active=True,
                                 error_msg=f'{ex.getErrorClass()} with {ex.getMessageParameters()} in node: {self.nodes[node_position].node_id}',  # noqa

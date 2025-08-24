@@ -60,9 +60,10 @@ message InvalidState {
 message SparkTransformResponse {
     string session_id = 1;
     string node_id = 2;
-    InvalidState invalid_state = 3;
-    bool active = 4;
-    repeated Column columns = 5;
+    string prev_node_id = 3;
+    InvalidState invalid_state = 4;
+    bool active = 5;
+    repeated Column columns = 6;
 }
 
 message DatasetResponse {

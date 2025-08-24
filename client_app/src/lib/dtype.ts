@@ -39,6 +39,8 @@ export type SparkTransform = {
     node_id: string;
     columns: Column[];
     invalid_state: InvalidState;
+    active: boolean;
+    prev_node_id: string;
 };
 
 type ValueType = "col" | "input" | "cols";
