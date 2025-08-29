@@ -17,7 +17,6 @@ class SparkRpcApi(SparkApiServicer):
             msg=f'Session {req.id} created.',
         )
 
-    # create node
     def submit_LoadDatasetNode(
         self, req: sparkapi_pb2.LoadDatasetNodeRequest, unused_context
     ) -> Generator[sparkapi_pb2.SparkTransformResponse]:
@@ -46,6 +45,7 @@ class SparkRpcApi(SparkApiServicer):
         self, req: sparkapi_pb2.AddColumnNodeRequest, unused_context
     ) -> Generator[sparkapi_pb2.SparkTransformResponse]:
         session = clientSessionTable.get_session(req.session_id)
+
         node = session.submit_node(
             node_class='AddColumnNode',
             session_id=session.id,
@@ -148,7 +148,6 @@ class SparkRpcApi(SparkApiServicer):
 
         return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())
 
-    # actions
     def summarizeDataset(self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context) -> sparkapi_pb2.SparkActionlResponse:
         session = clientSessionTable.get_session(req.session_id)
         summary = session.summarize(req.node_id)
