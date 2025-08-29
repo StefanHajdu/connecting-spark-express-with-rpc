@@ -14,7 +14,17 @@ interface Props {
 }
 let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 
-let expressions: AddColumnExpression[] = $state([]);
+let expressions: AddColumnExpression[] = $derived.by(() => {
+    let nodeUserInput = analyses[analysisIndex].nodes[nodeIndex].getUserInput();
+    if (nodeUserInput.length > 0) {
+        return nodeUserInput;
+    } else {
+        return [];
+    }
+
+    // return [];
+});
+
 let exprSelectionOpen = $state(false);
 
 function addExpression(returnValueType: string, methodName: string) {
@@ -25,6 +35,7 @@ function addExpression(returnValueType: string, methodName: string) {
         }),
     );
     exprSelectionOpen = false;
+    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
 }
 
 function duplicateExpr(exprId: number) {
@@ -37,7 +48,6 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
     await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
         session_id: analyses[analysisIndex].id,
         node_id: analyses[analysisIndex].nodes[nodeIndex].id,

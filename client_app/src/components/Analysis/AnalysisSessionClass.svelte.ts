@@ -31,7 +31,7 @@ export class AnalysisSession {
             ? params.nodes
             : [
                   nodeFactory({
-                      title: "Load",
+                      title: "LoadNode",
                       columnsOnNodeInput: [],
                       sumitted: false,
                   }),

@@ -15,9 +15,7 @@ def to_node_id(id: int):
 
 
 def create_session(session_id: str) -> str:
-    json_data = {
-        'id': session_id,
-    }
+    json_data = {'id': session_id, 'name': 'random_name'}
     res = requests.post('http://localhost:4444/rpc/session/create', json=json_data)
 
     assert res.status_code == 200 or (res.status_code == 500 and duplicateSessionException.__str__() in res.json()['error']['message'])

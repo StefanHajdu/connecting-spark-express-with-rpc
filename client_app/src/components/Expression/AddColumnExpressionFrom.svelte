@@ -12,6 +12,8 @@ interface Props {
 let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
 let multiColSelection = $state([]);
 let customInputChecked = $state(false);
+
+console.log(exprs);
 </script>
 
 <div class="mt-4 grid gap-3 md:grid-cols-12">
@@ -22,11 +24,14 @@ let customInputChecked = $state(false);
         {#each exprs[idx]["params"] as param, jdx}
             {#if param.dtype === "single_col"}
                 <div>
-                    {#if customInputChecked}
+                    {#if customInputChecked || exprs[idx].params[jdx].valueField.source === "input"}
                         <Label class="text-black-600/75"
                             >value
                             <Input
                                 type={exprs[idx].customInput}
+                                value={exprs[idx].params[jdx].valueField.value
+                                    ? exprs[idx].params[jdx].valueField.value
+                                    : ""}
                                 size="md"
                                 placeholder="..."
                                 oninput={(event) => {

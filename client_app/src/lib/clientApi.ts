@@ -18,6 +18,18 @@ export async function post(transformRoute: string, body: Object): Promise<Respon
     return response;
 }
 
+export async function get(transformRoute: string): Promise<Response> {
+    let url = new URL(transformRoute, BASE_URL);
+    const response = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+    }
+    return response;
+}
+
 export async function textBufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
     const reader = streamingResponse.body?.getReader();
     let decoder = new TextDecoder();

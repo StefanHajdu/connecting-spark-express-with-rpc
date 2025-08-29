@@ -81,7 +81,9 @@ class SessionPlanner:
     def _delete_node(self, position: int):
         del self.nodes[position]
 
-    def refresh_plan(self, spark: SparkSession, starting_node: Nodes.SparkNode) -> list[sparkapi_pb2.SparkTransformResponse]:
+    def refresh_plan(
+        self, spark: SparkSession, starting_node: Nodes.SparkNode, include_user_input: bool = False
+    ) -> list[sparkapi_pb2.SparkTransformResponse]:
         node_index = self.get_node_index(starting_node.node_id)
 
         recorded_spark_transforms = []
@@ -97,9 +99,11 @@ class SessionPlanner:
                         session_id='',
                         node_id=node.node_id,
                         prev_node_id=prev_node.node_id,
+                        title=node.__class__.__name__,
                         invalid_state=sparkapi_pb2.InvalidState(active=False, error_msg=''),
                         active=node.active,
                         columns=node.columns,
+                        user_input=node.user_input_to_json() if include_user_input else '',
                     )
                 )
             except PySparkException as ex:
@@ -113,12 +117,14 @@ class SessionPlanner:
                             session_id='',
                             node_id=node.node_id,
                             prev_node_id=prev_node.node_id,
+                            title=node.__class__.__name__,
                             invalid_state=sparkapi_pb2.InvalidState(
                                 active=True,
                                 error_msg=f'{ex.getErrorClass()} with {ex.getMessageParameters()} in node: {self.nodes[node_position].node_id}',  # noqa
                             ),
                             active=node.active,
                             columns=node.columns,
+                            user_input=node.user_input_to_json() if include_user_input else '',
                         )
                     )
                 break

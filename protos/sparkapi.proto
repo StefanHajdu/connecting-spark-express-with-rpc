@@ -65,11 +65,14 @@ message SparkTransformResponse {
     InvalidState invalid_state = 4;
     bool active = 5;
     repeated Column columns = 6;
+    string title = 7;
+    string user_input = 8;
 }
 
 message SessionResponse {
-    string session_id = 1;
-    repeated SparkTransformResponse transforms = 2;
+    string id = 1;
+    string name = 2;
+    repeated SparkTransformResponse nodes = 3;
 }
 
 message DatasetResponse {

@@ -41,6 +41,8 @@ export type SparkTransform = {
     invalid_state: InvalidState;
     active: boolean;
     prev_node_id: string;
+    title: string;
+    user_input: string;
 };
 
 type ValueType = "col" | "input" | "cols";

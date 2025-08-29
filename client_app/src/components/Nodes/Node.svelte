@@ -101,11 +101,11 @@ function summarizeNode() {
             </p>
         </div>
 
-        {#if analyses[analysisIndex].nodes[nodeIndex].title === "Load"}<LoadNode
+        {#if analyses[analysisIndex].nodes[nodeIndex].title === "LoadNode"}<LoadNode
                 bind:analyses={analyses}
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
-        {:else if analyses[analysisIndex].nodes[nodeIndex].title === "Add Column"}<AddColumnNode
+        {:else if analyses[analysisIndex].nodes[nodeIndex].title === "AddColumnNode"}<AddColumnNode
                 bind:analyses={analyses}
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
@@ -122,7 +122,7 @@ function summarizeNode() {
                 color="light"
                 disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={summarizeNode}>Summarize</Button>
-            {#if analyses[analysisIndex].nodes[nodeIndex].title !== "Load"}
+            {#if analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
                 <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
             {/if}
         </div>
@@ -143,10 +143,10 @@ function summarizeNode() {
         disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Filter")}>Filter</DropdownItem>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Add Column")}>Add Column</DropdownItem>
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Join")}>Join</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("FilterNode")}>Filter</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("AddColumnNode")}>Add Column</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("JoinNode")}>Join</DropdownItem>
         <DropdownDivider />
-        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("Table")}>Table</DropdownItem>
+        <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("TableNode")}>Table</DropdownItem>
     </Dropdown>
 </div>

@@ -45,28 +45,34 @@ class InvalidState(_message.Message):
     def __init__(self, active: bool = ..., error_msg: _Optional[str] = ...) -> None: ...
 
 class SparkTransformResponse(_message.Message):
-    __slots__ = ("session_id", "node_id", "prev_node_id", "invalid_state", "active", "columns")
+    __slots__ = ("session_id", "node_id", "prev_node_id", "invalid_state", "active", "columns", "title", "user_input")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     PREV_NODE_ID_FIELD_NUMBER: _ClassVar[int]
     INVALID_STATE_FIELD_NUMBER: _ClassVar[int]
     ACTIVE_FIELD_NUMBER: _ClassVar[int]
     COLUMNS_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    USER_INPUT_FIELD_NUMBER: _ClassVar[int]
     session_id: str
     node_id: str
     prev_node_id: str
     invalid_state: InvalidState
     active: bool
     columns: _containers.RepeatedCompositeFieldContainer[Column]
-    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
+    title: str
+    user_input: str
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ..., title: _Optional[str] = ..., user_input: _Optional[str] = ...) -> None: ...
 
 class SessionResponse(_message.Message):
-    __slots__ = ("session_id", "transforms")
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    TRANSFORMS_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    transforms: _containers.RepeatedCompositeFieldContainer[SparkTransformResponse]
-    def __init__(self, session_id: _Optional[str] = ..., transforms: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
+    __slots__ = ("id", "name", "nodes")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    NODES_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    nodes: _containers.RepeatedCompositeFieldContainer[SparkTransformResponse]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., nodes: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
 
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)

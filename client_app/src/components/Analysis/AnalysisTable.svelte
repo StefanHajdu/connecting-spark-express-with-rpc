@@ -29,8 +29,8 @@ function checkboxAnalyses(analyses: AnalysisSession[], flag: boolean): void {
 </script>
 
 <div>
-    <Button size="xs" color="blue" href="analyses">Open</Button>
-    <Button size="xs" color="red">Delete</Button>
+    <Button size="xs" color="blue" href="analyses" disabled={true}>Open</Button>
+    <Button size="xs" color="red" disabled={true}>Delete</Button>
 </div>
 <Table hoverable={true}>
     <TableHead>

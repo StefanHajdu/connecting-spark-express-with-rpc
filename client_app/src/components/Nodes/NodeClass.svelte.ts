@@ -6,15 +6,15 @@ import { AddColumnExpression } from "../Expression/Expression.svelte";
 const MASTER_NODE_ID = "0000-0000-0000";
 
 export function nodeFactory(params: any): Node {
-    if (params.title.toLowerCase() === "load") {
+    if (params.title === "LoadNode") {
         return new LoadNode(params);
-    } else if (params.title.toLowerCase() === "filter") {
+    } else if (params.title === "FilterNode") {
         return new FilterNode(params);
-    } else if (params.title.toLowerCase() === "join") {
+    } else if (params.title === "JoinNode") {
         return new JoinNode(params);
-    } else if (params.title.toLowerCase() === "add column") {
+    } else if (params.title === "AddColumnNode") {
         return new AddColumnNode(params);
-    } else if (params.title.toLowerCase() === "table") {
+    } else if (params.title === "TableNode") {
         return new TableNode(params);
     } else {
         return new LoadNode(params);
@@ -33,7 +33,7 @@ export abstract class Node {
 
     constructor(params: any) {
         this.id = params.id ? params.id : "node-" + uuidv4();
-        this.title = params.title;
+        this.title = params.title ? params.title : "NODE TITLE";
         this.prevNodeId = params.prevNodeId;
         this.columnsOnNodeInput = params.columnsOnNodeInput;
         this.columnsOnNodeOutput = params.columnsOnNodeOutput ? params.columnsOnNodeOutput : params.columnsOnNodeInput;
@@ -43,6 +43,7 @@ export abstract class Node {
 
     public abstract submit(params: any): Promise<SparkTransform[]>;
     public abstract setUserInput(params: any): void;
+    public abstract getUserInput(): any;
 }
 
 export class LoadNode extends Node {
@@ -60,6 +61,10 @@ export class LoadNode extends Node {
             kind: params.inputType,
             ...params.userInput,
         };
+    }
+
+    getUserInput(): ICsvMetadata | IJsonMetadata | IParquetMetadata {
+        return this.userInput;
     }
 
     async submit(params: any): Promise<SparkTransform[]> {
@@ -88,8 +93,25 @@ export class AddColumnNode extends Node {
         this.userInput = params.userInput ? params.userInput : [];
     }
 
-    setUserInput(expressions: AddColumnExpression[]): void {
-        this.userInput = expressions;
+    setUserInput(expressions: any): void {
+        if (expressions instanceof Array && expressions.length > 0 && expressions[0] instanceof AddColumnExpression) {
+            this.userInput = expressions;
+        } else {
+            this.userInput = expressions.map((e: any) => {
+                const params = e.expression.params.map((param: any) => {
+                    return {
+                        name: param.name,
+                        dtype: param.dtype,
+                        valueField: JSON.parse(param.valueJson),
+                    };
+                });
+                return new AddColumnExpression({ ...e.expression, params: params });
+            });
+        }
+    }
+
+    getUserInput(): AddColumnExpression[] {
+        return this.userInput;
     }
 
     async submit(params: any): Promise<SparkTransform[]> {
@@ -103,12 +125,18 @@ export class AddColumnNode extends Node {
 }
 
 class FilterNode extends Node {
+    userInput: any;
+
     constructor(params: any) {
         super(params);
         this.nodeType = "sql";
     }
 
     setUserInput(params: any): void {}
+
+    getUserInput(): any[] {
+        return this.userInput;
+    }
 
     async submit(params: any): Promise<SparkTransform[]> {
         return [];
@@ -116,12 +144,18 @@ class FilterNode extends Node {
 }
 
 class JoinNode extends Node {
+    userInput: any;
+
     constructor(params: any) {
         super(params);
         this.nodeType = "sql";
     }
 
     setUserInput(params: any): void {}
+
+    getUserInput(): any[] {
+        return this.userInput;
+    }
 
     async submit(params: any): Promise<SparkTransform[]> {
         return [];
@@ -129,12 +163,18 @@ class JoinNode extends Node {
 }
 
 class TableNode extends Node {
+    userInput: any;
+
     constructor(params: any) {
         super(params);
         this.nodeType = "sql";
     }
 
     setUserInput(params: any): void {}
+
+    getUserInput(): any[] {
+        return this.userInput;
+    }
 
     async submit(params: any): Promise<SparkTransform[]> {
         return [];

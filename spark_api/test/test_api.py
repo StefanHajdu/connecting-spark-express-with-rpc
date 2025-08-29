@@ -780,7 +780,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
             [{'session_id': u.to_session_id(100)}],
             [
                 {
-                    'transforms': [
+                    'nodes': [
                         {
                             'columns': [
                                 {'name': 'domain', 'dtype': 'string'},
@@ -798,6 +798,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'LoadNode',
                         },
                         {
                             'columns': [
@@ -817,6 +818,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                         {
                             'columns': [
@@ -837,9 +839,11 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': 'node_0001',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                     ],
-                    'session_id': u.to_session_id(100),
+                    'id': u.to_session_id(100),
+                    'name': 'random_name',
                 }
             ],
         ),
@@ -847,7 +851,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
             [{'session_id': u.to_session_id(101)}, {'session_id': u.to_session_id(102)}],
             [
                 {
-                    'transforms': [
+                    'nodes': [
                         {
                             'columns': [
                                 {'name': 'domain', 'dtype': 'string'},
@@ -865,6 +869,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'LoadNode',
                         },
                         {
                             'columns': [
@@ -884,6 +889,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                         {
                             'columns': [
@@ -904,12 +910,14 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': 'node_0001',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                     ],
-                    'session_id': u.to_session_id(101),
+                    'id': u.to_session_id(101),
+                    'name': 'random_name',
                 },
                 {
-                    'transforms': [
+                    'nodes': [
                         {
                             'columns': [
                                 {'name': 'domain', 'dtype': 'string'},
@@ -927,6 +935,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'LoadNode',
                         },
                         {
                             'columns': [
@@ -946,6 +955,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                         {
                             'columns': [
@@ -966,9 +976,11 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'prev_node_id': 'node_0001',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
+                            'title': 'AddColumnNode',
                         },
                     ],
-                    'session_id': u.to_session_id(102),
+                    'id': u.to_session_id(102),
+                    'name': 'random_name',
                 },
             ],
         ),

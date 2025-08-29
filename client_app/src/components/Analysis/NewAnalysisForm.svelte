@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
-import { fetchSparkApi } from "$lib/clientApi";
+import { post } from "$lib/clientApi";
 import { goto } from "$app/navigation";
 import { AnalysisSession } from "./AnalysisSessionClass.svelte";
 
@@ -10,7 +10,7 @@ let name = $state("");
 async function initNewAnalysis() {
     let newAnalysis = new AnalysisSession({ name: name, selected: true });
 
-    let createSessionResponse = await fetchSparkApi("/rpc/session/create", {
+    let createSessionResponse = await post("/rpc/session/create", {
         id: newAnalysis.id,
         name: newAnalysis.name,
     });
