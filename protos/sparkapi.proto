@@ -4,6 +4,7 @@ package sparkapi;
 
 service SparkApi {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
+    rpc loadSessions(Empty) returns (stream SessionResponse) {}
     
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
@@ -66,6 +67,11 @@ message SparkTransformResponse {
     repeated Column columns = 6;
 }
 
+message SessionResponse {
+    string session_id = 1;
+    repeated SparkTransformResponse transforms = 2;
+}
+
 message DatasetResponse {
     string data = 1;
 }
@@ -78,6 +84,9 @@ message StatusResponse {
 
 
 // --- Requests ---
+
+message Empty {}
+
 
 message NewSessionRequest {
     string id = 1;

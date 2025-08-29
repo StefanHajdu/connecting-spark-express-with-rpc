@@ -7,9 +7,9 @@ import Client
 
 class ClientSessionTable:
     def __init__(self):
-        self.session_table = {}
+        self.session_table: dict[str, Client.ClientSession] = {}
 
-    def add(self, id, session):
+    def add(self, id: str, session: Client.ClientSession):
         print(f'/createSession: {id}')
         if id in self.session_table:
             raise DuplicateSessionException()

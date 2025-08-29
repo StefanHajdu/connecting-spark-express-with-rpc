@@ -4,6 +4,7 @@ import * as rpcController from "../../controllers/rpc/rpcController.js";
 const router = express.Router();
 
 router.post("/create", rpcController.createSession);
+router.post("/", rpcController.createSession);
 router.post("/status", rpcController.getSessionStatus);
 router.post("/rebuild", rpcController.rebuildSession);
 

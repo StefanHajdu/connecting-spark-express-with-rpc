@@ -8,6 +8,11 @@ export const createSession = asyncHandler(async (req, res, next) => {
   rpcClient.createSession(req.body, res, next);
 });
 
+// LOAD
+export const loadSessions = asyncHandler(async (req, res, next) => {
+  rpcClient.loadSessions(req, res, next);
+});
+
 export const getSessionStatus = asyncHandler(async (req, res, next) => {
   rpcClient.getSessionStatus(req.params, res, next);
 });

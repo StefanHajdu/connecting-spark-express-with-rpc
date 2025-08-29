@@ -60,6 +60,14 @@ class SparkTransformResponse(_message.Message):
     columns: _containers.RepeatedCompositeFieldContainer[Column]
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
 
+class SessionResponse(_message.Message):
+    __slots__ = ("session_id", "transforms")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    TRANSFORMS_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    transforms: _containers.RepeatedCompositeFieldContainer[SparkTransformResponse]
+    def __init__(self, session_id: _Optional[str] = ..., transforms: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
+
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)
     DATA_FIELD_NUMBER: _ClassVar[int]
@@ -75,6 +83,10 @@ class StatusResponse(_message.Message):
     rebuild_recommendation: bool
     cause: str
     def __init__(self, session_id: _Optional[str] = ..., rebuild_recommendation: bool = ..., cause: _Optional[str] = ...) -> None: ...
+
+class Empty(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
 
 class NewSessionRequest(_message.Message):
     __slots__ = ("id", "name")

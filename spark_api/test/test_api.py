@@ -19,9 +19,7 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': TEST_STATE.root_node_id,
-            'user_input': [
-                {'expression': {'compiled': 'upper(domain) as a2', 'method_name': 'upper', 'params': [], 'new_column_name': 'a2'}}
-            ],
+            'user_input': [{'expression': {'compiled': 'upper(domain) as a2', 'method_name': 'upper', 'params': []}}],
         }
     )
 
@@ -30,7 +28,7 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_id_1,
-            'user_input': [{'expression': {'compiled': 'upper(tld) as b2', 'method_name': 'upper', 'params': [], 'new_column_name': 'b2'}}],
+            'user_input': [{'expression': {'compiled': 'upper(tld) as b2', 'method_name': 'upper', 'params': []}}],
         }
     )
 
@@ -42,9 +40,7 @@ def add_column_dependency(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(5),
             'prev_node_id': TEST_STATE.root_node_id,
-            'user_input': [
-                {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-            ],
+            'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': []}}],
         },
     )
     _ = requests.post(
@@ -53,7 +49,7 @@ def add_column_dependency(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': u.to_node_id(5),
-            'user_input': [{'expression': {'compiled': 'upper(x) as a2', 'method_name': 'upper', 'params': [], 'new_column_name': 'a2'}}],
+            'user_input': [{'expression': {'compiled': 'upper(x) as a2', 'method_name': 'upper', 'params': []}}],
         },
     )
 
@@ -67,9 +63,7 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(1),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': TEST_STATE.root_node_id,
-                'user_input': [
-                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-                ],
+                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': []}}],
             },
             [
                 {
@@ -776,4 +770,222 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
+        assert json.dumps(a) == json.dumps(b)
+
+
+@pytest.mark.parametrize(
+    'session_requests, expected',
+    [
+        (
+            [{'session_id': u.to_session_id(100)}],
+            [
+                {
+                    'transforms': [
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': '0000-0000-0000',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0001',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'b2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0002',
+                            'prev_node_id': 'node_0001',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                    ],
+                    'session_id': u.to_session_id(100),
+                }
+            ],
+        ),
+        (
+            [{'session_id': u.to_session_id(101)}, {'session_id': u.to_session_id(102)}],
+            [
+                {
+                    'transforms': [
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': '0000-0000-0000',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0001',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'b2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0002',
+                            'prev_node_id': 'node_0001',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                    ],
+                    'session_id': u.to_session_id(101),
+                },
+                {
+                    'transforms': [
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': '0000-0000-0000',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0001',
+                            'prev_node_id': '0000-0000-0000',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'b2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0002',
+                            'prev_node_id': 'node_0001',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                        },
+                    ],
+                    'session_id': u.to_session_id(102),
+                },
+            ],
+        ),
+    ],
+)
+def test_load_sessions(session_requests, expected):
+    for session_request in session_requests:
+        _ = session(session_request['session_id'])
+        _ = u.submit_loadNode({'session_id': session_request['session_id'], 'parquet': {'path': TEST_STATE.path}})
+        add_some_columns(session_request['session_id'])
+
+    res = requests.get('http://localhost:4444/rpc/load/sessions')
+    assert res.status_code == 200
+
+    res_json = [res.json()[0]]
+    if len(session_requests) > 1:
+        res_json = res.json()[1:3]
+
+    for a, b in zip(res_json, expected, strict=True):
         assert json.dumps(a) == json.dumps(b)

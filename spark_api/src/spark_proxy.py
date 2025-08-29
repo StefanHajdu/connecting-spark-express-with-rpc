@@ -11,11 +11,16 @@ from spark_session_init import clientSessionTable, spark
 class SparkRpcApi(SparkApiServicer):
     def createSession(self, req: sparkapi_pb2.NewSessionRequest, unused_context) -> sparkapi_pb2.NewSessionResponse:
         clientSessionTable.add(req.id, ClientSession(req.id, req.name))
-
         return sparkapi_pb2.NewSessionResponse(
             session_id=req.id,
             msg=f'Session {req.id} created.',
         )
+
+    def loadSessions(self, req: sparkapi_pb2.Empty, unused_context) -> Generator[sparkapi_pb2.SessionResponse]:
+        for id, session in clientSessionTable.session_table.items():
+            root_node = session.plan.nodes[0]
+            transforms = session.plan.refresh_plan(spark, root_node)
+            yield sparkapi_pb2.SessionResponse(session_id=id, transforms=transforms)
 
     def submit_LoadDatasetNode(
         self, req: sparkapi_pb2.LoadDatasetNodeRequest, unused_context

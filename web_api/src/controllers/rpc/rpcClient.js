@@ -67,6 +67,11 @@ export class RpcClient {
     });
   }
 
+  loadSessions(req, httpResponse, next) {
+    const stream = this.client.loadSessions();
+    this.forwardStream(stream, httpResponse, next);
+  }
+
   getSessionStatus(urlParams, httpResponse, next) {
     return this.client.getSessionStatus(
       { session_id: urlParams.session_id },

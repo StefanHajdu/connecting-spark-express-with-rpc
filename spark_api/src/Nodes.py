@@ -119,13 +119,10 @@ class SparkNode(ABC):
         node_query_state = node_query_factory(self.active, self.node_input_submitted, self.query)
         query_kwargs_complete = {**kwargs, **self.query_kwargs}
 
-        try:
-            df_result = spark.sql(
-                node_query_state.get_query(),
-                **query_kwargs_complete,
-            )
-        except Exception as ex:
-            print(ex)
+        df_result = spark.sql(
+            node_query_state.get_query(),
+            **query_kwargs_complete,
+        )
         return df_result
 
 
