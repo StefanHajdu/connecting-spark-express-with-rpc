@@ -2,7 +2,9 @@
 import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
-import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
+
+globalAnalysesState.setAnalysisFromAPI();
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -10,7 +12,7 @@ import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte"
 
     <main class="bg-white-500 space-y-4 p-4">
         <Tabs>
-            {#each analyses as analysis, i (analysis.id)}
+            {#each globalAnalysesState.analyses as analysis, i (analysis.id)}
                 <AnalysisSession analysisIndex={i} />
             {/each}
         </Tabs>

@@ -2,8 +2,7 @@
 import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "../PreviewFooter.svelte";
 import Node from "../Nodes/Node.svelte";
-import { AnalysisSession } from "./AnalysisSessionClass.svelte";
-import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
 
 interface Props {
     analysisIndex: number;
@@ -17,14 +16,14 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
 }
 </script>
 
-<TabItem open title={analyses[analysisIndex].name}>
+<TabItem open title={globalAnalysesState.analyses[analysisIndex].name}>
     <main class="bg-white-500 space-y-4 p-4">
-        <div id={analyses[analysisIndex].name}>
+        <div id={globalAnalysesState.analyses[analysisIndex].name}>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                <b>{analyses[analysisIndex].name}</b>
+                <b>{globalAnalysesState.analyses[analysisIndex].name}</b>
             </p>
 
-            {#each analyses[analysisIndex].nodes as node, i (node.id)}
+            {#each globalAnalysesState.analyses[analysisIndex].nodes as node, i (node.id)}
                 <Node
                     analysisIndex={analysisIndex}
                     nodeIndex={i}

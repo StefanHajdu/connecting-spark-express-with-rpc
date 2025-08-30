@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { analyses } from "../../Analysis/AnalysisSessionClass.svelte";
+import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
 
@@ -42,11 +42,17 @@ async function submit() {
     loadInProgress = true;
     let userInput = getNodeUserInput(inputType);
 
-    analyses[analysisIndex].nodes[nodeIndex].setUserInput({ inputType: inputType, userInput: userInput });
-    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
-        session_id: analyses[analysisIndex].id,
-        ...userInput,
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].setUserInput({
+        inputType: inputType,
+        userInput: userInput,
     });
+    await globalAnalysesState.analyses[analysisIndex].submitNode(
+        globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex],
+        {
+            session_id: globalAnalysesState.analyses[analysisIndex].id,
+            ...userInput,
+        },
+    );
 
     loadDatasetModal = false;
     loadInProgress = false;

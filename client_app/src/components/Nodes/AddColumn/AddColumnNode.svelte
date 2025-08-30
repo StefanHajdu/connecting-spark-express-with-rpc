@@ -2,7 +2,7 @@
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
-import { analyses } from "../../Analysis/AnalysisSessionClass.svelte";
+import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { AddColumnExpression } from "../../Expression/Expression.svelte";
@@ -14,13 +14,13 @@ interface Props {
 let { analysisIndex, nodeIndex }: Props = $props();
 
 let expressions: AddColumnExpression[] = $state(
-    analyses[analysisIndex].nodes[nodeIndex].getUserInput().length > 0
-        ? analyses[analysisIndex].nodes[nodeIndex].getUserInput()
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].getUserInput().length > 0
+        ? globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].getUserInput()
         : [],
 );
 
 $effect(() => {
-    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
 });
 
 let exprSelectionOpen = $state(false);
@@ -45,16 +45,19 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    await analyses[analysisIndex].submitNode(analyses[analysisIndex].nodes[nodeIndex], {
-        session_id: analyses[analysisIndex].id,
-        node_id: analyses[analysisIndex].nodes[nodeIndex].id,
-        prev_node_id: analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
-    });
+    await globalAnalysesState.analyses[analysisIndex].submitNode(
+        globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex],
+        {
+            session_id: globalAnalysesState.analyses[analysisIndex].id,
+            node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
+            prev_node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
+        },
+    );
 }
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-    {analyses[analysisIndex].nodes[nodeIndex].title}
+    {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title}
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as expr, i (expr.uuid)}
@@ -63,7 +66,7 @@ async function submit() {
             <ExpressionFrom
                 bind:exprs={expressions}
                 idx={i}
-                columnsOnNodeInput={analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput} />
+                columnsOnNodeInput={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput} />
             <div class="mt-6 ml-4">
                 <Button
                     color="alternative"
@@ -143,5 +146,6 @@ async function submit() {
     </Dropdown>
 </div>
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-    <Button disabled={!analyses[analysisIndex].nodes[nodeIndex].active} onclick={submit}>Submit</Button>
+    <Button disabled={!globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].active} onclick={submit}
+        >Submit</Button>
 </div>

@@ -2,7 +2,7 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
@@ -19,7 +19,7 @@ let newNodeDropdownOpen = $state(false);
 let optionsOpen = $state(false);
 let summarizePromise = $state(
     Promise.resolve({
-        session_id: analyses[analysisIndex].id,
+        session_id: globalAnalysesState.analyses[analysisIndex].id,
         msg: "",
         columns: "",
         schema: "",
@@ -39,41 +39,46 @@ $effect(() => {
 });
 
 async function insertNode(title: string) {
-    let node = analyses[analysisIndex].createNode(title, nodeIndex);
-    await analyses[analysisIndex].insertNode(node, nodeIndex);
+    let node = globalAnalysesState.analyses[analysisIndex].createNode(title, nodeIndex);
+    await globalAnalysesState.analyses[analysisIndex].insertNode(node, nodeIndex);
 
     nodeIdDOM = node.id;
     newNodeDropdownOpen = false;
 }
 
 async function removeNode() {
-    await analyses[analysisIndex].removeNode(nodeIndex);
+    await globalAnalysesState.analyses[analysisIndex].removeNode(nodeIndex);
 
     optionsOpen = false;
 }
 
 async function toggleNode() {
-    await analyses[analysisIndex].toggleNode(nodeIndex, !activeNodeStatus);
+    await globalAnalysesState.analyses[analysisIndex].toggleNode(nodeIndex, !activeNodeStatus);
 }
 
 function previewNode() {
-    preview(analyses[analysisIndex].id, analyses[analysisIndex].nodes[nodeIndex].id);
+    preview(
+        globalAnalysesState.analyses[analysisIndex].id,
+        globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
+    );
 }
 
 function summarizeNode() {
     summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
-        session_id: analyses[analysisIndex].id,
-        node_id: analyses[analysisIndex].nodes[nodeIndex].id,
+        session_id: globalAnalysesState.analyses[analysisIndex].id,
+        node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
     });
 }
 </script>
 
-<div class={"flex min-w-80 justify-center " + opacity} id={analyses[analysisIndex].nodes[nodeIndex].id}>
+<div
+    class={"flex min-w-80 justify-center " + opacity}
+    id={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id}>
     <Card class="max-w-5xl">
         <div class="flex justify-end">
             <DotsHorizontalOutline />
             <Dropdown class="w-36" bind:open={optionsOpen}>
-                {#if analyses[analysisIndex].nodes[nodeIndex].nodeType !== "input"}
+                {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].nodeType !== "input"}
                     <div class="flex items-stretch">
                         <DropdownItem class="flex items-center" disabled={!activeNodeStatus} onclick={removeNode}>
                             <TrashBinOutline class="mr-2" />
@@ -84,26 +89,26 @@ function summarizeNode() {
             </Dropdown>
         </div>
 
-        {#if analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
+        {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
             <div>
                 <Button id="invalid-state" outline color="red" size="xs"
-                    >{analyses[analysisIndex].nodes[nodeIndex].invalidState.error_msg}</Button>
+                    >{globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.error_msg}</Button>
             </div>
         {/if}
 
         <div class="mb-4 mt-4 flex items-center justify-between">
-            <p>id: {analyses[analysisIndex].nodes[nodeIndex].id.slice(-5)}</p>
+            <p>id: {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id.slice(-5)}</p>
             <p>
-                prev_id: {analyses[analysisIndex].nodes[nodeIndex].prevNodeId
-                    ? analyses[analysisIndex].nodes[nodeIndex].prevNodeId.slice(-5)
+                prev_id: {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId
+                    ? globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId.slice(-5)
                     : "no prev id"}
             </p>
         </div>
 
-        {#if analyses[analysisIndex].nodes[nodeIndex].title === "LoadNode"}<LoadNode
+        {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title === "LoadNode"}<LoadNode
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
-        {:else if analyses[analysisIndex].nodes[nodeIndex].title === "AddColumnNode"}<AddColumnNode
+        {:else if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title === "AddColumnNode"}<AddColumnNode
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
         {/if}
@@ -112,14 +117,16 @@ function summarizeNode() {
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
+                disabled={!activeNodeStatus ||
+                    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={previewNode}>Preview</Button>
             <Button
                 size="xs"
                 color="light"
-                disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
+                disabled={!activeNodeStatus ||
+                    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={summarizeNode}>Summarize</Button>
-            {#if analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
+            {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
                 <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
             {/if}
         </div>
@@ -137,7 +144,7 @@ function summarizeNode() {
     <Button
         size="xs"
         color="dark"
-        disabled={!activeNodeStatus || analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
+        disabled={!activeNodeStatus || globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
         >New Node<ChevronDownOutline class="ms-2 h-6 w-6 text-white dark:text-white" /></Button>
     <Dropdown bind:open={newNodeDropdownOpen}>
         <DropdownItem disabled={!activeNodeStatus} onclick={() => insertNode("FilterNode")}>Filter</DropdownItem>
