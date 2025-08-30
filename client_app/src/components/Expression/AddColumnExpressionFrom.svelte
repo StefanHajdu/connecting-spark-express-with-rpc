@@ -12,8 +12,6 @@ interface Props {
 let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
 let multiColSelection = $state([]);
 let customInputChecked = $state(false);
-
-console.log(exprs);
 </script>
 
 <div class="mt-4 grid gap-3 md:grid-cols-12">

@@ -1,5 +1,4 @@
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import { compile } from "svelte/compiler";
 import { v4 as uuidv4 } from "uuid";
 
 type CustomInputType = "number" | "text";
@@ -34,7 +33,7 @@ class Expression {
             ? funcParams.params
             : // @ts-ignore
               sparkColumnFunctions[this.returnValueType].exprs[this.methodName].params.map((p: any) => {
-                  return { name: p.name, dtype: p.type, valueField: { value: "", source: "input" } };
+                  return { name: p.name, dtype: p.type, valueField: { value: "", source: "" } };
               });
 
         // @ts-ignore

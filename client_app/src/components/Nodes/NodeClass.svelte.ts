@@ -105,7 +105,7 @@ export class AddColumnNode extends Node {
                         valueField: JSON.parse(param.valueJson),
                     };
                 });
-                return new AddColumnExpression({ ...e.expression, params: params });
+                return new AddColumnExpression({ ...e.expression, params: params, newColumnName: e.newColumnName });
             });
         }
     }

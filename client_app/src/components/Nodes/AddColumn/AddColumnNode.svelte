@@ -14,16 +14,11 @@ interface Props {
 }
 let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
 
-let expressions: AddColumnExpression[] = $derived.by(() => {
-    let nodeUserInput = analyses[analysisIndex].nodes[nodeIndex].getUserInput();
-    if (nodeUserInput.length > 0) {
-        return nodeUserInput;
-    } else {
-        return [];
-    }
-
-    // return [];
-});
+let expressions: AddColumnExpression[] = $state(
+    analyses[analysisIndex].nodes[nodeIndex].getUserInput().length > 0
+        ? analyses[analysisIndex].nodes[nodeIndex].getUserInput()
+        : [],
+);
 
 let exprSelectionOpen = $state(false);
 
