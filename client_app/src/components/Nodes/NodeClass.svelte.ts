@@ -56,11 +56,8 @@ export class LoadNode extends Node {
         this.nodeType = "input";
         this.userInput = params.userInput ? params.userInput : { kind: "parquet", path: "" };
     }
-    setUserInput(params: any): void {
-        this.userInput = {
-            kind: params.inputType,
-            ...params.userInput,
-        };
+    setUserInput(userInput: any): void {
+        this.userInput = userInput;
     }
 
     getUserInput(): ICsvMetadata | IJsonMetadata | IParquetMetadata {
@@ -68,11 +65,8 @@ export class LoadNode extends Node {
     }
 
     async submit(params: any): Promise<SparkTransform[]> {
-        let inputType = params.kind;
-        let sessionId = params.session_id;
-        delete params.kind;
-        delete params.session_id;
-        let body = { session_id: sessionId, [inputType]: params };
+        let user_input = this.getUserInput();
+        let body = { ...params, [user_input.kind]: user_input };
 
         const streamingResponse = await post("rpc/sessionNode/transform/submitLoadDatasetNode", body);
         const objs = await textBufferSparkStreamingApi(streamingResponse);
