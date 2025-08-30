@@ -2,23 +2,26 @@
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
-import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
+import { analyses } from "../../Analysis/AnalysisSessionClass.svelte";
 import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { AddColumnExpression } from "../../Expression/Expression.svelte";
 
 interface Props {
-    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
 }
-let { analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
+let { analysisIndex, nodeIndex }: Props = $props();
 
 let expressions: AddColumnExpression[] = $state(
     analyses[analysisIndex].nodes[nodeIndex].getUserInput().length > 0
         ? analyses[analysisIndex].nodes[nodeIndex].getUserInput()
         : [],
 );
+
+$effect(() => {
+    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
+});
 
 let exprSelectionOpen = $state(false);
 
@@ -30,7 +33,6 @@ function addExpression(returnValueType: string, methodName: string) {
         }),
     );
     exprSelectionOpen = false;
-    analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
 }
 
 function duplicateExpr(exprId: number) {

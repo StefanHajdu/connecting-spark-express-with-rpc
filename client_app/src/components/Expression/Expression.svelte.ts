@@ -3,11 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 
 type CustomInputType = "number" | "text";
 
-type ValueOrigin = "column" | "input" | "columns";
-
 interface ValueField {
     value: string | number;
-    source: ValueOrigin;
+    customInputUsed: boolean;
 }
 
 interface Param {
@@ -33,7 +31,7 @@ class Expression {
             ? funcParams.params
             : // @ts-ignore
               sparkColumnFunctions[this.returnValueType].exprs[this.methodName].params.map((p: any) => {
-                  return { name: p.name, dtype: p.type, valueField: { value: "", source: "" } };
+                  return { name: p.name, dtype: p.type, valueField: { value: "", customInputUsed: false } };
               });
 
         // @ts-ignore
@@ -45,7 +43,7 @@ class Expression {
     public compileParams(): string[] {
         return this.params.map((param: Param) => {
             if (param.dtype === "single_col") {
-                if (param.valueField.source === "input" && typeof param.valueField.value === "string") {
+                if (param.valueField.customInputUsed && typeof param.valueField.value === "string") {
                     return `'${param.valueField.value}'`;
                 } else {
                     return `${param.valueField.value}`;

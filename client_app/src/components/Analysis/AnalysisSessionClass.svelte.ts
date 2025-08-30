@@ -1,3 +1,4 @@
+import { analysesMock } from "$lib/analysesMock";
 import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
 import type { SparkTransform } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
@@ -122,3 +123,38 @@ export class AnalysisSession {
         }
     }
 }
+
+function constructNodes(nodeTransforms: SparkTransform[]): Node[] {
+    let nodes: Node[] = [];
+    for (let i = 0; i < nodeTransforms.length; i++) {
+        let node = nodeFactory({
+            id: nodeTransforms[i].node_id,
+            title: nodeTransforms[i].title,
+            prevNodeId: nodeTransforms[i].prev_node_id,
+            columnsOnNodeOutput: nodeTransforms[i].columns,
+            active: nodeTransforms[i].active,
+            invalidState: nodeTransforms[i].invalid_state,
+        });
+        node.setUserInput(JSON.parse(nodeTransforms[i].user_input));
+        nodes.push(node);
+        if (i > 0) {
+            nodes[i].columnsOnNodeInput = nodes[i - 1].columnsOnNodeOutput;
+        }
+    }
+
+    return nodes;
+}
+
+async function loadAnalysisFromAPI(): Promise<AnalysisSession[]> {
+    const streamingResponse = await fetch("http://localhost:4444/rpc/load/sessions");
+    const objs = await textBufferSparkStreamingApi(streamingResponse);
+    let analysesSnapshot = JSON.parse(objs);
+    return analysesSnapshot.map((analysisSnapshot: any) => {
+        return new AnalysisSession({
+            ...analysisSnapshot,
+            nodes: constructNodes(analysisSnapshot.nodes),
+        });
+    });
+}
+
+export const analyses = $state(await loadAnalysisFromAPI());

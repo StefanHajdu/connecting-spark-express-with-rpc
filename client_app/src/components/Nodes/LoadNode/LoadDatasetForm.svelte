@@ -1,19 +1,18 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { AnalysisSession } from "../../Analysis/AnalysisSessionClass.svelte";
+import { analyses } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
 import { type ButtonColor } from "$lib/uitype";
 
 interface Props {
     name: string;
     color: ButtonColor;
-    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
 }
 
-let { name, color, analyses = $bindable(), analysisIndex, nodeIndex }: Props = $props();
+let { name, color, analysisIndex, nodeIndex }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);

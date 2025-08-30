@@ -11,7 +11,6 @@ interface Props {
 
 let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
 let multiColSelection = $state([]);
-let customInputChecked = $state(false);
 </script>
 
 <div class="mt-4 grid gap-3 md:grid-cols-12">
@@ -22,7 +21,7 @@ let customInputChecked = $state(false);
         {#each exprs[idx]["params"] as param, jdx}
             {#if param.dtype === "single_col"}
                 <div>
-                    {#if customInputChecked || exprs[idx].params[jdx].valueField.source === "input"}
+                    {#if exprs[idx].params[jdx].valueField.customInputUsed}
                         <Label class="text-black-600/75"
                             >value
                             <Input
@@ -34,7 +33,6 @@ let customInputChecked = $state(false);
                                 placeholder="..."
                                 oninput={(event) => {
                                     exprs[idx].params[jdx].valueField.value = event.currentTarget.value;
-                                    exprs[idx].params[jdx].valueField.source = "input";
                                 }} />
                         </Label>
                     {:else}
@@ -52,11 +50,13 @@ let customInputChecked = $state(false);
                                     })}
                                 oninput={(event) => {
                                     exprs[idx].params[jdx].valueField.value = event.currentTarget.value;
-                                    exprs[idx].params[jdx].valueField.source = "column";
                                 }} />
                         </Label>
                     {/if}
-                    <Toggle size="small" class="pt-1" bind:checked={customInputChecked} />
+                    <Toggle
+                        size="small"
+                        class="pt-1"
+                        bind:checked={exprs[idx].params[jdx].valueField.customInputUsed} />
                 </div>
             {:else if param.dtype === "multi_col"}
                 <Label class="text-black-600/75"
@@ -69,7 +69,6 @@ let customInputChecked = $state(false);
                         bind:value={multiColSelection}
                         on:change={(event) => {
                             exprs[idx].params[jdx].valueField.value = multiColSelection.join(", ");
-                            exprs[idx].params[jdx].valueField.source = "columns";
                         }} />
                 </Label>
             {:else}

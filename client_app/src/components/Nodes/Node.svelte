@@ -2,18 +2,17 @@
 import { Card, Dropdown, DropdownItem, DropdownDivider, Button, Spinner, Toggle } from "flowbite-svelte";
 import { DotsHorizontalOutline, ChevronDownOutline, TrashBinOutline } from "flowbite-svelte-icons";
 import { fetchSparkApi } from "$lib/clientApi";
-import { AnalysisSession } from "../Analysis/AnalysisSessionClass.svelte";
+import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
 
 interface Props {
-    analyses: AnalysisSession[];
     analysisIndex: number;
     nodeIndex: number;
     preview(analysiId: string, nodeId: string): void;
 }
 
-let { analyses = $bindable(), analysisIndex, nodeIndex, preview }: Props = $props();
+let { analysisIndex, nodeIndex, preview }: Props = $props();
 
 let nodeIdDOM = $state("");
 let newNodeDropdownOpen = $state(false);
@@ -102,11 +101,9 @@ function summarizeNode() {
         </div>
 
         {#if analyses[analysisIndex].nodes[nodeIndex].title === "LoadNode"}<LoadNode
-                bind:analyses={analyses}
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
         {:else if analyses[analysisIndex].nodes[nodeIndex].title === "AddColumnNode"}<AddColumnNode
-                bind:analyses={analyses}
                 analysisIndex={analysisIndex}
                 nodeIndex={nodeIndex} />
         {/if}

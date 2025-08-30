@@ -3,13 +3,13 @@ import { TabItem } from "flowbite-svelte";
 import PreviewFooter from "../PreviewFooter.svelte";
 import Node from "../Nodes/Node.svelte";
 import { AnalysisSession } from "./AnalysisSessionClass.svelte";
+import { analyses } from "../../components/Analysis/AnalysisSessionClass.svelte";
 
 interface Props {
-    analyses: AnalysisSession[];
     analysisIndex: number;
 }
 
-let { analyses = $bindable(), analysisIndex }: Props = $props();
+let { analysisIndex }: Props = $props();
 let previewFooter: any;
 
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
@@ -26,7 +26,6 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
 
             {#each analyses[analysisIndex].nodes as node, i (node.id)}
                 <Node
-                    bind:analyses={analyses}
                     analysisIndex={analysisIndex}
                     nodeIndex={i}
                     preview={(analysisId, nodeId) => {
