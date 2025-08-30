@@ -2,12 +2,14 @@
 import { Label, Input, Modal, Button } from "flowbite-svelte";
 import { post } from "$lib/clientApi";
 import { goto } from "$app/navigation";
-import { AnalysisSession } from "./AnalysisSessionClass.svelte";
+import { AnalysisSession, globalAnalysesState } from "./AnalysisSessionClass.svelte";
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
 
 async function initNewAnalysis() {
+    // qa: when creating new analysis, on backend it means that only 1 session should be loaded
+    // therefore it might be needed to delete all sesssion on this call
     let newAnalysis = new AnalysisSession({ name: name, selected: true });
 
     let createSessionResponse = await post("/rpc/session/create", {
@@ -15,6 +17,7 @@ async function initNewAnalysis() {
         name: newAnalysis.name,
     });
     if (createSessionResponse) {
+        globalAnalysesState.analyses.push(newAnalysis);
         await goto("http://localhost:5173/analyses");
     }
 }

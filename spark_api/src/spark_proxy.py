@@ -18,9 +18,12 @@ class SparkRpcApi(SparkApiServicer):
 
     def loadSessions(self, req: sparkapi_pb2.Empty, unused_context) -> Generator[sparkapi_pb2.SessionResponse]:
         for id, session in clientSessionTable.session_table.items():
-            root_node = session.plan.nodes[0]
-            transforms = session.plan.refresh_plan(spark, root_node, include_user_input=True)
-            yield sparkapi_pb2.SessionResponse(id=id, name=session.name, nodes=transforms)
+            if len(session.plan.nodes) > 0:
+                root_node = session.plan.nodes[0]
+                transforms = session.plan.refresh_plan(spark, root_node, include_user_input=True)
+                yield sparkapi_pb2.SessionResponse(id=id, name=session.name, nodes=transforms)
+            else:
+                yield sparkapi_pb2.SessionResponse(id=id, name=session.name, nodes=[])
 
     def submit_LoadDatasetNode(
         self, req: sparkapi_pb2.LoadDatasetNodeRequest, unused_context

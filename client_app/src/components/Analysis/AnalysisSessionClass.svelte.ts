@@ -11,13 +11,7 @@ export class AnalysisSession {
     resources: string = $state("");
     rest: string = $state("");
     selected: boolean = $state(false);
-    nodes: Node[] = $state([
-        nodeFactory({
-            title: "Load",
-            colsInNode: [],
-            sumitted: false,
-        }),
-    ]);
+    nodes: Node[] = $state([]);
 
     constructor(params: any) {
         this.id = params.id ? params.id : "analysis-" + uuidv4();
@@ -27,15 +21,15 @@ export class AnalysisSession {
         this.resources = params.resources ? params.resources : "";
         this.rest = params.rest ? params.rest : "";
         this.selected = params.selected ? params.selected : false;
-        this.nodes = params.nodes
-            ? params.nodes
-            : [
-                  nodeFactory({
-                      title: "LoadNode",
-                      columnsOnNodeInput: [],
-                      sumitted: false,
-                  }),
-              ];
+        this.nodes =
+            params.nodes && params.nodes.length > 0
+                ? params.nodes
+                : [
+                      nodeFactory({
+                          title: "LoadNode",
+                          columnsOnNodeInput: [],
+                      }),
+                  ];
     }
 
     public setSelected(selected: boolean): void {
@@ -154,13 +148,17 @@ class GlobalAnalysesState {
     public async setAnalysisFromAPI(): Promise<void> {
         const streamingResponse = await fetch("http://localhost:4444/rpc/load/sessions");
         const objs = await textBufferSparkStreamingApi(streamingResponse);
-        let analysesSnapshot = JSON.parse(objs);
-        this.analyses = analysesSnapshot.map((analysisSnapshot: any) => {
-            return new AnalysisSession({
-                ...analysisSnapshot,
-                nodes: this.constructNodes(analysisSnapshot.nodes),
+        try {
+            let analysesSnapshot = JSON.parse(objs);
+            this.analyses = analysesSnapshot.map((analysisSnapshot: any) => {
+                return new AnalysisSession({
+                    ...analysisSnapshot,
+                    nodes: this.constructNodes(analysisSnapshot.nodes),
+                });
             });
-        });
+        } catch (error) {
+            this.analyses = [];
+        }
     }
 }
 

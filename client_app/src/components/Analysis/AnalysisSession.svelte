@@ -23,10 +23,16 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
                 <b>{globalAnalysesState.analyses[analysisIndex].name}</b>
             </p>
 
-            {#each globalAnalysesState.analyses[analysisIndex].nodes as node, i (node.id)}
+            <Node
+                analysisIndex={analysisIndex}
+                nodeIndex={0}
+                preview={(analysisId, nodeId) => {
+                    forwardPreview(analysisId, nodeId);
+                }} />
+            {#each globalAnalysesState.analyses[analysisIndex].nodes.slice(1) as node, i (node.id)}
                 <Node
                     analysisIndex={analysisIndex}
-                    nodeIndex={i}
+                    nodeIndex={i + 1}
                     preview={(analysisId, nodeId) => {
                         forwardPreview(analysisId, nodeId);
                     }} />
