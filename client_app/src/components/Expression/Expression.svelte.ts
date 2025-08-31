@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 type CustomInputType = "number" | "text";
 
 interface ValueField {
-    value: string | number;
+    value: string | number | string[] | number[];
     customInputUsed: boolean;
 }
 
@@ -50,6 +50,8 @@ class Expression {
                 }
             } else if (param.dtype === "text") {
                 return `'${param.valueField.value}'`;
+            } else if (param.dtype === "multi_col" && param.valueField.value instanceof Array) {
+                return `${param.valueField.value.join(",")}`;
             } else {
                 return `${param.valueField.value}`;
             }

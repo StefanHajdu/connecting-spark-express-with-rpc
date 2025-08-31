@@ -54,6 +54,12 @@ class SparkRpcApi(SparkApiServicer):
     ) -> Generator[sparkapi_pb2.SparkTransformResponse]:
         session = clientSessionTable.get_session(req.session_id)
 
+        print(list(req.user_input))
+        try:
+            print(list(req.user_input)[0].expression.params)
+        except Exception as e:
+            print(e)
+
         node = session.submit_node(
             node_class='AddColumnNode',
             session_id=session.id,

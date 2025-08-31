@@ -157,6 +157,7 @@ class GlobalAnalysesState {
                 });
             });
         } catch (error) {
+            console.log(error);
             this.analyses = [];
         }
     }

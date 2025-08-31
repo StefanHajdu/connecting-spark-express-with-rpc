@@ -10,7 +10,6 @@ interface Props {
 }
 
 let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
-let multiColSelection = $state([]);
 </script>
 
 <div class="mt-4 grid gap-3 md:grid-cols-12">
@@ -66,9 +65,11 @@ let multiColSelection = $state([]);
                         items={columnsOnNodeInput.map((col: any) => {
                             return { value: col.name, name: col.name };
                         })}
-                        bind:value={multiColSelection}
-                        on:change={(event) => {
-                            exprs[idx].params[jdx].valueField.value = multiColSelection.join(", ");
+                        value={exprs[idx].params[jdx].valueField.value instanceof Array
+                            ? exprs[idx].params[jdx].valueField.value
+                            : []}
+                        onchange={(event) => {
+                            exprs[idx].params[jdx].valueField.value = multiColSelection;
                         }} />
                 </Label>
             {:else}

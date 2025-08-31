@@ -92,13 +92,16 @@ export class AddColumnNode extends Node {
             this.userInput = expressions;
         } else {
             this.userInput = expressions.map((e: any) => {
-                const params = e.expression.params.map((param: any) => {
-                    return {
-                        name: param.name,
-                        dtype: param.dtype,
-                        valueField: JSON.parse(param.valueJson),
-                    };
-                });
+                // params are optional, some expression don't require them e.g. current_date()
+                const params = e.expression.params
+                    ? e.expression.params.map((param: any) => {
+                          return {
+                              name: param.name,
+                              dtype: param.dtype,
+                              valueField: JSON.parse(param.valueJson),
+                          };
+                      })
+                    : [];
                 return new AddColumnExpression({ ...e.expression, params: params, newColumnName: e.newColumnName });
             });
         }

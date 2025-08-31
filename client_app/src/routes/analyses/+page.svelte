@@ -3,8 +3,12 @@ import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
 import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { onMount } from "svelte";
 
-globalAnalysesState.setAnalysisFromAPI();
+onMount(() => {
+    globalAnalysesState.setAnalysisFromAPI();
+    console.log(globalAnalysesState.analyses);
+});
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
