@@ -84,6 +84,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -104,6 +106,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -125,6 +129,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -158,6 +164,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -179,6 +187,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': u.to_node_id(5),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -213,6 +223,8 @@ def add_column_dependency(session_id):
                     'prev_node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -259,6 +271,8 @@ def test_column_adding(session_id, node_request_body, expected):
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 }
             ],
         ),
@@ -287,6 +301,8 @@ def test_column_adding(session_id, node_request_body, expected):
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 }
             ],
         ),
@@ -337,6 +353,8 @@ def test_column_removing(session_id, removal_request_body, expected):
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -361,6 +379,8 @@ def test_column_removing(session_id, removal_request_body, expected):
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -404,6 +424,8 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -423,6 +445,8 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -448,6 +472,8 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 }
             ],
         ),
@@ -491,6 +517,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': False,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -514,6 +542,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -538,6 +568,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`x`', 'proposal': '`tld`, `dnssec`, `domain`, `registrar`, `created_at`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
             [
@@ -559,6 +591,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -582,6 +616,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                         'error_msg': '',
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -606,6 +642,8 @@ def test_node_disable(session_id, toggle_request_body, expected):
                         'error_msg': '',
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -648,6 +686,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                         'error_msg': '',
                     },
                     'active': True,
+                    'title': 'LoadNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -670,6 +710,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -693,6 +735,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                         'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
                     },
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -717,6 +761,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'LoadNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -736,6 +782,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
                 {
                     'columns': [
@@ -756,6 +804,8 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
+                    'title': 'AddColumnNode',
+                    'user_input': '',
                 },
             ],
         ),
@@ -799,6 +849,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
+                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
                         },
                         {
                             'columns': [
@@ -811,14 +862,15 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_ds', 'dtype': 'string'},
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
                             ],
                             'session_id': '',
-                            'node_id': 'node_0001',
+                            'node_id': 'node_0005',
                             'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
                         },
                         {
                             'columns': [
@@ -831,6 +883,29 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_ds', 'dtype': 'string'},
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0001',
+                            'prev_node_id': 'node_0005',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                            'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
                                 {'name': 'a2', 'dtype': 'string'},
                                 {'name': 'b2', 'dtype': 'string'},
                             ],
@@ -840,9 +915,10 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': u.to_session_id(100),
+                    'id': 'session_0001',
                     'name': 'random_name',
                 }
             ],
@@ -870,6 +946,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
+                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
                         },
                         {
                             'columns': [
@@ -890,6 +967,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
                         },
                         {
                             'columns': [
@@ -903,17 +981,41 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
                                 {'name': 'a2', 'dtype': 'string'},
-                                {'name': 'b2', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
                             ],
                             'session_id': '',
-                            'node_id': 'node_0002',
+                            'node_id': 'node_0005',
                             'prev_node_id': 'node_0001',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
+                                {'name': 'b2', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0002',
+                            'prev_node_id': 'node_0005',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                            'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': u.to_session_id(101),
+                    'id': 'session_0002',
                     'name': 'random_name',
                 },
                 {
@@ -936,6 +1038,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
+                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
                         },
                         {
                             'columns': [
@@ -956,6 +1059,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
                         },
                         {
                             'columns': [
@@ -977,9 +1081,33 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
+                        },
+                        {
+                            'columns': [
+                                {'name': 'domain', 'dtype': 'string'},
+                                {'name': 'tld', 'dtype': 'string'},
+                                {'name': 'dnssec', 'dtype': 'string'},
+                                {'name': 'registrar', 'dtype': 'string'},
+                                {'name': 'created_at', 'dtype': 'string'},
+                                {'name': 'records_ns', 'dtype': 'string'},
+                                {'name': 'records_ds', 'dtype': 'string'},
+                                {'name': 'records_dnskey', 'dtype': 'string'},
+                                {'name': 'analyzed_at', 'dtype': 'string'},
+                                {'name': 'a2', 'dtype': 'string'},
+                                {'name': 'b2', 'dtype': 'string'},
+                                {'name': 'x', 'dtype': 'string'},
+                            ],
+                            'session_id': '',
+                            'node_id': 'node_0005',
+                            'prev_node_id': 'node_0002',
+                            'invalid_state': {'active': False, 'error_msg': ''},
+                            'active': True,
+                            'title': 'AddColumnNode',
+                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
                         },
                     ],
-                    'id': u.to_session_id(102),
+                    'id': 'session_0003',
                     'name': 'random_name',
                 },
             ],
