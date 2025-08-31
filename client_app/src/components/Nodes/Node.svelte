@@ -26,7 +26,7 @@ let summarizePromise = $state(
         count: -1,
     }),
 );
-let activeNodeStatus = $state(true);
+let activeNodeStatus = $state(globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].active);
 let opacity = $derived.by(() => {
     return activeNodeStatus ? "opacity-100" : "opacity-40";
 });

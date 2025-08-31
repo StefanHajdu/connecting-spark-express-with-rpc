@@ -37,7 +37,7 @@ export abstract class Node {
         this.prevNodeId = params.prevNodeId;
         this.columnsOnNodeInput = params.columnsOnNodeInput;
         this.columnsOnNodeOutput = params.columnsOnNodeOutput ? params.columnsOnNodeOutput : params.columnsOnNodeInput;
-        this.active = params.active ? params.active : true;
+        this.active = params.active !== undefined ? params.active : true;
         this.invalidState = params.invalidState ? params.invalidState : { active: false, error_msg: "" };
     }
 

@@ -7,7 +7,6 @@ import { onMount } from "svelte";
 
 onMount(() => {
     globalAnalysesState.setAnalysisFromAPI();
-    console.log(globalAnalysesState.analyses);
 });
 </script>
 
