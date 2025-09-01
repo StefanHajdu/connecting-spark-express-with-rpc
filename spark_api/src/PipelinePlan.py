@@ -81,9 +81,7 @@ class SessionPlanner:
     def _delete_node(self, position: int):
         del self.nodes[position]
 
-    def refresh_plan(
-        self, spark: SparkSession, starting_node: Nodes.SparkNode, include_user_input: bool = False
-    ) -> list[sparkapi_pb2.SparkTransformResponse]:
+    def refresh_plan(self, spark: SparkSession, starting_node: Nodes.SparkNode, include_user_input: bool = False) -> list[sparkapi_pb2.SparkTransformResponse]:
         node_index = self.get_node_index(starting_node.node_id)
 
         recorded_spark_transforms = []
