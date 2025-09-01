@@ -38,7 +38,7 @@ jobs:
           sleep 20
 
       - name: Run tests
-        run: cd spark_api && pytest test/test_use_cases.py test/test_api.py -v
+        run: cd spark_api && pytest test/test_api.py test/test_use_cases.py -v
         env:
           PYTHONPATH: ${{ github.workspace }}/spark_api/src
 
