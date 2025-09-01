@@ -849,7 +849,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
-                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
+                            'user_input': '{"path": ' + f'"{CURRENT_DIR}/../../data/domains_small.parquet' + '"}',
                         },
                         {
                             'columns': [
@@ -946,7 +946,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
-                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
+                            'user_input': '{"path": ' + f'"{CURRENT_DIR}/../../data/domains_small.parquet' + '"}',
                         },
                         {
                             'columns': [
@@ -1038,7 +1038,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'LoadNode',
-                            'user_input': '{"path": "/home/stephenx/Documents/Programming/01_Blogs/contour-app/spark_api/test/../../data/domains_small.parquet"}',
+                            'user_input': '{"path": ' + f'"{CURRENT_DIR}/../../data/domains_small.parquet' + '"}',
                         },
                         {
                             'columns': [
@@ -1126,6 +1126,10 @@ def test_load_sessions(session_requests, expected):
     res_json = [res.json()[0]]
     if len(session_requests) > 1:
         res_json = res.json()[1:3]
+
+    print(res_json)
+    print()
+    print(expected)
 
     for a, b in zip(res_json, expected, strict=True):
         assert json.dumps(a) == json.dumps(b)
