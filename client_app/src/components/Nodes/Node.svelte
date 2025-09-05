@@ -127,7 +127,9 @@ function summarizeNode() {
                     globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
                 on:click={summarizeNode}>Summarize</Button>
             {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
-                <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
+                <div>
+                    <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
+                </div>
             {/if}
         </div>
 

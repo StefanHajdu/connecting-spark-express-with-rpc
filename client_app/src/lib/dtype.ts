@@ -34,6 +34,11 @@ export type Column = {
     dtype: string;
 };
 
+export type PreviewColumn = {
+    name: string;
+    type: string;
+};
+
 export type SparkTransform = {
     session_id: string;
     node_id: string;
