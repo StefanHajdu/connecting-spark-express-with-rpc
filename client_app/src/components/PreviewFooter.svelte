@@ -19,11 +19,12 @@ let transitionParamsBottom = {
     duration: 200,
     easing: sineIn,
 };
-let componentCollapsed = $state(true);
+let collapsed = $state(true);
 let dataframeTableComponent: any;
 
 export async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
-    componentCollapsed = false;
+    collapsed = false;
+    footerPreview.visibilityToggle(!collapsed);
     tick().then(async () => {
         await dataframeTableComponent.preview(analysiId, nodeId);
     });
@@ -34,7 +35,8 @@ export async function forwardPreview(analysiId: string, nodeId: string): Promise
     <p>{title}</p>
     <Button
         on:click={() => {
-            componentCollapsed = false;
+            collapsed = false;
+            footerPreview.visibilityToggle(!collapsed);
         }}>
         <AngleUpOutline />
     </Button>
@@ -45,14 +47,15 @@ export async function forwardPreview(analysiId: string, nodeId: string): Promise
         transitionParams={transitionParamsBottom}
         activateClickOutside={activateClickOutside}
         backdrop={backdrop}
-        bind:hidden={componentCollapsed}
+        bind:hidden={collapsed}
         id="sidebar8"
         class="outline-1 outline-black">
         <div class="mb-2 flex h-6 items-center">
             <p>Preview</p>
             <CloseButton
                 on:click={() => {
-                    componentCollapsed = true;
+                    collapsed = true;
+                    footerPreview.visibilityToggle(!collapsed);
                 }}
                 class="dark:text-white" />
         </div>

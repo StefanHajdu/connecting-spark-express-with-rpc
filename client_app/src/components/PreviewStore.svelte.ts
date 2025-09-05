@@ -45,6 +45,12 @@ export class FooterPreview extends Preview {
     public visibilityToggle(visible: boolean) {
         this.visible = visible;
     }
+
+    public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
+        if (this.visible) {
+            super.run(analysisId, nodeId, limit);
+        }
+    }
 }
 
 export const footerPreview = $state(new FooterPreview());
