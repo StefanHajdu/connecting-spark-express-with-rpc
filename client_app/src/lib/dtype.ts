@@ -99,3 +99,16 @@ export interface IParquetMetadata {
     kind: "parquet";
     path: string;
 }
+
+export type ButtonColor =
+    | "dark"
+    | "blue"
+    | "none"
+    | "red"
+    | "yellow"
+    | "green"
+    | "purple"
+    | "light"
+    | "primary"
+    | "alternative"
+    | undefined;

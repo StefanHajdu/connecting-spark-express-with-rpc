@@ -38,6 +38,6 @@ async function forwardPreview(analysiId: string, nodeId: string): Promise<void> 
                     }} />
             {/each}
         </div>
+        <PreviewFooter bind:this={previewFooter} />
     </main>
-    <PreviewFooter bind:this={previewFooter} />
 </TabItem>
