@@ -5,8 +5,8 @@ import { Tabs } from "flowbite-svelte";
 import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
 import { onMount } from "svelte";
 
-onMount(() => {
-    globalAnalysesState.setAnalysisFromAPI();
+onMount(async () => {
+    await globalAnalysesState.setAnalysisFromAPI();
 });
 </script>
 

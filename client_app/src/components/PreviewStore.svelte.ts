@@ -1,5 +1,6 @@
 import type { PreviewColumn } from "$lib/dtype";
 import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import { type ColumnDef } from "@tanstack/table-core";
 
 export class Preview {
     columns: PreviewColumn[] = $state([]);
@@ -20,7 +21,13 @@ export class Preview {
         this.data = data;
     }
 
-    public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
+    public getColumnOptions(): ColumnDef<string | null>[] {
+        return this.columns.map((col, index) => {
+            return { accessorKey: `${index}`, header: `${col.name}` };
+        });
+    }
+
+    public async run(analysisId: string, nodeId: string, limit: number = 10): Promise<void> {
         const streamingResponse = await post("rpc/sessionNode/action/preview", {
             session_id: analysisId,
             node_id: nodeId,
@@ -46,7 +53,7 @@ export class FooterPreview extends Preview {
         this.visible = visible;
     }
 
-    public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
+    public async run(analysisId: string, nodeId: string, limit: number = 10): Promise<void> {
         if (this.visible) {
             super.run(analysisId, nodeId, limit);
         }

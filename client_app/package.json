@@ -38,6 +38,7 @@
         "vite": "^6.2.5"
     },
     "dependencies": {
+        "@tanstack/table-core": "^8.21.3",
         "uuid": "^11.1.0"
     }
 }
