@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount, onDestroy } from "svelte";
-import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell, Spinner } from "flowbite-svelte";
+import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell } from "flowbite-svelte";
 import type { Preview } from "../PreviewStore.svelte";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
@@ -13,13 +13,6 @@ interface Props {
 }
 
 let { previewObject }: Props = $props();
-let streamInProgress = $state(false);
-
-export async function preview(analysisId: string, nodeId: string): Promise<void> {
-    streamInProgress = true;
-    await previewObject.run(analysisId, nodeId);
-    streamInProgress = false;
-}
 
 onMount(() => {
     console.log("table entered DOM");
@@ -73,7 +66,7 @@ const table = createSvelteTable({
 </div>
 
 <!-- {#if streamInProgress}
-    <Spinner size="6" />
+<Spinner size="6" />
 {:else}
     <div class="h-80 overflow-y-auto">
         <Table>

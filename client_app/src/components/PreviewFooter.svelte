@@ -1,16 +1,9 @@
 <script lang="ts">
 import { AngleUpOutline } from "flowbite-svelte-icons";
-import { Drawer, Button, CloseButton } from "flowbite-svelte";
+import { Drawer, Button, CloseButton, Spinner } from "flowbite-svelte";
 import { sineIn } from "svelte/easing";
-import { tick } from "svelte";
-import { onMount } from "svelte";
 import { footerPreview } from "./PreviewStore.svelte";
 import DataFrameTable from "./DataFrameTable/DataFrameTable.svelte";
-
-onMount(() => {
-    console.log("*** FOOTER RERENDERED ***");
-    footerPreview.reset();
-});
 
 let title: string = "(footer)";
 let backdrop = false;
@@ -21,27 +14,19 @@ let transitionParamsBottom = {
     easing: sineIn,
 };
 let collapsed = $state(true);
-let dataframeTableComponent: any;
 
-export async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
-    console.log("*** running preview START ***");
+export async function preview(analysisId: string, nodeId: string): Promise<void> {
+    await footerPreview.run(analysisId, nodeId);
     collapsed = false;
-    tick().then(async () => {
-        await dataframeTableComponent.preview(analysiId, nodeId);
-    });
-    console.log("*** running preview DONE ***");
-    footerPreview.visibilityToggle(!collapsed);
 }
-
-$inspect(footerPreview.data);
 </script>
 
 <footer class="sticky bottom-0 p-1/2 flex items-center justify-between bg-gray-300">
     <p>{title}</p>
+
     <Button
         on:click={() => {
             collapsed = false;
-            footerPreview.visibilityToggle(!collapsed);
         }}>
         <AngleUpOutline />
     </Button>
@@ -60,10 +45,9 @@ $inspect(footerPreview.data);
             <CloseButton
                 on:click={() => {
                     collapsed = true;
-                    footerPreview.visibilityToggle(!collapsed);
                 }}
                 class="dark:text-white" />
         </div>
-        <DataFrameTable bind:this={dataframeTableComponent} previewObject={footerPreview} />
+        <DataFrameTable previewObject={footerPreview} />
     </Drawer>
 </footer>

@@ -54,9 +54,7 @@ export class FooterPreview extends Preview {
     }
 
     public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
-        if (this.visible) {
-            super.run(analysisId, nodeId, limit);
-        }
+        await super.run(analysisId, nodeId, limit);
     }
 }
 

@@ -12,7 +12,7 @@ let { analysisIndex }: Props = $props();
 let previewFooter: any;
 
 async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
-    await previewFooter.forwardPreview(analysiId, nodeId);
+    await previewFooter.preview(analysiId, nodeId);
 }
 </script>
 
