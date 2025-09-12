@@ -1,4 +1,5 @@
 import type { PreviewColumn } from "$lib/dtype";
+import { v4 as uuidv4 } from "uuid";
 import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
 import { type ColumnDef } from "@tanstack/table-core";
 
@@ -43,10 +44,12 @@ export class Preview {
 
 export class FooterPreview extends Preview {
     visible: boolean = $state(false);
+    salt: string = $state(uuidv4());
 
     constructor() {
         super();
         this.visible = false;
+        this.salt = uuidv4();
     }
 
     public visibilityToggle(visible: boolean) {
@@ -54,7 +57,11 @@ export class FooterPreview extends Preview {
     }
 
     public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
-        await super.run(analysisId, nodeId, limit);
+        if (this.visible) {
+            // preview can run also on node submit, but only if preview table is opened
+            await super.run(analysisId, nodeId, limit);
+            this.salt = uuidv4();
+        }
     }
 }
 

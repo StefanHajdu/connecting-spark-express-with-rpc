@@ -5,7 +5,7 @@ import type { Preview } from "../PreviewStore.svelte";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-import { type ColumnDef, getCoreRowModel } from "@tanstack/table-core";
+import { type ColumnDef, getCoreRowModel, type SortingState, getSortedRowModel } from "@tanstack/table-core";
 import { createSvelteTable, FlexRender } from "$lib/components/data-table/index.js";
 
 interface Props {
@@ -27,11 +27,25 @@ const columns: ColumnDef<string | null>[] = previewObject.columns.map((col, inde
     return { accessorKey: `${index}`, header: `${col.name}` };
 });
 
+let sorting = $state<SortingState>([]);
 const table = createSvelteTable({
     // @ts-ignore
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: (updater) => {
+        if (typeof updater === "function") {
+            sorting = updater(sorting);
+        } else {
+            sorting = updater;
+        }
+    },
+    state: {
+        get sorting() {
+            return sorting;
+        },
+    },
 });
 </script>
 
@@ -42,7 +56,17 @@ const table = createSvelteTable({
                 {#each headerGroup.headers as header (header.id)}
                     {#if !header.isPlaceholder}
                         <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs">
-                            <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                            <div
+                                class:cursor-pointer={header.column.getCanSort()}
+                                class:select-none={header.column.getCanSort()}
+                                on:click={header.column.getToggleSortingHandler()}>
+                                <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                                {#if header.column.getIsSorted().toString() === "asc"}
+                                    🔼
+                                {:else if header.column.getIsSorted().toString() === "desc"}
+                                    🔽
+                                {/if}
+                            </div>
                         </TableHeadCell>
                     {/if}
                     <!-- <DataFrameTableHeadCell columnName={column.name} dType={column.type} /> -->

@@ -14,14 +14,18 @@ let transitionParamsBottom = {
     easing: sineIn,
 };
 let collapsed = $state(true);
+let rerenderState = $derived.by(() => {
+    return footerPreview.salt;
+});
 
 export async function preview(analysisId: string, nodeId: string): Promise<void> {
     collapsed = true;
+    footerPreview.visibilityToggle(true);
     await footerPreview.run(analysisId, nodeId);
     collapsed = false;
 }
 
-$inspect(collapsed);
+$inspect(rerenderState);
 </script>
 
 <footer class="sticky bottom-0 p-1/2 flex items-center justify-between bg-gray-300">
@@ -30,10 +34,11 @@ $inspect(collapsed);
     <Button
         on:click={() => {
             collapsed = false;
+            footerPreview.visibilityToggle(!collapsed);
         }}>
         <AngleUpOutline />
     </Button>
-    {#key collapsed}
+    {#key rerenderState}
         <Drawer
             placement="bottom"
             width="w-full"
@@ -49,6 +54,7 @@ $inspect(collapsed);
                 <CloseButton
                     on:click={() => {
                         collapsed = true;
+                        footerPreview.visibilityToggle(!collapsed);
                     }}
                     class="dark:text-white" />
             </div>
