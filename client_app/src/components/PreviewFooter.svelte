@@ -8,6 +8,7 @@ import { footerPreview } from "./PreviewStore.svelte";
 import DataFrameTable from "./DataFrameTable/DataFrameTable.svelte";
 
 onMount(() => {
+    console.log("*** FOOTER RERENDERED ***");
     footerPreview.reset();
 });
 
@@ -23,12 +24,16 @@ let collapsed = $state(true);
 let dataframeTableComponent: any;
 
 export async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
+    console.log("*** running preview START ***");
     collapsed = false;
-    footerPreview.visibilityToggle(!collapsed);
     tick().then(async () => {
         await dataframeTableComponent.preview(analysiId, nodeId);
     });
+    console.log("*** running preview DONE ***");
+    footerPreview.visibilityToggle(!collapsed);
 }
+
+$inspect(footerPreview.data);
 </script>
 
 <footer class="sticky bottom-0 p-1/2 flex items-center justify-between bg-gray-300">

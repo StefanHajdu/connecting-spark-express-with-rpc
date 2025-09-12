@@ -27,7 +27,7 @@ export class Preview {
         });
     }
 
-    public async run(analysisId: string, nodeId: string, limit: number = 10): Promise<void> {
+    public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
         const streamingResponse = await post("rpc/sessionNode/action/preview", {
             session_id: analysisId,
             node_id: nodeId,
@@ -53,7 +53,7 @@ export class FooterPreview extends Preview {
         this.visible = visible;
     }
 
-    public async run(analysisId: string, nodeId: string, limit: number = 10): Promise<void> {
+    public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
         if (this.visible) {
             super.run(analysisId, nodeId, limit);
         }
