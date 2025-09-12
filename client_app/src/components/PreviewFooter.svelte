@@ -16,9 +16,12 @@ let transitionParamsBottom = {
 let collapsed = $state(true);
 
 export async function preview(analysisId: string, nodeId: string): Promise<void> {
+    collapsed = true;
     await footerPreview.run(analysisId, nodeId);
     collapsed = false;
 }
+
+$inspect(collapsed);
 </script>
 
 <footer class="sticky bottom-0 p-1/2 flex items-center justify-between bg-gray-300">
@@ -30,24 +33,26 @@ export async function preview(analysisId: string, nodeId: string): Promise<void>
         }}>
         <AngleUpOutline />
     </Button>
-    <Drawer
-        placement="bottom"
-        width="w-full"
-        transitionType="fly"
-        transitionParams={transitionParamsBottom}
-        activateClickOutside={activateClickOutside}
-        backdrop={backdrop}
-        bind:hidden={collapsed}
-        id="sidebar8"
-        class="outline-1 outline-black">
-        <div class="mb-2 flex h-6 items-center">
-            <p>Preview</p>
-            <CloseButton
-                on:click={() => {
-                    collapsed = true;
-                }}
-                class="dark:text-white" />
-        </div>
-        <DataFrameTable previewObject={footerPreview} />
-    </Drawer>
+    {#key collapsed}
+        <Drawer
+            placement="bottom"
+            width="w-full"
+            transitionType="fly"
+            transitionParams={transitionParamsBottom}
+            activateClickOutside={activateClickOutside}
+            backdrop={backdrop}
+            bind:hidden={collapsed}
+            id="sidebar8"
+            class="outline-1 outline-black">
+            <div class="mb-2 flex h-6 items-center">
+                <p>Preview</p>
+                <CloseButton
+                    on:click={() => {
+                        collapsed = true;
+                    }}
+                    class="dark:text-white" />
+            </div>
+            <DataFrameTable previewObject={footerPreview} />
+        </Drawer>
+    {/key}
 </footer>
