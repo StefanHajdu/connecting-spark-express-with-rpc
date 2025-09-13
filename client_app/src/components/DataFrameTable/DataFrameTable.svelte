@@ -11,12 +11,19 @@ import {
     DropdownItem,
     Button,
 } from "flowbite-svelte";
+import Icon from "@iconify/svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import type { Preview } from "../PreviewStore.svelte";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
 
-import { type ColumnDef, getCoreRowModel, type SortingState, getSortedRowModel } from "@tanstack/table-core";
+import {
+    type ColumnDef,
+    type SortingState,
+    type ColumnPinningState,
+    getCoreRowModel,
+    getSortedRowModel,
+} from "@tanstack/table-core";
 import { createSvelteTable, FlexRender } from "$lib/components/data-table/index.js";
 
 interface Props {
@@ -40,6 +47,8 @@ const columns: ColumnDef<string | null>[] = previewObject.columns.map((col, inde
 });
 
 let sorting = $state<SortingState>([]);
+let columnPinning = $state<ColumnPinningState>({});
+
 const table = createSvelteTable({
     // @ts-ignore
     data,
@@ -53,9 +62,19 @@ const table = createSvelteTable({
             sorting = updater;
         }
     },
+    onColumnPinningChange: (updater) => {
+        if (typeof updater === "function") {
+            columnPinning = updater(columnPinning);
+        } else {
+            columnPinning = updater;
+        }
+    },
     state: {
         get sorting() {
             return sorting;
+        },
+        get columnPinning() {
+            return columnPinning;
         },
     },
 });
@@ -68,7 +87,7 @@ const table = createSvelteTable({
                 {#each headerGroup.headers as header (header.id)}
                     {#if !header.isPlaceholder}
                         <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs">
-                            <Button class="p-2!" size="xs"><ChevronDownOutline class="h-6 w-6" /></Button>
+                            <Button class="px-1 py-1"><ChevronDownOutline class="h-3 w-3" /></Button>
                             <Dropdown>
                                 <DropdownItem
                                     onclick={() => {
@@ -89,12 +108,24 @@ const table = createSvelteTable({
                                         header.getContext().column.clearSorting();
                                         columnMenuIsOpen = false;
                                     }}>original</DropdownItem>
+                                <DropdownItem
+                                    onclick={() => {
+                                        if (header.column.getIsPinned()) {
+                                            header.column.pin(false);
+                                        } else {
+                                            header.column.pin("left");
+                                        }
+                                        columnMenuIsOpen = false;
+                                    }}>pin left</DropdownItem>
                             </Dropdown>
                             <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
                             {#if header.column.getIsSorted().toString() === "asc"}
-                                🔼
+                                <Icon icon="tabler:sort-ascending-small-big" width="12" height="12" />
                             {:else if header.column.getIsSorted().toString() === "desc"}
-                                🔽
+                                <Icon icon="tabler:sort-descending-small-big" width="12" height="12" />
+                            {/if}
+                            {#if header.column.getIsPinned()}
+                                <Icon icon="tabler:pin" width="12" height="12" />
                             {/if}
                         </TableHeadCell>
                     {/if}
