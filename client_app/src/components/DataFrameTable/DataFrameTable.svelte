@@ -1,6 +1,17 @@
 <script lang="ts">
 import { onMount, onDestroy } from "svelte";
-import { Table, TableBody, TableBodyRow, TableHead, TableBodyCell, TableHeadCell } from "flowbite-svelte";
+import {
+    Table,
+    TableBody,
+    TableBodyRow,
+    TableHead,
+    TableBodyCell,
+    TableHeadCell,
+    Dropdown,
+    DropdownItem,
+    Button,
+} from "flowbite-svelte";
+import { ChevronDownOutline } from "flowbite-svelte-icons";
 import type { Preview } from "../PreviewStore.svelte";
 import DataFrameTableHeadCell from "./DataFrameTableHeadCell.svelte";
 import DataFrameTableCell from "./DataFrameTableCell.svelte";
@@ -13,6 +24,7 @@ interface Props {
 }
 
 let { previewObject }: Props = $props();
+let columnMenuIsOpen = $state(false);
 
 onMount(() => {
     console.log("table entered DOM");
@@ -56,17 +68,34 @@ const table = createSvelteTable({
                 {#each headerGroup.headers as header (header.id)}
                     {#if !header.isPlaceholder}
                         <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs">
-                            <div
-                                class:cursor-pointer={header.column.getCanSort()}
-                                class:select-none={header.column.getCanSort()}
-                                on:click={header.column.getToggleSortingHandler()}>
-                                <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
-                                {#if header.column.getIsSorted().toString() === "asc"}
-                                    🔼
-                                {:else if header.column.getIsSorted().toString() === "desc"}
-                                    🔽
-                                {/if}
-                            </div>
+                            <Button class="p-2!" size="xs"><ChevronDownOutline class="h-6 w-6" /></Button>
+                            <Dropdown>
+                                <DropdownItem
+                                    onclick={() => {
+                                        header
+                                            .getContext()
+                                            .table.setSorting([{ desc: true, id: header.getContext().column.id }]);
+                                        columnMenuIsOpen = false;
+                                    }}>desc</DropdownItem>
+                                <DropdownItem
+                                    onclick={() => {
+                                        header
+                                            .getContext()
+                                            .table.setSorting([{ desc: false, id: header.getContext().column.id }]);
+                                        columnMenuIsOpen = false;
+                                    }}>asc</DropdownItem>
+                                <DropdownItem
+                                    onclick={() => {
+                                        header.getContext().column.clearSorting();
+                                        columnMenuIsOpen = false;
+                                    }}>original</DropdownItem>
+                            </Dropdown>
+                            <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                            {#if header.column.getIsSorted().toString() === "asc"}
+                                🔼
+                            {:else if header.column.getIsSorted().toString() === "desc"}
+                                🔽
+                            {/if}
                         </TableHeadCell>
                     {/if}
                     <!-- <DataFrameTableHeadCell columnName={column.name} dType={column.type} /> -->
