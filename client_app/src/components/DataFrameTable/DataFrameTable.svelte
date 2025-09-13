@@ -1,3 +1,11 @@
+<style>
+.resizable {
+    resize: inline;
+    overflow: auto;
+    min-width: 100px;
+}
+</style>
+
 <script lang="ts">
 import { onMount, onDestroy } from "svelte";
 import {
@@ -21,6 +29,7 @@ import {
     type ColumnDef,
     type SortingState,
     type ColumnPinningState,
+    type ColumnSizingState,
     getCoreRowModel,
     getSortedRowModel,
 } from "@tanstack/table-core";
@@ -47,12 +56,20 @@ const columns: ColumnDef<string | null>[] = previewObject.columns.map((col, inde
 });
 
 let sorting = $state<SortingState>([]);
-let columnPinning = $state<ColumnPinningState>({});
+let pinning = $state<ColumnPinningState>({});
+let columnSizing = $state<ColumnSizingState>({});
 
 const table = createSvelteTable({
     // @ts-ignore
     data,
     columns,
+    defaultColumn: {
+        size: 150,
+        minSize: 150,
+        maxSize: 500,
+    },
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: (updater) => {
@@ -64,9 +81,17 @@ const table = createSvelteTable({
     },
     onColumnPinningChange: (updater) => {
         if (typeof updater === "function") {
-            columnPinning = updater(columnPinning);
+            pinning = updater(pinning);
         } else {
-            columnPinning = updater;
+            pinning = updater;
+        }
+    },
+    onColumnSizingChange: (updater) => {
+        console.log("sth is happening");
+        if (typeof updater === "function") {
+            columnSizing = updater(columnSizing);
+        } else {
+            columnSizing = updater;
         }
     },
     state: {
@@ -74,19 +99,25 @@ const table = createSvelteTable({
             return sorting;
         },
         get columnPinning() {
-            return columnPinning;
+            return pinning;
+        },
+        get columnSizing() {
+            return columnSizing;
         },
     },
 });
 </script>
 
 <div class="h-80 overflow-y-auto">
-    <Table hoverable={true}>
+    <Table hoverable={true} class="table-fixed">
         <TableHead>
             {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
                 {#each headerGroup.headers as header (header.id)}
                     {#if !header.isPlaceholder}
-                        <TableHeadCell class="text- normal border border-black px-3 py-2 text-xs">
+                        <TableHeadCell
+                            class="text-normal border border-black text-xs"
+                            colspan={header.colSpan}
+                            style={`width:${header.getSize()}px`}>
                             <Button class="px-1 py-1"><ChevronDownOutline class="h-3 w-3" /></Button>
                             <Dropdown>
                                 <DropdownItem
@@ -118,7 +149,17 @@ const table = createSvelteTable({
                                         columnMenuIsOpen = false;
                                     }}>pin left</DropdownItem>
                             </Dropdown>
-                            <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+
+                            <div
+                                role="button"
+                                tabindex="0"
+                                ondblclick={() => {
+                                    header.column.resetSize();
+                                }}
+                                onmousedown={header.getResizeHandler()}
+                                class="resizable">
+                                <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                            </div>
                             {#if header.column.getIsSorted().toString() === "asc"}
                                 <Icon icon="tabler:sort-ascending-small-big" width="12" height="12" />
                             {:else if header.column.getIsSorted().toString() === "desc"}
@@ -137,8 +178,8 @@ const table = createSvelteTable({
             {#each table.getRowModel().rows as row (row.id)}
                 <TableBodyRow>
                     {#each row.getVisibleCells() as cell (cell.id)}
-                        <TableBodyCell class="text- normal border border-black px-3 py-2 text-xs">
-                            <p class="ml-1 h-1/4 w-32 truncate">
+                        <TableBodyCell class="text-normal border border-black text-xs">
+                            <p class="ml-1 h-1/8 truncate">
                                 <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
                             </p>
                         </TableBodyCell>
