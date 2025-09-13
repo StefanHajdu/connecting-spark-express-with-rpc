@@ -131,9 +131,7 @@ class TransformNode(SparkNode):
         self._active = True
 
     def __str__(self):
-        return (
-            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
-        )
+        return f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
 
     @property
     @abstractmethod
@@ -266,9 +264,7 @@ class FilterNode(TransformNode):
 
 
 class AddColumnNode(TransformNode):
-    def __init__(
-        self, session_id: str, node_id: str, prev_node_id: str, user_input: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame
-    ):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, user_input: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame):
         super().__init__()
         self.session_id = session_id
         self.node_id = node_id

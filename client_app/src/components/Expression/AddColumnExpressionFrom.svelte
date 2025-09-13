@@ -8,6 +8,7 @@ interface Props {
     idx: number;
     columnsOnNodeInput: Column[];
 }
+const multiColSelection: string[] = [];
 
 let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
 </script>
@@ -65,18 +66,13 @@ let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
                         items={columnsOnNodeInput.map((col: any) => {
                             return { value: col.name, name: col.name };
                         })}
-                        value={exprs[idx].params[jdx].valueField.value instanceof Array
-                            ? exprs[idx].params[jdx].valueField.value
-                            : []}
-                        onchange={(event) => {
-                            exprs[idx].params[jdx].valueField.value = multiColSelection;
-                        }} />
+                        bind:value={exprs[idx].params[jdx].valueField.value} />
                 </Label>
             {:else}
                 <Label class="text-black-600/75"
                     >{param["name"]}
                     <Input
-                        type={param.dtype}
+                        type={param.dtype as any}
                         size="sm"
                         placeholder="..."
                         bind:value={exprs[idx].params[jdx].valueField.value} />
