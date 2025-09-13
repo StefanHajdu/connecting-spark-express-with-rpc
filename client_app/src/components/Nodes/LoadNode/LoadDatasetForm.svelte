@@ -1,38 +1,18 @@
 <script lang="ts">
 import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } from "flowbite-svelte";
 import { ChevronDownOutline } from "flowbite-svelte-icons";
-import { type LoadedDataset, CsvMetadata, JsonMetadata, ParquetMetadata } from "./loadTypes";
-import { Node } from "../NodeInstance.svelte";
-import { tryRestoreNodes } from "$lib/utils";
+import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
+import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
+import { type ButtonColor } from "$lib/uitype";
 
 interface Props {
-    analysisId: string;
     name: string;
-    color:
-        | "dark"
-        | "blue"
-        | "none"
-        | "red"
-        | "yellow"
-        | "green"
-        | "purple"
-        | "light"
-        | "primary"
-        | "alternative"
-        | undefined;
-    nodesInAnalysis: Node[];
+    color: ButtonColor;
+    analysisIndex: number;
     nodeIndex: number;
-    loadedDataset: LoadedDataset | {};
 }
 
-let {
-    analysisId,
-    name,
-    color,
-    nodesInAnalysis = $bindable(),
-    nodeIndex,
-    loadedDataset = $bindable(),
-}: Props = $props();
+let { name, color, analysisIndex, nodeIndex }: Props = $props();
 let loadDatasetModal = $state(false);
 
 let inputTypeDropdownOpen: boolean = $state(false);
@@ -48,38 +28,29 @@ let jsonMultiline: boolean = $state(true);
 
 let loadInProgress = $state(false);
 
+function getNodeUserInput(inputType: string): ICsvMetadata | IJsonMetadata | IParquetMetadata {
+    return inputType === "csv"
+        ? { kind: "csv", delimiter: csvDelimiter, include_header: csvIncludeHeader, path: datasetPath }
+        : inputType === "json"
+          ? { kind: "json", multiline: jsonMultiline, path: datasetPath }
+          : inputType === "parquet"
+            ? { kind: "parquet", path: datasetPath }
+            : { kind: "parquet", path: datasetPath };
+}
+
 async function submit() {
     loadInProgress = true;
-    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
-        session_id: analysisId,
-        [inputType]:
-            inputType === "csv"
-                ? { delimiter: csvDelimiter, include_header: csvIncludeHeader, path: datasetPath }
-                : inputType === "json"
-                  ? { multiline: jsonMultiline, path: datasetPath }
-                  : inputType === "parquet"
-                    ? { path: datasetPath }
-                    : { path: datasetPath },
-    });
+    let userInput = getNodeUserInput(inputType);
 
-    if (submitSuccessful) {
-        loadDatasetModal = false;
-    }
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].setUserInput(userInput);
+    await globalAnalysesState.analyses[analysisIndex].submitNode(
+        globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex],
+        {
+            session_id: globalAnalysesState.analyses[analysisIndex].id,
+        },
+    );
 
-    loadedDataset = {
-        loadSuccess: submitSuccessful,
-        metadata:
-            inputType === "csv"
-                ? new CsvMetadata(datasetPath, csvDelimiter, csvIncludeHeader)
-                : inputType === "json"
-                  ? new JsonMetadata(datasetPath, jsonMultiline)
-                  : inputType === "parquet"
-                    ? new ParquetMetadata(datasetPath)
-                    : new ParquetMetadata(datasetPath),
-    };
-
-    await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
-
+    loadDatasetModal = false;
     loadInProgress = false;
 }
 </script>

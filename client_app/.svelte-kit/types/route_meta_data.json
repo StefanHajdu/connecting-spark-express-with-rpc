@@ -2,5 +2,7 @@
 	"/": [
 		"src/routes/+page.ts"
 	],
-	"/analyses": []
+	"/analyses": [
+		"src/routes/analyses/+page.ts"
+	]
 }

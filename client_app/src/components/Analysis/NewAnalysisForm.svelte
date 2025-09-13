@@ -1,33 +1,23 @@
 <script lang="ts">
 import { Label, Input, Modal, Button } from "flowbite-svelte";
-import { LS_KEY_ANALYSES, LS_KEY_SCOPED, toLocalStorage } from "$lib/localStorageHandles";
-import { getUniqueAnalysesId } from "../lib/utils";
-import { fetchSparkApi } from "$lib/clientApi";
+import { post } from "$lib/clientApi";
 import { goto } from "$app/navigation";
-
-let { analyses } = $props();
+import { AnalysisSession, globalAnalysesState } from "./AnalysisSessionClass.svelte";
 
 let openNewAnalysisForm = $state(false);
 let name = $state("");
-let id = getUniqueAnalysesId();
 
 async function initNewAnalysis() {
-    let createSessionResponse = await fetchSparkApi("/rpc/session/create", {
-        id: id,
-        name: name,
+    // qa: when creating new analysis, on backend it means that only 1 session should be loaded
+    // therefore it might be needed to delete all sesssion on this call
+    let newAnalysis = new AnalysisSession({ name: name, selected: true });
+
+    let createSessionResponse = await post("/rpc/session/create", {
+        id: newAnalysis.id,
+        name: newAnalysis.name,
     });
     if (createSessionResponse) {
-        analyses[id] = {
-            id: id,
-            name: name,
-            status: "new",
-            buildTime: "---",
-            resources: "---",
-            rest: "...",
-            selected: false,
-        };
-        toLocalStorage(LS_KEY_ANALYSES, analyses);
-        toLocalStorage(LS_KEY_SCOPED, [id]);
+        globalAnalysesState.analyses.push(newAnalysis);
         await goto("http://localhost:5173/analyses");
     }
 }

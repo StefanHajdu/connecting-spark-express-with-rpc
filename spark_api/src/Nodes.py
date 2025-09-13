@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-import io
 import json
 from abc import ABC, abstractmethod
+from typing import Any
 
 import sparkapi_pb2
 from constants import PLAN_NODE_ROOT_ID
 from google.protobuf.json_format import MessageToDict
+from google.protobuf.message import Message
 from pyspark.sql import DataFrame
 
 import NodeExtensions
 import PipelinePlan
 from misc_types import SparkActionMetadata
+from NodeQuery import node_query_factory
 from spark_session_init import spark
 from utils import load_data_for_spark
 
@@ -32,6 +34,14 @@ class SparkNode(ABC):
     @df.setter
     def df(self, val: DataFrame):
         self._df = val
+
+    @property
+    def active(self):
+        return self._active
+
+    @active.setter
+    def active(self, val: bool):
+        self._active = val
 
     @property
     def node_id(self):
@@ -65,8 +75,24 @@ class SparkNode(ABC):
         return self._query
 
     @query.setter
-    def query(self, val: bool):
+    def query(self, val: str):
         self._query = val
+
+    @property
+    def node_input_submitted(self):
+        return self._node_input_submitted
+
+    @node_input_submitted.setter
+    def node_input_submitted(self, val: bool):
+        self._node_input_submitted = val
+
+    @property
+    def user_input(self):
+        return self._user_input
+
+    @user_input.setter
+    def user_input(self, val: Any):
+        self._user_input = val
 
     @property
     def query_kwargs(self) -> dict:
@@ -89,19 +115,28 @@ class SparkNode(ABC):
 
     def run_transform(self, **kwargs) -> DataFrame:
         spark = kwargs.pop('spark')
+
+        node_query_state = node_query_factory(self.active, self.node_input_submitted, self.query)
         query_kwargs_complete = {**kwargs, **self.query_kwargs}
+
         df_result = spark.sql(
-            self.query,
+            node_query_state.get_query(),
             **query_kwargs_complete,
         )
         return df_result
 
 
 class TransformNode(SparkNode):
+    def __init__(self):
+        self._active = True
+
     def __str__(self):
-        return (
-            f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
-        )
+        return f'[Transform - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+
+    @property
+    @abstractmethod
+    def query_template(self) -> str:
+        pass
 
     @property
     @abstractmethod
@@ -110,8 +145,16 @@ class TransformNode(SparkNode):
 
     @property
     @abstractmethod
-    def query_template(self) -> str:
+    def node_input_submitted(self) -> bool:
         pass
+
+    def user_input_to_json(self) -> str:
+        if isinstance(self.user_input, Message):
+            return json.dumps(MessageToDict(self.user_input))
+        elif isinstance(self.user_input, list):
+            return json.dumps([MessageToDict(i) for i in self.user_input])
+        else:
+            return ''
 
     def preview(self, limit: int) -> str:
         df_pandas = self.df.limit(limit).toPandas()
@@ -128,38 +171,36 @@ class TransformNode(SparkNode):
 
 
 class LoadNode(TransformNode):
-    def __init__(self, session_id: str, input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
+    def __init__(self, session_id: str, user_input: Any):
+        super().__init__()
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
-        self._input_metadata = input_metadata
+        self._user_input = user_input
         self.df = self.run_transform()
 
     @property
-    def query(self) -> str:
-        return ''
+    def node_input_submitted(self) -> bool:
+        return self.user_input is not None
 
     @property
     def query_template(self) -> str:
         return ''
 
     @property
-    def path(self):
-        return self._path
-
-    @path.setter
-    def path(self, val: str):
-        self._path = val
+    def query(self) -> str:
+        return ''
 
     def __str__(self):
-        return f'[Load - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | path: {self._input_metadata.path}'
+        return f'[{self.__class__.__name__}] -> id: {self.node_id} | {self.user_input_to_json()}'
 
     def run_transform(self, **kwargs):
-        return load_data_for_spark(input_metadata=self._input_metadata)
+        return load_data_for_spark(input_metadata=self.user_input)
 
 
 class LoadFromSessionNode(TransformNode):
     def __init__(self, session_id: str, parent_session_plan: PipelinePlan.SessionPlanner):
+        super().__init__()
         self._session_id = session_id
         self._node_id = PLAN_NODE_ROOT_ID
         self._prev_node_id = None
@@ -167,11 +208,15 @@ class LoadFromSessionNode(TransformNode):
         self.df = self.run_transform()
 
     @property
-    def query(self) -> str:
-        return ''
+    def node_input_submitted(self) -> bool:
+        return self._parent_session_plan is not None
 
     @property
     def query_template(self) -> str:
+        return ''
+
+    @property
+    def query(self) -> str:
         return ''
 
     @property
@@ -192,12 +237,17 @@ class LoadFromSessionNode(TransformNode):
 
 class FilterNode(TransformNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, expressions: list[str], matching: str, prev_df: DataFrame):
+        super().__init__()
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
         self.expressions = expressions
         self.matching = matching
         self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def node_input_submitted(self) -> bool:
+        return self.expressions is not None and self.matching is not None
 
     @property
     def query_template(self) -> str:
@@ -213,15 +263,18 @@ class FilterNode(TransformNode):
         return {}
 
 
-class NewColumnNode(TransformNode):
-    def __init__(
-        self, session_id: str, node_id: str, prev_node_id: str, expressions: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame
-    ):
+class AddColumnNode(TransformNode):
+    def __init__(self, session_id: str, node_id: str, prev_node_id: str, user_input: list[sparkapi_pb2.AddColumnExpression], prev_df: DataFrame):
+        super().__init__()
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
-        self.expressions = expressions
+        self.user_input = user_input
         self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def node_input_submitted(self) -> bool:
+        return len(self.user_input) > 0
 
     @property
     def query_template(self) -> str:
@@ -229,7 +282,7 @@ class NewColumnNode(TransformNode):
 
     @property
     def query(self) -> str:
-        expressions = ', '.join([' as '.join((obj.expression, obj.col_name)) for obj in self.expressions])
+        expressions = ', '.join([expr.expression.compiled for expr in self.user_input])
         return self.query_template.format(expressions=expressions, df='{df}')
 
     @property
@@ -244,15 +297,20 @@ class JoinNode(TransformNode):
         node_id: str,
         prev_node_id: str,
         input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput | sparkapi_pb2.SessionInput,
-        joinParams: sparkapi_pb2.JoinParams,
+        join_params: sparkapi_pb2.JoinParams,
         prev_df: DataFrame,
     ):
+        super().__init__()
         self.session_id = session_id
         self.node_id = node_id
         self.prev_node_id = prev_node_id
         self.other_df = NodeExtensions.OtherDataframe(input_metadata)
-        self.joinParams = MessageToDict(joinParams)
+        self.join_params = MessageToDict(join_params)
         self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def node_input_submitted(self) -> bool:
+        return self.join_params is not None
 
     @property
     def query_template(self) -> str:
@@ -267,17 +325,17 @@ class JoinNode(TransformNode):
 
     @property
     def query(self) -> str:
-        if len(self.joinParams) > 0:
+        if len(self.join_params) > 0:
             columns_to_add = [
-                ' as '.join(('{other_df}.' + col_name, self.joinParams.get('prefixForAddedColumns', '') + col_name))
-                for col_name in self.joinParams.get('columnsToAdd', [])
+                ' as '.join(('{other_df}.' + col_name, self.join_params.get('prefixForAddedColumns', '') + col_name))
+                for col_name in self.join_params.get('columnsToAdd', [])
             ]
-            columns_to_keep = ['{df}.' + col_name for col_name in self.joinParams.get('columnsToKeep', [])]
-            join_criteria = f' {self.joinParams.get("criteriaMatching", "").strip()} '.join(self.joinParams.get('joinCriteria', []))
+            columns_to_keep = ['{df}.' + col_name for col_name in self.join_params.get('columnsToKeep', [])]
+            join_criteria = f' {self.join_params.get("criteriaMatching", "").strip()} '.join(self.join_params.get('joinCriteria', []))
             return self.query_template.format(
                 columns=', '.join(columns_to_keep + columns_to_add),
                 df='{df}',
-                join_relation=self.joinParams.get('joinRelation', ''),
+                join_relation=self.join_params.get('joinRelation', ''),
                 other_df='{other_df}',
                 join_criteria='on ' + join_criteria if join_criteria else '',
             )
@@ -286,8 +344,11 @@ class JoinNode(TransformNode):
 
 
 class VisualizationNode(SparkNode):
+    def __init__(self):
+        self._active = True
+
     def __str__(self):
-        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'
+        return f'[Visualization - {self.__class__.__name__}] -> node_id: {self.node_id} | prev_node_id: {self.prev_node_id} | query: {self.query}'  # noqa
 
     @property
     def query(self) -> str:
@@ -296,6 +357,11 @@ class VisualizationNode(SparkNode):
     @property
     def query_kwargs(self) -> dict:
         return {}
+
+    @property
+    @abstractmethod
+    def node_input_submitted(self) -> bool:
+        pass
 
     @property
     @abstractmethod
@@ -331,10 +397,15 @@ class VisualizationNode(SparkNode):
 
 class TableNode(VisualizationNode):
     def __init__(self, session_id: str, node_id: str, prev_node_id: str, prev_df: DataFrame):
+        super().__init__()
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
         self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def node_input_submitted(self) -> bool:
+        return True
 
     @property
     def visualization_query(self) -> str:
@@ -357,6 +428,7 @@ class HistogramNode(VisualizationNode):
         expression: str,
         prev_df: DataFrame,
     ):
+        super().__init__()
         self._session_id = session_id
         self._node_id = node_id
         self._prev_node_id = prev_node_id
@@ -365,6 +437,10 @@ class HistogramNode(VisualizationNode):
         self.sort_by = sort_by
         self.expression = expression
         self.df = self.run_transform(spark=spark, df=prev_df)
+
+    @property
+    def node_input_submitted(self) -> bool:
+        return self.y_axis_col is not None
 
     @property
     def visualization_query(self) -> str:

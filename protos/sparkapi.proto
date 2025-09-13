@@ -4,21 +4,21 @@ package sparkapi;
 
 service SparkApi {
     rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
+    rpc loadSessions(Empty) returns (stream SessionResponse) {}
     
     rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
     rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
-    rpc rebuildSession(RebuildRequest) returns (SparkTransformResponse) {}
 
     // load node
-    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (stream SparkTransformResponse) {}
     rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
     
     // filter node
     rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
     
     // add column node
-    rpc submit_NewColumnNode(NewColumnNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_AddColumnNode(AddColumnNodeRequest) returns (stream SparkTransformResponse) {}
     
     // join node
     rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
@@ -28,7 +28,8 @@ service SparkApi {
     rpc submit_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
     
     // all nodes
-    rpc removeNode(NodeRemovalRequest) returns (SparkTransformResponse) {}
+    rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
+    rpc toggleNode(NodeToggleRequest) returns (stream SparkTransformResponse) {}
 }
 
 
@@ -52,10 +53,26 @@ message Column {
     string dtype = 2;
 }
 
+message InvalidState {
+    bool active = 1;
+    string error_msg = 2;
+}
+
 message SparkTransformResponse {
     string session_id = 1;
-    string msg = 2;
-    repeated Column columns = 3;
+    string node_id = 2;
+    string prev_node_id = 3;
+    InvalidState invalid_state = 4;
+    bool active = 5;
+    repeated Column columns = 6;
+    string title = 7;
+    string user_input = 8;
+}
+
+message SessionResponse {
+    string id = 1;
+    string name = 2;
+    repeated SparkTransformResponse nodes = 3;
 }
 
 message DatasetResponse {
@@ -71,6 +88,9 @@ message StatusResponse {
 
 // --- Requests ---
 
+message Empty {}
+
+
 message NewSessionRequest {
     string id = 1;
     string name = 2;
@@ -80,29 +100,33 @@ message CsvInput {
     string delimiter = 1;
     bool include_header = 2;
     string path = 3;
+    string kind = 4;
 }
 
 message JsonInput {
     bool multiline = 1;
     string path = 2;
+    string kind = 3;
 }
 
 message ParquetInput {
     string path = 1;
+    string kind = 2;
+}
+
+message LoadDatasetNodeRequest {
+    string session_id = 1;
+    oneof user_input {
+        CsvInput csv = 2;
+        JsonInput json = 3;
+        ParquetInput parquet = 4;
+    }
 }
 
 message SessionInput {
     string session_id = 1;
 }
 
-message LoadDatasetNodeRequest {
-    string session_id = 1;
-    oneof input_metadata {
-        CsvInput csv = 2;
-        JsonInput json = 3;
-        ParquetInput parquet = 4;
-    }
-}
 
 message PreviewDatasetRequest {
     string session_id = 1;
@@ -139,16 +163,29 @@ message AddHistogramNodeRequest {
     string expression = 7;
 }
 
-message AddColumnExpression {
-    string expression = 1;
-    string col_name = 2;
+message Param {
+    string name = 1;
+    string dtype = 2;
+    string value_json = 3;
 }
 
-message NewColumnNodeRequest {
+message Expression {
+    string method_name = 1;
+    string return_value_type = 2;
+    repeated Param params = 3;
+    string compiled = 4;
+}
+
+message AddColumnExpression {
+    Expression expression = 1;
+    string new_column_name = 2;
+}
+
+message AddColumnNodeRequest {
     string session_id = 1;
     string node_id = 2;
     string prev_node_id = 3;
-    repeated AddColumnExpression expressions = 4;
+    repeated AddColumnExpression user_input = 4;
 }
 
 message JoinParams {
@@ -178,13 +215,15 @@ message NodeRemovalRequest {
     string node_id = 2;
 }
 
+message NodeToggleRequest {
+    string session_id = 1;
+    string node_id = 2;
+    bool toggle = 3;
+}
+
 message LoadFromSessionNodeRequest {
     string session_id = 1;
     string input_session_id = 2;
-}
-
-message RebuildRequest {
-    string session_id = 1;
 }
 
 message SessionStatusRequest {

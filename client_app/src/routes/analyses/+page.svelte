@@ -1,34 +1,23 @@
 <script lang="ts">
-import { browser } from "$app/environment";
 import Header from "../../components/Header.svelte";
-import Analysis from "../../components/Analysis.svelte";
+import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import { Tabs } from "flowbite-svelte";
-import { LS_KEY_SCOPED, LS_KEY_ANALYSES, fromLocalStorage } from "../../lib/localStorageHandles";
+import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
+import { onMount } from "svelte";
 
-const scopedAnalyses = loadScoped();
-
-function loadScoped(): any[] {
-  if (browser) {
-    let analyses = fromLocalStorage(LS_KEY_ANALYSES);
-    let scopedKeys = fromLocalStorage(LS_KEY_SCOPED);
-    return scopedKeys.map((key: string) => {
-      return analyses[key];
-    });
-  }
-  return [];
-}
-
-$inspect("analyses arr", scopedAnalyses);
+onMount(() => {
+    globalAnalysesState.setAnalysisFromAPI();
+});
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
-  <Header />
+    <Header />
 
-  <main class="bg-white-500 space-y-4 p-4">
-    <Tabs>
-      {#each scopedAnalyses as analysis}
-        <Analysis name={analysis.name} id={analysis.id} />
-      {/each}
-    </Tabs>
-  </main>
+    <main class="bg-white-500 space-y-4 p-4">
+        <Tabs>
+            {#each globalAnalysesState.analyses as analysis, i (analysis.id)}
+                <AnalysisSession analysisIndex={i} />
+            {/each}
+        </Tabs>
+    </main>
 </div>

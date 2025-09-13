@@ -1,6 +1,19 @@
+import { Node } from "../components/Nodes/NodeClass.svelte.js";
+
+export interface IAnalysis {
+    id: string;
+    name: string;
+    status: string;
+    buildTime: string;
+    resources: string;
+    rest: string;
+    selected: boolean;
+    nodes: Node[];
+}
+
 export interface InvalidState {
-    value: boolean;
-    description: string;
+    active: boolean;
+    error_msg: string;
 }
 
 export type SparkActionlResponse = {
@@ -21,10 +34,15 @@ export type Column = {
     dtype: string;
 };
 
-export type SparkTransformResponse = {
+export type SparkTransform = {
     session_id: string;
-    msg: string;
+    node_id: string;
     columns: Column[];
+    invalid_state: InvalidState;
+    active: boolean;
+    prev_node_id: string;
+    title: string;
+    user_input: string;
 };
 
 type ValueType = "col" | "input" | "cols";
@@ -60,3 +78,19 @@ export type DataFrame = {
     columns: SparkColumn[];
     data: string[][];
 };
+
+export interface ICsvMetadata {
+    kind: "csv";
+    path: string;
+    delimiter: string;
+    include_header: boolean;
+}
+export interface IJsonMetadata {
+    kind: "json";
+    path: string;
+    multiline: boolean;
+}
+export interface IParquetMetadata {
+    kind: "parquet";
+    path: string;
+}

@@ -41,17 +41,3 @@ class InvalidInputTypeException(Exception):
 
     def __init__(self, message='Input type is not supported. Valid options: ["file", "session"]'):
         super().__init__(message)
-
-
-class InvalidRemovalException(Exception):
-    """Raised when node removal would break the analysis."""
-
-    def __init__(self, message):
-        super().__init__(f'Removal of this node breaks the analysis. {message}')
-
-
-class EmptyException(Exception):
-    """A generic empty exception."""
-
-    def __init__(self, message=''):
-        super().__init__(message)

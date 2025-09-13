@@ -27,6 +27,35 @@ export class RpcClient {
     );
   }
 
+  forwardStream(stream, httpResponse, next) {
+    httpResponse.writeHead(200, {
+      "Content-Type": "application/json",
+      "Transfer-Encoding": "chunked",
+    });
+
+    let cnt = 0;
+    stream.on("data", (chunk) => {
+      if (cnt === 0) {
+        httpResponse.write("[");
+        httpResponse.write(JSON.stringify(chunk));
+      } else {
+        httpResponse.write(",");
+        httpResponse.write(JSON.stringify(chunk));
+      }
+      cnt += 1;
+    });
+
+    stream.on("end", () => {
+      httpResponse.write("]");
+      httpResponse.end();
+      next();
+    });
+
+    stream.on("error", (err) => {
+      console.log(`ERROR: ${err}`);
+    });
+  }
+
   // HANDLE SESSIONS
   createSession(body, httpResponse, next) {
     return this.client.createSession(body, (err, rpcResponse) => {
@@ -36,6 +65,11 @@ export class RpcClient {
         httpResponse.json(rpcResponse);
       }
     });
+  }
+
+  loadSessions(req, httpResponse, next) {
+    const stream = this.client.loadSessions();
+    this.forwardStream(stream, httpResponse, next);
   }
 
   getSessionStatus(urlParams, httpResponse, next) {
@@ -70,13 +104,8 @@ export class RpcClient {
 
   // ADD NODES
   submitLoadDatasetNode(body, httpResponse, next) {
-    return this.client.submit_LoadDatasetNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
-    });
+    const stream = this.client.submit_LoadDatasetNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   submitLoadFromSessionNode(body, httpResponse, next) {
@@ -99,14 +128,9 @@ export class RpcClient {
     });
   }
 
-  submitNewColumnNode(body, httpResponse, next) {
-    return this.client.submit_NewColumnNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
-    });
+  submitAddColumnNode(body, httpResponse, next) {
+    const stream = this.client.submit_AddColumnNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   submitTableNode(body, httpResponse, next) {
@@ -141,13 +165,13 @@ export class RpcClient {
 
   // REMOVE NODE
   removeNode(body, httpResponse, next) {
-    return this.client.removeNode(body, (err, rpcResponse) => {
-      if (err) {
-        return next(new ApplicationError({ message: err.message, code: 500 }));
-      } else {
-        httpResponse.json(rpcResponse);
-      }
-    });
+    const stream = this.client.removeNode(body);
+    this.forwardStream(stream, httpResponse, next);
+  }
+
+  toggleNode(body, httpResponse, next) {
+    const stream = this.client.toggleNode(body);
+    this.forwardStream(stream, httpResponse, next);
   }
 
   // ACTIONS
@@ -156,6 +180,7 @@ export class RpcClient {
       "Content-Type": "application/json",
       "Transfer-Encoding": "chunked",
     });
+
     const previewStream = this.client.previewDataset(body);
     previewStream.on("data", (chunk) => {
       httpResponseStream.write(chunk.data);

@@ -1,10 +1,11 @@
 import sparkapi_pb2
 from exceptions import InvalidSparkInputException
+from google.protobuf.message import Message
 
 from spark_session_init import spark
 
 
-def load_data_for_spark(input_metadata: sparkapi_pb2.CsvInput | sparkapi_pb2.JsonInput | sparkapi_pb2.ParquetInput):
+def load_data_for_spark(input_metadata: Message):
     if isinstance(input_metadata, sparkapi_pb2.CsvInput):
         return (
             spark.read.option('delimiter', input_metadata.delimiter)

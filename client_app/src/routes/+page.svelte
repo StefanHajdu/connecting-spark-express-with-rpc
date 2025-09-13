@@ -1,14 +1,16 @@
 <script lang="ts">
 import Header from "../components/Header.svelte";
 import Footer from "../components/Footer.svelte";
-import NewAnalysisForm from "../components/NewAnalysisForm.svelte";
-import AnalysisTable from "../components/AnalysisTable.svelte";
-import type { PageProps } from "./$types";
-import { LS_KEY_ANALYSES, toLocalStorage } from "$lib/localStorageHandles";
+import NewAnalysisForm from "../components/Analysis/NewAnalysisForm.svelte";
+import AnalysisTable from "../components/Analysis/AnalysisTable.svelte";
+import { analysesMock } from "$lib/analysesMock";
+import { AnalysisSession } from "../components/Analysis/AnalysisSessionClass.svelte";
 
-let { data }: PageProps = $props();
-let analyses = data;
-toLocalStorage(LS_KEY_ANALYSES, analyses);
+let persistedAnalyses = $state(
+    analysesMock.analyses.map((mocked: any) => {
+        return new AnalysisSession(mocked);
+    }),
+);
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -16,10 +18,10 @@ toLocalStorage(LS_KEY_ANALYSES, analyses);
 
     <main class="bg-white-500 space-y-4 p-4">
         <div>
-            <NewAnalysisForm analyses={analyses} />
+            <NewAnalysisForm />
         </div>
         <div>
-            <AnalysisTable analyses={analyses} />
+            <AnalysisTable bind:persistedAnalyses={persistedAnalyses} />
         </div>
     </main>
 

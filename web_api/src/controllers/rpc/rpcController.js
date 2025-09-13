@@ -8,6 +8,11 @@ export const createSession = asyncHandler(async (req, res, next) => {
   rpcClient.createSession(req.body, res, next);
 });
 
+// LOAD
+export const loadSessions = asyncHandler(async (req, res, next) => {
+  rpcClient.loadSessions(req, res, next);
+});
+
 export const getSessionStatus = asyncHandler(async (req, res, next) => {
   rpcClient.getSessionStatus(req.params, res, next);
 });
@@ -31,8 +36,8 @@ export const submitFilterNode = asyncHandler(async (req, res, next) => {
   rpcClient.submitFilterNode(req.body, res, next);
 });
 
-export const submitNewColumnNode = asyncHandler(async (req, res, next) => {
-  rpcClient.submitNewColumnNode(req.body, res, next);
+export const submitAddColumnNode = asyncHandler(async (req, res, next) => {
+  rpcClient.submitAddColumnNode(req.body, res, next);
 });
 
 export const submitJoinNode = asyncHandler(async (req, res, next) => {
@@ -50,6 +55,10 @@ export const submitHistogramNode = asyncHandler(async (req, res, next) => {
 // REMOVE NODE
 export const removeNode = asyncHandler(async (req, res, next) => {
   rpcClient.removeNode(req.body, res, next);
+});
+
+export const toggleNode = asyncHandler(async (req, res, next) => {
+  rpcClient.toggleNode(req.body, res, next);
 });
 
 // ACTIONS

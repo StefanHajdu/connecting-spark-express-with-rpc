@@ -9,10 +9,11 @@ router.post(
   rpcController.submitLoadFromSessionNode
 );
 router.post("/submitFilterNode", rpcController.submitFilterNode);
-router.post("/submitNewColumnNode", rpcController.submitNewColumnNode);
+router.post("/submitAddColumnNode", rpcController.submitAddColumnNode);
 router.post("/submitJoinNode", rpcController.submitJoinNode);
 router.post("/submitTableNode", rpcController.submitTableNode);
 router.post("/submitHistogramNode", rpcController.submitHistogramNode);
 router.post("/removeNode", rpcController.removeNode);
+router.post("/toggleNode", rpcController.toggleNode);
 
 export default router;

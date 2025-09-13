@@ -15,9 +15,7 @@ def to_node_id(id: int):
 
 
 def create_session(session_id: str) -> str:
-    json_data = {
-        'id': session_id,
-    }
+    json_data = {'id': session_id, 'name': 'random_name'}
     res = requests.post('http://localhost:4444/rpc/session/create', json=json_data)
 
     assert res.status_code == 200 or (res.status_code == 500 and duplicateSessionException.__str__() in res.json()['error']['message'])
@@ -48,7 +46,7 @@ def submit_filterNode(**kwargs) -> str:
 
 
 def submit_newColumnNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitNewColumnNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
@@ -63,6 +61,12 @@ def submit_joinNode(**kwargs) -> str:
 
 def removeNode(**kwargs):
     res = requests.post('http://localhost:4444/rpc/sessionNode/transform/removeNode', json=kwargs)
+
+    assert res.status_code == 200
+
+
+def toggleNode(**kwargs):
+    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=kwargs)
 
     assert res.status_code == 200
 

@@ -36,15 +36,43 @@ class Column(_message.Message):
     dtype: str
     def __init__(self, name: _Optional[str] = ..., dtype: _Optional[str] = ...) -> None: ...
 
+class InvalidState(_message.Message):
+    __slots__ = ("active", "error_msg")
+    ACTIVE_FIELD_NUMBER: _ClassVar[int]
+    ERROR_MSG_FIELD_NUMBER: _ClassVar[int]
+    active: bool
+    error_msg: str
+    def __init__(self, active: bool = ..., error_msg: _Optional[str] = ...) -> None: ...
+
 class SparkTransformResponse(_message.Message):
-    __slots__ = ("session_id", "msg", "columns")
+    __slots__ = ("session_id", "node_id", "prev_node_id", "invalid_state", "active", "columns", "title", "user_input")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    MSG_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    PREV_NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    INVALID_STATE_FIELD_NUMBER: _ClassVar[int]
+    ACTIVE_FIELD_NUMBER: _ClassVar[int]
     COLUMNS_FIELD_NUMBER: _ClassVar[int]
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    USER_INPUT_FIELD_NUMBER: _ClassVar[int]
     session_id: str
-    msg: str
+    node_id: str
+    prev_node_id: str
+    invalid_state: InvalidState
+    active: bool
     columns: _containers.RepeatedCompositeFieldContainer[Column]
-    def __init__(self, session_id: _Optional[str] = ..., msg: _Optional[str] = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ...) -> None: ...
+    title: str
+    user_input: str
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ..., title: _Optional[str] = ..., user_input: _Optional[str] = ...) -> None: ...
+
+class SessionResponse(_message.Message):
+    __slots__ = ("id", "name", "nodes")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    NODES_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    nodes: _containers.RepeatedCompositeFieldContainer[SparkTransformResponse]
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., nodes: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
 
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)
@@ -62,6 +90,10 @@ class StatusResponse(_message.Message):
     cause: str
     def __init__(self, session_id: _Optional[str] = ..., rebuild_recommendation: bool = ..., cause: _Optional[str] = ...) -> None: ...
 
+class Empty(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...
+
 class NewSessionRequest(_message.Message):
     __slots__ = ("id", "name")
     ID_FIELD_NUMBER: _ClassVar[int]
@@ -71,34 +103,34 @@ class NewSessionRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class CsvInput(_message.Message):
-    __slots__ = ("delimiter", "include_header", "path")
+    __slots__ = ("delimiter", "include_header", "path", "kind")
     DELIMITER_FIELD_NUMBER: _ClassVar[int]
     INCLUDE_HEADER_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
     delimiter: str
     include_header: bool
     path: str
-    def __init__(self, delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ...) -> None: ...
+    kind: str
+    def __init__(self, delimiter: _Optional[str] = ..., include_header: bool = ..., path: _Optional[str] = ..., kind: _Optional[str] = ...) -> None: ...
 
 class JsonInput(_message.Message):
-    __slots__ = ("multiline", "path")
+    __slots__ = ("multiline", "path", "kind")
     MULTILINE_FIELD_NUMBER: _ClassVar[int]
     PATH_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
     multiline: bool
     path: str
-    def __init__(self, multiline: bool = ..., path: _Optional[str] = ...) -> None: ...
+    kind: str
+    def __init__(self, multiline: bool = ..., path: _Optional[str] = ..., kind: _Optional[str] = ...) -> None: ...
 
 class ParquetInput(_message.Message):
-    __slots__ = ("path",)
+    __slots__ = ("path", "kind")
     PATH_FIELD_NUMBER: _ClassVar[int]
+    KIND_FIELD_NUMBER: _ClassVar[int]
     path: str
-    def __init__(self, path: _Optional[str] = ...) -> None: ...
-
-class SessionInput(_message.Message):
-    __slots__ = ("session_id",)
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
+    kind: str
+    def __init__(self, path: _Optional[str] = ..., kind: _Optional[str] = ...) -> None: ...
 
 class LoadDatasetNodeRequest(_message.Message):
     __slots__ = ("session_id", "csv", "json", "parquet")
@@ -111,6 +143,12 @@ class LoadDatasetNodeRequest(_message.Message):
     json: JsonInput
     parquet: ParquetInput
     def __init__(self, session_id: _Optional[str] = ..., csv: _Optional[_Union[CsvInput, _Mapping]] = ..., json: _Optional[_Union[JsonInput, _Mapping]] = ..., parquet: _Optional[_Union[ParquetInput, _Mapping]] = ...) -> None: ...
+
+class SessionInput(_message.Message):
+    __slots__ = ("session_id",)
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
 
 class PreviewDatasetRequest(_message.Message):
     __slots__ = ("session_id", "node_id", "limit")
@@ -172,25 +210,47 @@ class AddHistogramNodeRequest(_message.Message):
     expression: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., y_axis_col: _Optional[str] = ..., order_by: _Optional[str] = ..., sort_by: _Optional[str] = ..., expression: _Optional[str] = ...) -> None: ...
 
-class AddColumnExpression(_message.Message):
-    __slots__ = ("expression", "col_name")
-    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
-    COL_NAME_FIELD_NUMBER: _ClassVar[int]
-    expression: str
-    col_name: str
-    def __init__(self, expression: _Optional[str] = ..., col_name: _Optional[str] = ...) -> None: ...
+class Param(_message.Message):
+    __slots__ = ("name", "dtype", "value_json")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    DTYPE_FIELD_NUMBER: _ClassVar[int]
+    VALUE_JSON_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    dtype: str
+    value_json: str
+    def __init__(self, name: _Optional[str] = ..., dtype: _Optional[str] = ..., value_json: _Optional[str] = ...) -> None: ...
 
-class NewColumnNodeRequest(_message.Message):
-    __slots__ = ("session_id", "node_id", "prev_node_id", "expressions")
+class Expression(_message.Message):
+    __slots__ = ("method_name", "return_value_type", "params", "compiled")
+    METHOD_NAME_FIELD_NUMBER: _ClassVar[int]
+    RETURN_VALUE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    PARAMS_FIELD_NUMBER: _ClassVar[int]
+    COMPILED_FIELD_NUMBER: _ClassVar[int]
+    method_name: str
+    return_value_type: str
+    params: _containers.RepeatedCompositeFieldContainer[Param]
+    compiled: str
+    def __init__(self, method_name: _Optional[str] = ..., return_value_type: _Optional[str] = ..., params: _Optional[_Iterable[_Union[Param, _Mapping]]] = ..., compiled: _Optional[str] = ...) -> None: ...
+
+class AddColumnExpression(_message.Message):
+    __slots__ = ("expression", "new_column_name")
+    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    NEW_COLUMN_NAME_FIELD_NUMBER: _ClassVar[int]
+    expression: Expression
+    new_column_name: str
+    def __init__(self, expression: _Optional[_Union[Expression, _Mapping]] = ..., new_column_name: _Optional[str] = ...) -> None: ...
+
+class AddColumnNodeRequest(_message.Message):
+    __slots__ = ("session_id", "node_id", "prev_node_id", "user_input")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NODE_ID_FIELD_NUMBER: _ClassVar[int]
     PREV_NODE_ID_FIELD_NUMBER: _ClassVar[int]
-    EXPRESSIONS_FIELD_NUMBER: _ClassVar[int]
+    USER_INPUT_FIELD_NUMBER: _ClassVar[int]
     session_id: str
     node_id: str
     prev_node_id: str
-    expressions: _containers.RepeatedCompositeFieldContainer[AddColumnExpression]
-    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., expressions: _Optional[_Iterable[_Union[AddColumnExpression, _Mapping]]] = ...) -> None: ...
+    user_input: _containers.RepeatedCompositeFieldContainer[AddColumnExpression]
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., user_input: _Optional[_Iterable[_Union[AddColumnExpression, _Mapping]]] = ...) -> None: ...
 
 class JoinParams(_message.Message):
     __slots__ = ("join_relation", "columns_to_keep", "columns_to_add", "prefix_for_added_columns", "join_criteria", "criteria_matching")
@@ -236,6 +296,16 @@ class NodeRemovalRequest(_message.Message):
     node_id: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ...) -> None: ...
 
+class NodeToggleRequest(_message.Message):
+    __slots__ = ("session_id", "node_id", "toggle")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
+    NODE_ID_FIELD_NUMBER: _ClassVar[int]
+    TOGGLE_FIELD_NUMBER: _ClassVar[int]
+    session_id: str
+    node_id: str
+    toggle: bool
+    def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., toggle: bool = ...) -> None: ...
+
 class LoadFromSessionNodeRequest(_message.Message):
     __slots__ = ("session_id", "input_session_id")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
@@ -243,12 +313,6 @@ class LoadFromSessionNodeRequest(_message.Message):
     session_id: str
     input_session_id: str
     def __init__(self, session_id: _Optional[str] = ..., input_session_id: _Optional[str] = ...) -> None: ...
-
-class RebuildRequest(_message.Message):
-    __slots__ = ("session_id",)
-    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
-    session_id: str
-    def __init__(self, session_id: _Optional[str] = ...) -> None: ...
 
 class SessionStatusRequest(_message.Message):
     __slots__ = ("session_id",)

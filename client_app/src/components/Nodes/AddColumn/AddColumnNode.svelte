@@ -2,49 +2,42 @@
 import { Dropdown, DropdownItem, DropdownHeader, DropdownDivider, Button } from "flowbite-svelte";
 import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svelte-icons";
 import Icon from "@iconify/svelte";
-import { v4 as uuidv4 } from "uuid";
-import { Node } from "../NodeInstance.svelte";
-import ExpressionFrom from "./ExpressionFrom.svelte";
+import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
+import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
-import type { Expression } from "$lib/dtype";
-import { compileExprString, tryRestoreNodes, getActivePredecessor } from "$lib/utils";
+import { AddColumnExpression } from "../../Expression/Expression.svelte";
 
 interface Props {
-    nodesInAnalysis: Node[];
+    analysisIndex: number;
     nodeIndex: number;
-    analysisId: string;
-    activeNodeStatus: boolean;
 }
+let { analysisIndex, nodeIndex }: Props = $props();
 
-let { analysisId, nodesInAnalysis = $bindable(), nodeIndex, activeNodeStatus }: Props = $props();
-let node: Node = nodesInAnalysis[nodeIndex];
-let expressions: Expression[] = $state([]);
+let expressions: AddColumnExpression[] = $state(
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].getUserInput().length > 0
+        ? globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].getUserInput()
+        : [],
+);
+
+$effect(() => {
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].setUserInput(expressions);
+});
+
 let exprSelectionOpen = $state(false);
-let msg = $state("");
 
-function addExpression(category: string, fname: string) {
-    // @ts-ignore
-    let expr = sparkColumnFunctions[category].exprs[fname];
-    expressions.push({
-        uuid: "add_col_expr-" + uuidv4(),
-        fname: fname,
-        params: expr["params"].map((param: any) => {
-            return { ...param, valueField: { value: "", source: "input" } };
+function addExpression(returnValueType: string, methodName: string) {
+    expressions.push(
+        new AddColumnExpression({
+            returnValueType: returnValueType,
+            methodName: methodName,
         }),
-        newColumnName: "",
-        // @ts-ignore
-        sparkTypes: new Set(sparkColumnFunctions[category].sparkTypes),
-        // @ts-ignore
-        customInput: sparkColumnFunctions[category].customInput,
-    });
+    );
     exprSelectionOpen = false;
 }
 
 function duplicateExpr(exprId: number) {
-    const exprToDuplicate = structuredClone($state.snapshot(expressions)[exprId]);
-    exprToDuplicate.newColumnName = "new_" + exprToDuplicate.newColumnName;
-    exprToDuplicate.uuid = "add_col_expr-" + uuidv4();
-    expressions.splice(exprId + 1, 0, exprToDuplicate);
+    const exprClone = expressions[exprId].clone();
+    expressions.splice(exprId + 1, 0, exprClone);
 }
 
 function removeExpr(exprId: number) {
@@ -52,27 +45,19 @@ function removeExpr(exprId: number) {
 }
 
 async function submit() {
-    let submitSuccessful = await nodesInAnalysis[nodeIndex].submit({
-        analysisId: analysisId,
-        nodeUuid: nodesInAnalysis[nodeIndex].uuid,
-        prevNodeUuid: nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].uuid,
-        expressions: expressions,
-        nodesInAnalysis: nodesInAnalysis,
-        nodeIndex: nodeIndex,
-    });
-
-    if (submitSuccessful) {
-        // invalid -> valid trigger submit on following nodes
-        if (nodesInAnalysis[nodeIndex].invalidState.value) {
-            await tryRestoreNodes(analysisId, nodesInAnalysis, nodeIndex + 1);
-        }
-        nodesInAnalysis[nodeIndex].setInvalidState(false, "");
-    }
+    await globalAnalysesState.analyses[analysisIndex].submitNode(
+        globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex],
+        {
+            session_id: globalAnalysesState.analyses[analysisIndex].id,
+            node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
+            prev_node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId,
+        },
+    );
 }
 </script>
 
 <h5 class="mb-1 text-xl font-medium text-gray-900 dark:text-white">
-    {node.title}
+    {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title}
 </h5>
 <span class="text-sm text-gray-500 dark:text-gray-400">Add Column</span>
 {#each expressions as expr, i (expr.uuid)}
@@ -81,8 +66,7 @@ async function submit() {
             <ExpressionFrom
                 bind:exprs={expressions}
                 idx={i}
-                colsInPrevDf={nodesInAnalysis[getActivePredecessor(nodesInAnalysis, nodeIndex)].colsInNode}
-                nodeIndex={nodeIndex} />
+                columnsOnNodeInput={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].columnsOnNodeInput} />
             <div class="mt-6 ml-4">
                 <Button
                     color="alternative"
@@ -98,7 +82,7 @@ async function submit() {
                     }}><FileCopyOutline /></Button>
             </div>
         </div>
-        <p class="mt-2 font-mono text-xs">{compileExprString(expressions[i])}</p>
+        <p class="mt-2 font-mono text-xs">{expressions[i].toString()}</p>
     </div>
 {/each}
 <div class="mt-4 flex justify-center">
@@ -162,5 +146,6 @@ async function submit() {
     </Dropdown>
 </div>
 <div class="flex space-x-3 mt-2 rtl:space-x-reverse">
-    <Button disabled={!activeNodeStatus} onclick={submit}>Submit</Button>
+    <Button disabled={!globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].active} onclick={submit}
+        >Submit</Button>
 </div>
