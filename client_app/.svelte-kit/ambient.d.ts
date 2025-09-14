@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const PYTHON_BASIC_REPL: string;
 	export const LESSOPEN: string;
 	export const LANGUAGE: string;
 	export const USER: string;
@@ -87,6 +88,7 @@ declare module '$env/static/private' {
 	export const VSCODE_DEBUGPY_ADAPTER_ENDPOINTS: string;
 	export const LANG: string;
 	export const XDG_CURRENT_DESKTOP: string;
+	export const PYTHONSTARTUP: string;
 	export const LC_TELEPHONE: string;
 	export const XDG_SESSION_DESKTOP: string;
 	export const XAUTHORITY: string;
@@ -157,6 +159,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		PYTHON_BASIC_REPL: string;
 		LESSOPEN: string;
 		LANGUAGE: string;
 		USER: string;
@@ -218,6 +221,7 @@ declare module '$env/dynamic/private' {
 		VSCODE_DEBUGPY_ADAPTER_ENDPOINTS: string;
 		LANG: string;
 		XDG_CURRENT_DESKTOP: string;
+		PYTHONSTARTUP: string;
 		LC_TELEPHONE: string;
 		XDG_SESSION_DESKTOP: string;
 		XAUTHORITY: string;
