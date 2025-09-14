@@ -3,6 +3,7 @@
   resize: inline;
   overflow: hidden;
   min-width: 120px;
+  max-width: 470px;
 }
 </style>
 
@@ -143,8 +144,8 @@ const table = createSvelteTable({
                     header.column.resetSize();
                   }}
                   onmousedown={header.getResizeHandler()}
-                  class="grid grid-cols-3 gap-1 resizable">
-                  <div class="col-span-2">
+                  class="flex justify-between gap-1 resizable">
+                  <div class="w-[70%]">
                     <p class="truncate">
                       <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
                     </p>
@@ -153,80 +154,88 @@ const table = createSvelteTable({
                     </p>
                   </div>
 
-                  <Button class="p-1 m-2 h-4 w-4"><ChevronDownOutline class="h-2 w-2" /></Button>
-                  <Dropdown
-                    bind:open={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open}>
-                    <DropdownItem
-                      class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc}
-                      onclick={() => {
-                        if (header.column.getIsSorted().toString() === "desc") {
-                          header.getContext().column.clearSorting();
+                  <div>
+                    <Button class="p-1 m-2 h-4 w-4"><ChevronDownOutline class="h-2 w-2" /></Button>
+                    <Dropdown
+                      bind:open={
+                        columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open
+                      }>
+                      <DropdownItem
+                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc}
+                        onclick={() => {
+                          if (header.column.getIsSorted().toString() === "desc") {
+                            header.getContext().column.clearSorting();
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                            "bg-white font-normal";
-                        } else {
-                          header.getContext().table.setSorting([{ desc: true, id: header.getContext().column.id }]);
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
+                              "bg-white font-normal";
+                          } else {
+                            header.getContext().table.setSorting([{ desc: true, id: header.getContext().column.id }]);
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                            "bg-sky-100 font-semibold";
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                            "bg-white font-normal";
-                        }
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
+                              "bg-sky-100 font-semibold";
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
+                              "bg-white font-normal";
+                          }
 
-                        columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open = false;
-                      }}>
-                      <div class="flex justify-normal gap-2">
-                        <Icon icon="tabler:sort-descending-small-big" width="16" height="16" />
-                        <p>Sort descending</p>
-                      </div></DropdownItem>
+                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
+                            false;
+                        }}>
+                        <div class="flex justify-normal gap-2">
+                          <Icon icon="tabler:sort-descending-small-big" width="16" height="16" />
+                          <p>Sort descending</p>
+                        </div></DropdownItem>
 
-                    <DropdownItem
-                      class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc}
-                      onclick={() => {
-                        if (header.column.getIsSorted().toString() === "asc") {
-                          header.getContext().column.clearSorting();
+                      <DropdownItem
+                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc}
+                        onclick={() => {
+                          if (header.column.getIsSorted().toString() === "asc") {
+                            header.getContext().column.clearSorting();
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                            "bg-white font-normal";
-                        } else {
-                          header.getContext().table.setSorting([{ desc: false, id: header.getContext().column.id }]);
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
+                              "bg-white font-normal";
+                          } else {
+                            header.getContext().table.setSorting([{ desc: false, id: header.getContext().column.id }]);
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                            "bg-sky-100 font-semibold";
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                            "bg-white font-normal";
-                        }
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
+                              "bg-sky-100 font-semibold";
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
+                              "bg-white font-normal";
+                          }
 
-                        columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open = false;
-                      }}>
-                      <div class="flex justify-normal gap-2">
-                        <Icon icon="tabler:sort-ascending-small-big" width="16" height="16" />
-                        <p>Sort ascending</p>
-                      </div></DropdownItem>
+                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
+                            false;
+                        }}>
+                        <div class="flex justify-normal gap-2">
+                          <Icon icon="tabler:sort-ascending-small-big" width="16" height="16" />
+                          <p>Sort ascending</p>
+                        </div></DropdownItem>
 
-                    <DropdownItem
-                      class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning}
-                      onclick={() => {
-                        if (header.column.getIsPinned()) {
-                          header.column.pin(false);
+                      <DropdownItem
+                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen]
+                          .pinning}
+                        onclick={() => {
+                          if (header.column.getIsPinned()) {
+                            header.column.pin(false);
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
-                            "bg-white font-normal";
-                        } else {
-                          header.column.pin("left");
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
+                              "bg-white font-normal";
+                          } else {
+                            header.column.pin("left");
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
-                            "bg-sky-100 font-semibold";
-                        }
+                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
+                              "bg-sky-100 font-semibold";
+                          }
 
-                        columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open = false;
-                      }}>
-                      <div class="flex justify-normal gap-2">
-                        <Icon icon="tabler:pin" width="16" height="16" />
-                        <p>Pin</p>
-                      </div>
-                    </DropdownItem>
-                  </Dropdown>
+                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
+                            false;
+                        }}>
+                        <div class="flex justify-normal gap-2">
+                          <Icon icon="tabler:pin" width="16" height="16" />
+                          <p>Pin</p>
+                        </div>
+                      </DropdownItem>
+                    </Dropdown>
+                  </div>
                 </div>
               </div>
 
