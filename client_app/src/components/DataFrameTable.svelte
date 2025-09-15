@@ -8,7 +8,6 @@
 </style>
 
 <script lang="ts">
-import { onMount, onDestroy } from "svelte";
 import {
   Table,
   TableBody,
@@ -41,42 +40,28 @@ interface Props {
 
 let { previewObject }: Props = $props();
 
-type columnMenu = {
+type columnMenuType = {
   open: boolean;
-  pinning: string;
-  asc: string;
-  desc: string;
 };
-let columnMenuIsOpen = $state<Record<string, columnMenu>>(
-  previewObject.columns.reduce((acc: Record<string, columnMenu>, col: PreviewColumn) => {
+let columnMenu = $state<Record<string, columnMenuType>>(
+  previewObject.columns.reduce((acc: Record<string, columnMenuType>, col: PreviewColumn) => {
     return {
       ...acc,
       [col.name]: {
         open: false,
-        pinning: "bg-white font-normal",
-        asc: "bg-white font-normal",
-        desc: "bg-white font-normal",
       },
     };
   }, {}),
 );
-
-onMount(() => {
-  console.log("table entered DOM");
-});
-
-onDestroy(() => {
-  console.log(`table left DOM`);
-});
 
 const data: (string | null)[][] = previewObject.data;
 const columns: ColumnDef<(string | null)[] | null, any>[] = previewObject.columns.map((col, index) => {
   return { accessorKey: `${index}`, header: `${col.name}`, footer: `${col.type}` };
 });
 
-let sorting = $state<SortingState>([]);
-let pinning = $state<ColumnPinningState>({});
-let columnSizing = $state<ColumnSizingState>({});
+let sorting = $state<SortingState>(previewObject.sortingConf);
+let pinning = $state<ColumnPinningState>(previewObject.pinningConf);
+let columnSizing = $state<ColumnSizingState>(previewObject.sizingConf);
 
 const table = createSvelteTable({
   data,
@@ -96,6 +81,7 @@ const table = createSvelteTable({
     } else {
       sorting = updater;
     }
+    previewObject.sortingConf = sorting;
   },
   onColumnPinningChange: (updater) => {
     if (typeof updater === "function") {
@@ -103,14 +89,15 @@ const table = createSvelteTable({
     } else {
       pinning = updater;
     }
+    previewObject.pinningConf = pinning;
   },
   onColumnSizingChange: (updater) => {
-    console.log("sth is happening");
     if (typeof updater === "function") {
       columnSizing = updater(columnSizing);
     } else {
       columnSizing = updater;
     }
+    previewObject.sizingConf = columnSizing;
   },
   state: {
     get sorting() {
@@ -156,29 +143,19 @@ const table = createSvelteTable({
 
                   <div>
                     <Button class="p-1 m-2 h-4 w-4"><ChevronDownOutline class="h-2 w-2" /></Button>
-                    <Dropdown
-                      bind:open={
-                        columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open
-                      }>
+                    <Dropdown bind:open={columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open}>
                       <DropdownItem
-                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc}
+                        class={header.column.getIsSorted().toString() === "desc"
+                          ? "bg-sky-100 font-semibold"
+                          : "bg-white font-normal"}
                         onclick={() => {
                           if (header.column.getIsSorted().toString() === "desc") {
                             header.getContext().column.clearSorting();
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                              "bg-white font-normal";
                           } else {
                             header.getContext().table.setSorting([{ desc: true, id: header.getContext().column.id }]);
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                              "bg-sky-100 font-semibold";
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                              "bg-white font-normal";
                           }
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
-                            false;
+                          columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open = false;
                         }}>
                         <div class="flex justify-normal gap-2">
                           <Icon icon="tabler:sort-descending-small-big" width="16" height="16" />
@@ -186,24 +163,17 @@ const table = createSvelteTable({
                         </div></DropdownItem>
 
                       <DropdownItem
-                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc}
+                        class={header.column.getIsSorted().toString() === "asc"
+                          ? "bg-sky-100 font-semibold"
+                          : "bg-white font-normal"}
                         onclick={() => {
                           if (header.column.getIsSorted().toString() === "asc") {
                             header.getContext().column.clearSorting();
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                              "bg-white font-normal";
                           } else {
                             header.getContext().table.setSorting([{ desc: false, id: header.getContext().column.id }]);
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].asc =
-                              "bg-sky-100 font-semibold";
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].desc =
-                              "bg-white font-normal";
                           }
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
-                            false;
+                          columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open = false;
                         }}>
                         <div class="flex justify-normal gap-2">
                           <Icon icon="tabler:sort-ascending-small-big" width="16" height="16" />
@@ -211,23 +181,15 @@ const table = createSvelteTable({
                         </div></DropdownItem>
 
                       <DropdownItem
-                        class={columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen]
-                          .pinning}
+                        class={header.column.getIsPinned() ? "bg-sky-100 font-semibold" : "bg-white font-normal"}
                         onclick={() => {
                           if (header.column.getIsPinned()) {
                             header.column.pin(false);
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
-                              "bg-white font-normal";
                           } else {
                             header.column.pin("left");
-
-                            columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].pinning =
-                              "bg-sky-100 font-semibold";
                           }
 
-                          columnMenuIsOpen[header.column.columnDef.header as keyof typeof columnMenuIsOpen].open =
-                            false;
+                          columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open = false;
                         }}>
                         <div class="flex justify-normal gap-2">
                           <Icon icon="tabler:pin" width="16" height="16" />
