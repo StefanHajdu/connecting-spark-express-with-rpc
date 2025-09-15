@@ -37,9 +37,10 @@ import type { PreviewColumn } from "$lib/dtype";
 
 interface Props {
   previewObject: Preview;
+  heightCss: string;
 }
 
-let { previewObject }: Props = $props();
+let { previewObject, heightCss }: Props = $props();
 
 type columnMenu = {
   open: boolean;
@@ -126,7 +127,7 @@ const table = createSvelteTable({
 });
 </script>
 
-<div class="h-80 overflow-y-auto">
+<div class={`${heightCss}`}>
   <Table hoverable={true} class="table-fixed">
     <TableHead class="normal-case">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
