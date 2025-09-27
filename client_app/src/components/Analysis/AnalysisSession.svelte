@@ -22,8 +22,9 @@ let paneVisible = $derived.by(() => {
 });
 let resize = $state(0);
 
-async function forwardPreview(analysiId: string, nodeId: string): Promise<void> {
-  await previewFooter.preview(analysiId, nodeId);
+async function forwardPreview(analysisId: string, nodeId: string): Promise<void> {
+  footerPreview.visibilityToggle(true);
+  await footerPreview.run(analysisId, nodeId);
 }
 
 function handleMessage(event: any) {
@@ -75,10 +76,9 @@ $inspect(resize);
             class="dark:text-white" />
         </div>
         {#key rerenderState}
-          <DataFrameTable previewObject={footerPreview} heightCss={`h-${80}`} />
+          <DataFrameTable previewObject={footerPreview} heightCss={`h-${resize}`} />
         {/key}
       {/if}
     </Pane>
   </Splitpanes>
-  <PreviewFooter bind:this={previewFooter} />
 </TabItem>
