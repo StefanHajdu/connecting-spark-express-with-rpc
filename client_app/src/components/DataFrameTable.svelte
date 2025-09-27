@@ -37,10 +37,9 @@ import type { PreviewColumn } from "$lib/dtype";
 
 interface Props {
   previewObject: Preview;
-  heightCss: string;
 }
 
-let { previewObject, heightCss }: Props = $props();
+let { previewObject }: Props = $props();
 
 type columnMenu = {
   open: boolean;
@@ -83,8 +82,8 @@ const table = createSvelteTable({
   data,
   columns,
   defaultColumn: {
-    size: 150,
-    minSize: 150,
+    size: 60,
+    minSize: 60,
     maxSize: 500,
   },
   enableColumnResizing: true,
@@ -106,7 +105,6 @@ const table = createSvelteTable({
     }
   },
   onColumnSizingChange: (updater) => {
-    console.log("sth is happening");
     if (typeof updater === "function") {
       columnSizing = updater(columnSizing);
     } else {
@@ -127,8 +125,8 @@ const table = createSvelteTable({
 });
 </script>
 
-<div class={`${heightCss}`}>
-  <Table hoverable={true} class="table-fixed">
+<div class="h-[100%] overflow-y-auto">
+  <Table hoverable={true}>
     <TableHead class="normal-case">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         {#each headerGroup.headers as header (header.id)}
@@ -147,10 +145,10 @@ const table = createSvelteTable({
                   onmousedown={header.getResizeHandler()}
                   class="flex justify-between gap-1 resizable">
                   <div class="w-[70%]">
-                    <p class="truncate">
+                    <p class="w-32 truncate">
                       <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
                     </p>
-                    <p class="truncate font-normal">
+                    <p class="w-32 truncate font-normal">
                       {header.column.columnDef.footer}
                     </p>
                   </div>
@@ -266,7 +264,7 @@ const table = createSvelteTable({
         <TableBodyRow>
           {#each row.getVisibleCells() as cell (cell.id)}
             <TableBodyCell class="px-1 py-1 text-normal border border-black text-xs">
-              <p class="truncate">
+              <p class="w-32 truncate">
                 <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
               </p>
             </TableBodyCell>
