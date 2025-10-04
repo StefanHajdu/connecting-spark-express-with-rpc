@@ -57,7 +57,7 @@ $inspect(previewPaneSize);
 
 <div class="flex flex-col overflow-hidden h-screen">
   <Header />
-  <Tabs defaultClass="sticky z-1 top-10 bg-[#fafafa]" contentClass="overflow-y-scroll">
+  <Tabs defaultClass="sticky z-1 top-10 bg-[#fafafa]" contentClass="grow overflow-y-scroll">
     {#each globalAnalysesState.analyses as analysis, i (analysis.id)}
       <AnalysisSession analysisIndex={i} />
     {/each}
