@@ -87,7 +87,7 @@ const table = createSvelteTable({
     maxSize: 500,
   },
   enableColumnResizing: true,
-  columnResizeMode: "onChange",
+  columnResizeMode: "onEnd",
   getCoreRowModel: getCoreRowModel(),
   getSortedRowModel: getSortedRowModel(),
   onSortingChange: (updater) => {
@@ -125,7 +125,7 @@ const table = createSvelteTable({
 });
 </script>
 
-<div class="h-[100%] overflow-y-auto">
+<div class="h-full overflow-y-auto pb-4">
   <Table hoverable={true}>
     <TableHead class="normal-case">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
