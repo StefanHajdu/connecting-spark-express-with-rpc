@@ -15,8 +15,8 @@ async function forwardPreview(analysisId: string, nodeId: string): Promise<void>
 }
 </script>
 
-<TabItem open title={globalAnalysesState.analyses[analysisIndex].name}>
-  <div id={globalAnalysesState.analyses[analysisIndex].name} class="overflow-y">
+<TabItem open divClass="h-full" title={globalAnalysesState.analyses[analysisIndex].name}>
+  <div id={globalAnalysesState.analyses[analysisIndex].name} class="grow bg-[#86efac]">
     <Node
       analysisIndex={analysisIndex}
       nodeIndex={0}

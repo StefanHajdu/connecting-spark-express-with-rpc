@@ -1,7 +1,7 @@
 <script lang="ts">
-	let title: string = '(header)';
+let title: string = "(header)";
 </script>
 
-<header class="sticky top-0 z-10 bg-red-500/80 p-4 backdrop-blur-sm">
-	{title}
+<header class="p-2 sticky top-0 z-1 bg-red-500">
+  {title}
 </header>
