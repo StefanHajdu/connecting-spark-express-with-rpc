@@ -2,6 +2,7 @@ import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
 import type { SparkTransform } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
+import { footerPreview } from "../PreviewStore.svelte";
 
 export class AnalysisSession {
     id: string = $state("");
@@ -100,6 +101,7 @@ export class AnalysisSession {
     public async submitNode(node: Node, params: any): Promise<void> {
         const recordedTransforms = await node.submit(params);
         this.updateNodes(recordedTransforms);
+        footerPreview.run(this.id, node.id);
     }
 
     public updateNodes(transforms: SparkTransform[]): void {

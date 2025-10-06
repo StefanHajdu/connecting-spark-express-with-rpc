@@ -34,6 +34,11 @@ export type Column = {
     dtype: string;
 };
 
+export type PreviewColumn = {
+    name: string;
+    type: string;
+};
+
 export type SparkTransform = {
     session_id: string;
     node_id: string;
@@ -94,3 +99,16 @@ export interface IParquetMetadata {
     kind: "parquet";
     path: string;
 }
+
+export type ButtonColor =
+    | "dark"
+    | "blue"
+    | "none"
+    | "red"
+    | "yellow"
+    | "green"
+    | "purple"
+    | "light"
+    | "primary"
+    | "alternative"
+    | undefined;

@@ -3,7 +3,7 @@ import { Input, Button, Modal, Dropdown, DropdownItem, Toggle, Label, Spinner } 
 import { ChevronDownOutline } from "flowbite-svelte-icons";
 import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import type { ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
-import { type ButtonColor } from "$lib/uitype";
+import { type ButtonColor } from "$lib/dtype";
 
 interface Props {
     name: string;
