@@ -1,7 +1,12 @@
 import type { PreviewColumn } from "$lib/dtype";
 import { v4 as uuidv4 } from "uuid";
 import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
-import { type SortingState, type ColumnPinningState, type ColumnSizingState } from "@tanstack/table-core";
+import {
+  type SortingState,
+  type ColumnPinningState,
+  type ColumnSizingState,
+  type ColumnSizingInfoState,
+} from "@tanstack/table-core";
 
 export class Preview {
   columns: PreviewColumn[] = $state([]);
@@ -9,6 +14,14 @@ export class Preview {
   sortingConf: SortingState = $state([]);
   pinningConf: ColumnPinningState = $state({});
   sizingConf: ColumnSizingState = $state({});
+  sizingInfoConf: ColumnSizingInfoState = $state({
+    startOffset: null,
+    startSize: null,
+    deltaOffset: null,
+    deltaPercentage: null,
+    isResizingColumn: false,
+    columnSizingStart: [],
+  });
 
   constructor() {
     this.columns = [];
@@ -16,6 +29,14 @@ export class Preview {
     this.sortingConf = [];
     this.pinningConf = {};
     this.sizingConf = {};
+    this.sizingInfoConf = {
+      startOffset: null,
+      startSize: null,
+      deltaOffset: null,
+      deltaPercentage: null,
+      isResizingColumn: false,
+      columnSizingStart: [],
+    };
   }
 
   public reset() {
@@ -27,6 +48,14 @@ export class Preview {
     this.sortingConf = [];
     this.pinningConf = {};
     this.sizingConf = {};
+    this.sizingInfoConf = {
+      startOffset: null,
+      startSize: null,
+      deltaOffset: null,
+      deltaPercentage: null,
+      isResizingColumn: false,
+      columnSizingStart: [],
+    };
   }
 
   public sync(columns: PreviewColumn[], data: any[][]) {

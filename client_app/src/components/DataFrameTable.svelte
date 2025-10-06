@@ -1,9 +1,28 @@
 <style>
-.resizable {
-  resize: inline;
-  overflow: hidden;
-  min-width: 120px;
-  max-width: 470px;
+.resizer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.resizer.isResizing {
+  background: blue;
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .resizer {
+    opacity: 0;
+  }
+
+  *:hover > .resizer {
+    opacity: 1;
+  }
 }
 </style>
 
@@ -28,6 +47,7 @@ import {
   type SortingState,
   type ColumnPinningState,
   type ColumnSizingState,
+  type ColumnSizingInfoState,
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/table-core";
@@ -62,13 +82,13 @@ const columns: ColumnDef<(string | null)[] | null, any>[] = previewObject.column
 let sorting = $state<SortingState>(previewObject.sortingConf);
 let pinning = $state<ColumnPinningState>(previewObject.pinningConf);
 let columnSizing = $state<ColumnSizingState>(previewObject.sizingConf);
+let columnSizingInfo = $state<ColumnSizingInfoState>(previewObject.sizingInfoConf);
 
 const table = createSvelteTable({
   data,
   columns,
   defaultColumn: {
-    size: 60,
-    minSize: 60,
+    minSize: 50,
     maxSize: 500,
   },
   enableColumnResizing: true,
@@ -99,6 +119,14 @@ const table = createSvelteTable({
     }
     previewObject.sizingConf = columnSizing;
   },
+  onColumnSizingInfoChange: (updater) => {
+    if (typeof updater === "function") {
+      columnSizingInfo = updater(columnSizingInfo);
+    } else {
+      columnSizingInfo = updater;
+    }
+    previewObject.sizingInfoConf = columnSizingInfo;
+  },
   state: {
     get sorting() {
       return sorting;
@@ -109,59 +137,38 @@ const table = createSvelteTable({
     get columnSizing() {
       return columnSizing;
     },
+    get columnSizingInfo() {
+      return columnSizingInfo;
+    },
   },
 });
+
+$inspect(columnSizing);
 </script>
 
-<div class="h-full overflow-y-auto pb-4">
-  <Table hoverable={true}>
+<div class="h-full overflow-y-auto overflow-x-scroll pb-4">
+  <Table hoverable={true} style={`width: ${table.getCenterTotalSize()}px`}>
     <TableHead class="normal-case">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         {#each headerGroup.headers as header (header.id)}
           {#if !header.isPlaceholder}
-            <TableHeadCell
-              class="text-normal border border-black text-xs"
-              colspan={header.colSpan}
-              style={`width:${header.getSize()}px`}>
-              <div>
-                <div
-                  role="button"
-                  tabindex="0"
-                  ondblclick={() => {
-                    header.column.resetSize();
-                  }}
-                  onmousedown={header.getResizeHandler()}
-                  class="flex justify-between gap-1 resizable">
-                  <div class="w-[70%]">
-                    <p class="w-32 truncate">
+            <TableHeadCell class="px-0 pl-2 text-normal border border-black text-xs relative" colspan={header.colSpan}>
+              <div style={`width: ${header.getSize()}px;`}>
+                <!-- header title  -->
+                <div class="flex justify-between">
+                  <div class="min-w-0">
+                    <p class="truncate">
                       <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
                     </p>
-                    <p class="w-32 truncate font-normal">
+                    <p class="truncate font-normal">
                       {header.column.columnDef.footer}
                     </p>
                   </div>
 
+                  <!-- column menu  -->
                   <div>
                     <Button class="p-1 m-2 h-4 w-4"><ChevronDownOutline class="h-2 w-2" /></Button>
                     <Dropdown bind:open={columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open}>
-                      <DropdownItem
-                        class={header.column.getIsSorted().toString() === "desc"
-                          ? "bg-sky-100 font-semibold"
-                          : "bg-white font-normal"}
-                        onclick={() => {
-                          if (header.column.getIsSorted().toString() === "desc") {
-                            header.getContext().column.clearSorting();
-                          } else {
-                            header.getContext().table.setSorting([{ desc: true, id: header.getContext().column.id }]);
-                          }
-
-                          columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open = false;
-                        }}>
-                        <div class="flex justify-normal gap-2">
-                          <Icon icon="tabler:sort-descending-small-big" width="16" height="16" />
-                          <p>Sort descending</p>
-                        </div></DropdownItem>
-
                       <DropdownItem
                         class={header.column.getIsSorted().toString() === "asc"
                           ? "bg-sky-100 font-semibold"
@@ -178,6 +185,24 @@ const table = createSvelteTable({
                         <div class="flex justify-normal gap-2">
                           <Icon icon="tabler:sort-ascending-small-big" width="16" height="16" />
                           <p>Sort ascending</p>
+                        </div></DropdownItem>
+
+                      <DropdownItem
+                        class={header.column.getIsSorted().toString() === "desc"
+                          ? "bg-sky-100 font-semibold"
+                          : "bg-white font-normal"}
+                        onclick={() => {
+                          if (header.column.getIsSorted().toString() === "desc") {
+                            header.getContext().column.clearSorting();
+                          } else {
+                            header.getContext().table.setSorting([{ desc: true, id: header.getContext().column.id }]);
+                          }
+
+                          columnMenu[header.column.columnDef.header as keyof typeof columnMenu].open = false;
+                        }}>
+                        <div class="flex justify-normal gap-2">
+                          <Icon icon="tabler:sort-descending-small-big" width="16" height="16" />
+                          <p>Sort descending</p>
                         </div></DropdownItem>
 
                       <DropdownItem
@@ -198,6 +223,18 @@ const table = createSvelteTable({
                       </DropdownItem>
                     </Dropdown>
                   </div>
+                </div>
+
+                <!-- resizer  -->
+                <div
+                  role="button"
+                  tabindex="0"
+                  ondblclick={() => {
+                    header.column.resetSize();
+                  }}
+                  onmousedown={header.getResizeHandler()}
+                  class={`resizer ${header.column.getIsResizing() ? "isResizing" : ""} right-0`}
+                  style={`transform: translateX(${table.getState().columnSizingInfo.deltaOffset}px)`}>
                 </div>
               </div>
 
@@ -227,9 +264,11 @@ const table = createSvelteTable({
         <TableBodyRow>
           {#each row.getVisibleCells() as cell (cell.id)}
             <TableBodyCell class="px-1 py-1 text-normal border border-black text-xs">
-              <p class="w-32 truncate">
-                <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-              </p>
+              <div style={`width: ${cell.column.getSize()}px;`}>
+                <p class="truncate">
+                  <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+                </p>
+              </div>
             </TableBodyCell>
           {/each}
         </TableBodyRow>
