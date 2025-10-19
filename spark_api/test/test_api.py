@@ -673,7 +673,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
             {'session_id': u.to_session_id(9), 'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df2.json'}},
             [
                 {
-                    'columns': [{'name': 'session_id', 'dtype': 'long'}, {'name': 'name', 'dtype': 'string'}],
+                    'columns': [{'name': 'name', 'dtype': 'string'}, {'name': 'session_id', 'dtype': 'long'}],
                     'session_id': u.to_session_id(9),
                     'node_id': TEST_STATE.root_node_id,
                     'prev_node_id': TEST_STATE.root_node_id,
@@ -703,7 +703,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`session_id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`name`, `session_id`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
@@ -728,7 +728,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`session_id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`name`, `session_id`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
