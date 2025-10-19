@@ -1054,9 +1054,7 @@ def test_load_sessions(session_requests, expected):
     res = requests.get('http://localhost:4444/rpc/load/sessions')
     assert res.status_code == 200
 
-    res_json = [res.json()[0]]
-    if len(session_requests) > 1:
-        res_json = res.json()[1:3]
+    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))
 
     print(res_json)
     print()
