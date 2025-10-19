@@ -13,22 +13,6 @@ onMount(async () => {
   await globalAnalysesState.setAnalysisFromAPI();
 });
 
-$effect(() => {
-  const analyses = globalAnalysesState.analyses;
-
-  if (!analyses.length) {
-    selectedIndex = 0;
-    return;
-  }
-
-  const flagged = analyses.findIndex((analysis) => analysis.selected);
-  if (flagged >= 0) {
-    selectedIndex = flagged;
-  } else if (selectedIndex >= analyses.length) {
-    selectedIndex = analyses.length - 1;
-  }
-});
-
 function selectAnalysis(index: number) {
   globalAnalysesState.analyses.forEach((analysis, idx) => {
     analysis.selected = idx === index;
@@ -42,11 +26,11 @@ function selectAnalysis(index: number) {
 
   <div class="sticky z-10 flex items-center gap-4 px-4 py-3">
     <div class="tab-scroll flex-1 overflow-x-auto whitespace-nowrap">
-      <div class="inline-flex items-center gap-4">
+      <div class="inline-flex items-center gap-2">
         {#each globalAnalysesState.analyses as analysis, i (analysis.session_id)}
           <button
             type="button"
-            class={`text-slate-600 hover:text-slate-900 ${selectedIndex === i ? "text-slate-900 underline" : ""}`}
+            class={`rounded-lg border px-4 py-2 text-sm font-medium ${selectedIndex === i ? "bg-slate-800 text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"}`}
             onclick={() => selectAnalysis(i)}>
             {analysis.name}
           </button>
