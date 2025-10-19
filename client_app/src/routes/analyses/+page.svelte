@@ -4,7 +4,7 @@ import { onMount } from "svelte";
 import Header from "../../components/Header.svelte";
 import AnalysisSession from "../../components/Analysis/AnalysisSession.svelte";
 import PreviewFooter from "../../components/PreviewFooter.svelte";
-import NewAnalysisForm from "../../components/Analysis/NewAnalysisForm.svelte";
+import NewAnalysisTabForm from "../../components/Analysis/NewAnalysisTabForm.svelte";
 import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
 
 let selectedIndex = $state(0);
@@ -53,7 +53,7 @@ function selectAnalysis(index: number) {
         {/each}
       </div>
     </div>
-    <NewAnalysisForm />
+    <NewAnalysisTabForm />
   </div>
 
   <div class="flex-1 overflow-hidden">

@@ -1,7 +1,6 @@
 <script lang="ts">
 import Header from "../components/Header.svelte";
 import Footer from "../components/Footer.svelte";
-import NewAnalysisForm from "../components/Analysis/NewAnalysisForm.svelte";
 import AnalysisTable from "../components/Analysis/AnalysisTable.svelte";
 import { analysesMock } from "$lib/analysesMock";
 import { AnalysisSession } from "../components/Analysis/AnalysisSessionClass.svelte";
@@ -18,11 +17,8 @@ let persistedAnalyses = $state(
 
   <main class="bg-white-500 space-y-4 p-4">
     <div>
-      <NewAnalysisForm />
+      <AnalysisTable bind:persistedAnalyses={persistedAnalyses} />
     </div>
-    <!-- <div>
-            <AnalysisTable bind:persistedAnalyses={persistedAnalyses} />
-        </div> -->
   </main>
 
   <Footer />

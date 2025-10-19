@@ -10,6 +10,7 @@ import {
   Button,
 } from "flowbite-svelte";
 import { AnalysisSession } from "./AnalysisSessionClass.svelte";
+import { goto } from "$app/navigation";
 
 interface Props {
   persistedAnalyses: AnalysisSession[];
@@ -29,7 +30,6 @@ function checkboxAnalyses(analyses: AnalysisSession[], flag: boolean): void {
 </script>
 
 <div>
-  <Button size="xs" color="blue" href="analyses" disabled={true}>Open</Button>
   <Button size="xs" color="red" disabled={true}>Delete</Button>
 </div>
 <Table hoverable={true}>
@@ -69,7 +69,16 @@ function checkboxAnalyses(analyses: AnalysisSession[], flag: boolean): void {
         <TableBodyCell>{analysis.status}</TableBodyCell>
         <TableBodyCell>{analysis.buildTime}</TableBodyCell>
         <TableBodyCell>{analysis.resources}</TableBodyCell>
-        <TableBodyCell>{analysis.rest}</TableBodyCell>
+        <TableHeadCell>
+          <!-- button open -->
+          <Button
+            size="xs"
+            color="blue"
+            disabled={false}
+            onclick={() => {
+              void goto("http://localhost:5173/analyses");
+            }}>Open</Button>
+        </TableHeadCell>
       </TableBodyRow>
     {/each}
   </TableBody>
