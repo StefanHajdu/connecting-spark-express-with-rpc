@@ -95,12 +95,12 @@ export class AddColumnNode extends Node {
         // params are optional, some expression don't require them e.g. current_date()
         const params = e.expression.params
           ? e.expression.params.map((param: any) => {
-            return {
-              name: param.name,
-              dtype: param.dtype,
-              valueField: JSON.parse(param.valueJson),
-            };
-          })
+              return {
+                name: param.name,
+                dtype: param.dtype,
+                valueField: JSON.parse(param.valueJson),
+              };
+            })
           : [];
         return new AddColumnExpression({ ...e.expression, params: params, newColumnName: e.newColumnName });
       });
@@ -129,7 +129,7 @@ class FilterNode extends Node {
     this.nodeType = "sql";
   }
 
-  setUserInput(params: any): void { }
+  setUserInput(params: any): void {}
 
   getUserInput(): any[] {
     return this.userInput;
@@ -148,7 +148,7 @@ class JoinNode extends Node {
     this.nodeType = "sql";
   }
 
-  setUserInput(params: any): void { }
+  setUserInput(params: any): void {}
 
   getUserInput(): any[] {
     return this.userInput;
@@ -167,7 +167,7 @@ class TableNode extends Node {
     this.nodeType = "sql";
   }
 
-  setUserInput(params: any): void { }
+  setUserInput(params: any): void {}
 
   getUserInput(): any[] {
     return this.userInput;
