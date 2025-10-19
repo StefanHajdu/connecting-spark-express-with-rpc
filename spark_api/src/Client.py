@@ -27,18 +27,18 @@ class UpdateStatus:
 
 
 class ClientSession:
-    def __init__(self, id, name):
-        self.id = id
+    def __init__(self, session_id, name):
+        self.session_id = session_id
         self.name = name
         self.child_sessions = set()
         self.update_status = UpdateStatus()
-        self.plan = PipelinePlan.SessionPlanner(id)
+        self.plan = PipelinePlan.SessionPlanner(session_id)
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.session_id)
 
     def __repr__(self):
-        return f'session: {self.id}, status: {self.update_status}'
+        return f'session: {self.session_id}, status: {self.update_status}'
 
     def add_child_session(self, session_id):
         self.child_sessions.add(session_id)
@@ -92,8 +92,8 @@ class ClientSession:
             return node.preview(limit=limit)
 
     def get_session_status(self):
-        self._log(f'/getSessionStatus: {self.id}')
+        self._log(f'/getSessionStatus: {self.session_id}')
         return self.update_status.__dict__
 
     def _log(self, msg):
-        print(f'*** session - {self.id} *** ' + msg)
+        print(f'*** session - {self.session_id} *** ' + msg)

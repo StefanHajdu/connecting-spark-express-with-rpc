@@ -19,7 +19,7 @@ let newNodeDropdownOpen = $state(false);
 let optionsOpen = $state(false);
 let summarizePromise = $state(
   Promise.resolve({
-    session_id: globalAnalysesState.analyses[analysisIndex].id,
+    session_id: globalAnalysesState.analyses[analysisIndex].session_id,
     msg: "",
     columns: "",
     schema: "",
@@ -42,7 +42,7 @@ async function insertNode(title: string) {
   let node = globalAnalysesState.analyses[analysisIndex].createNode(title, nodeIndex);
   await globalAnalysesState.analyses[analysisIndex].insertNode(node, nodeIndex);
 
-  nodeIdDOM = node.id;
+  nodeIdDOM = node.node_id;
   newNodeDropdownOpen = false;
 }
 
@@ -58,22 +58,22 @@ async function toggleNode() {
 
 function previewNode() {
   preview(
-    globalAnalysesState.analyses[analysisIndex].id,
-    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
+    globalAnalysesState.analyses[analysisIndex].session_id,
+    globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id,
   );
 }
 
 function summarizeNode() {
   summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
-    session_id: globalAnalysesState.analyses[analysisIndex].id,
-    node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id,
+    session_id: globalAnalysesState.analyses[analysisIndex].session_id,
+    node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id,
   });
 }
 </script>
 
 <div
   class={"flex min-w-80 justify-center " + opacity}
-  id={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id}>
+  id={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id}>
   <Card class="border-gray-500 max-w-5xl">
     <div class="flex justify-end">
       <DotsHorizontalOutline />
@@ -97,7 +97,7 @@ function summarizeNode() {
     {/if}
 
     <div class="mb-4 mt-4 flex items-center justify-between">
-      <p>id: {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].id.slice(-5)}</p>
+      <p>id: {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id.slice(-5)}</p>
       <p>
         prev_id: {globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId
           ? globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].prevNodeId.slice(-5)

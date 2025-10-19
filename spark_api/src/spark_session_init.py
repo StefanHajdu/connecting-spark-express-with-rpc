@@ -24,6 +24,6 @@ print(rf"""
     | |                    
     |_|
 
-id: {spark_app_id}
+session_id: {spark_app_id}
 ---------------------------
 """)

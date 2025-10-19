@@ -990,8 +990,8 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'inner',
-                'columns_to_keep': ['name', 'id'],
-                'columns_to_add': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
+                'columns_to_add': ['name', 'session_id'],
                 'prefix_for_added_columns': '_',
                 'join_criteria': ['{df}.name == {other_df}.name'],
                 'criteria_matching': '',
@@ -1001,8 +1001,8 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'cross',
-                'columns_to_keep': ['name', 'id'],
-                'columns_to_add': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
+                'columns_to_add': ['name', 'session_id'],
                 'prefix_for_added_columns': '_',
                 'join_criteria': [],
                 'criteria_matching': '',
@@ -1012,8 +1012,8 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'full',
-                'columns_to_keep': ['name', 'id'],
-                'columns_to_add': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
+                'columns_to_add': ['name', 'session_id'],
                 'prefix_for_added_columns': '_',
                 'join_criteria': ['{df}.name == {other_df}.name'],
                 'criteria_matching': '',
@@ -1023,8 +1023,8 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'left',
-                'columns_to_keep': ['name', 'id'],
-                'columns_to_add': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
+                'columns_to_add': ['name', 'session_id'],
                 'prefix_for_added_columns': '_',
                 'join_criteria': ['{df}.name == {other_df}.name'],
                 'criteria_matching': '',
@@ -1034,8 +1034,8 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'right',
-                'columns_to_keep': ['name', 'id'],
-                'columns_to_add': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
+                'columns_to_add': ['name', 'session_id'],
                 'prefix_for_added_columns': '_',
                 'join_criteria': ['{df}.name == {other_df}.name'],
                 'criteria_matching': '',
@@ -1045,7 +1045,7 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'left semi',
-                'columns_to_keep': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
                 'columns_to_add': [],
                 'prefix_for_added_columns': '',
                 'join_criteria': ['{df}.name == {other_df}.name'],
@@ -1056,7 +1056,7 @@ def test_18_misc_functions(misc_function):
         {
             'case': {
                 'join_relation': 'left anti',
-                'columns_to_keep': ['name', 'id'],
+                'columns_to_keep': ['name', 'session_id'],
                 'columns_to_add': [],
                 'prefix_for_added_columns': '',
                 'join_criteria': ['{df}.name == {other_df}.name'],

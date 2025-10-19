@@ -140,9 +140,7 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(2),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(1),
-                'user_input': [
-                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-                ],
+                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
             },
             [
                 {
@@ -198,9 +196,7 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(3),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(2),
-                'user_input': [
-                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-                ],
+                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
             },
             [
                 {
@@ -677,7 +673,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
             {'session_id': u.to_session_id(9), 'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df2.json'}},
             [
                 {
-                    'columns': [{'name': 'id', 'dtype': 'long'}, {'name': 'name', 'dtype': 'string'}],
+                    'columns': [{'name': 'session_id', 'dtype': 'long'}, {'name': 'name', 'dtype': 'string'}],
                     'session_id': u.to_session_id(9),
                     'node_id': TEST_STATE.root_node_id,
                     'prev_node_id': TEST_STATE.root_node_id,
@@ -707,7 +703,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`session_id`, `name`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
@@ -732,7 +728,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`session_id`, `name`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
@@ -918,7 +914,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': 'session_0001',
+                    'session_id': 'session_0001',
                     'name': 'random_name',
                 }
             ],
@@ -1015,7 +1011,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': 'session_0002',
+                    'session_id': 'session_0002',
                     'name': 'random_name',
                 },
                 {
@@ -1107,7 +1103,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
                         },
                     ],
-                    'id': 'session_0003',
+                    'session_id': 'session_0003',
                     'name': 'random_name',
                 },
             ],

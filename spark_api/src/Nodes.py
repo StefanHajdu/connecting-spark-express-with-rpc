@@ -192,7 +192,7 @@ class LoadNode(TransformNode):
         return ''
 
     def __str__(self):
-        return f'[{self.__class__.__name__}] -> id: {self.node_id} | {self.user_input_to_json()}'
+        return f'[{self.__class__.__name__}] -> session_id: {self.node_id} | {self.user_input_to_json()}'
 
     def run_transform(self, **kwargs):
         return load_data_for_spark(input_metadata=self.user_input)

@@ -8,31 +8,31 @@ let openNewAnalysisForm = $state(false);
 let name = $state("");
 
 async function initNewAnalysis() {
-    // qa: when creating new analysis, on backend it means that only 1 session should be loaded
-    // therefore it might be needed to delete all sesssion on this call
-    let newAnalysis = new AnalysisSession({ name: name, selected: true });
+  // qa: when creating new analysis, on backend it means that only 1 session should be loaded
+  // therefore it might be needed to delete all sesssion on this call
+  let newAnalysis = new AnalysisSession({ name: name, selected: true });
 
-    let createSessionResponse = await post("/rpc/session/create", {
-        id: newAnalysis.id,
-        name: newAnalysis.name,
-    });
-    if (createSessionResponse) {
-        globalAnalysesState.analyses.push(newAnalysis);
-        await goto("http://localhost:5173/analyses");
-    }
+  let createSessionResponse = await post("/rpc/session/create", {
+    session_id: newAnalysis.session_id,
+    name: newAnalysis.name,
+  });
+  if (createSessionResponse) {
+    globalAnalysesState.analyses.push(newAnalysis);
+    await goto("http://localhost:5173/analyses");
+  }
 }
 </script>
 
-<Button color="green" on:click={() => (openNewAnalysisForm = true)}>New Analysis</Button>
+<Button color="green" on:click={() => (openNewAnalysisForm = true)}>New Tab</Button>
 
 <Modal bind:open={openNewAnalysisForm} size="xs" autoclose outsideclose>
-    <div>
-        <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Create New Analysis</h3>
-        <Label class="space-y-2">
-            <span>Name your analysis:</span>
-            <Input type="text" name="analysisName" placeholder="name" required bind:value={name} />
-        </Label>
+  <div>
+    <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Create New Analysis</h3>
+    <Label class="space-y-2">
+      <span>Name your analysis:</span>
+      <Input type="text" name="analysisName" placeholder="name" required bind:value={name} />
+    </Label>
 
-        <Button onclick={initNewAnalysis} class="w-full1">Create</Button>
-    </div>
+    <Button onclick={initNewAnalysis} class="w-full1">Create</Button>
+  </div>
 </Modal>

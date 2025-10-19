@@ -189,6 +189,9 @@ export class RpcClient {
       httpResponseStream.end();
       next();
     });
+    previewStream.on("error", (err) => {
+      return next(new ApplicationError({ message: err.message, code: 500 }));
+    });
   }
 
   summarizeDataset(body, httpResponse, next) {

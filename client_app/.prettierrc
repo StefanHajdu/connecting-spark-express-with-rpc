@@ -1,5 +1,5 @@
 {
-    "svelteSortOrder": "options-styles-scripts-markup",
+    "svelteSortOrder": "options-scripts-markup-styles",
     "svelteBracketNewLine": false,
     "svelteAllowShorthand": false,
     "svelteIndentScriptAndStyle": false,
