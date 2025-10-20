@@ -3,19 +3,20 @@ requires = ["setuptools>=64", "wheel", "grpcio-tools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyspark_api"
-version = "0.3"
+name = "spark_service"
+version = "0.1.0"
+description = "FastAPI service bridging HTTP requests to the Spark gRPC API"
 requires-python = ">=3.11"
 dependencies = [
     "grpcio",
     "grpcio-tools",
-    "pyspark",
-    "pandas",
-    "asyncio",
-    "pytest",
-    "requests",
-    "ruff",
+    "fastapi",
+    "uvicorn[standard]",
+    "protobuf",
+    "googleapis-common-protos",
+    "pydantic>=2",
 ]
+
 
 [tool.setuptools]
 package-dir = { "" = "lib" }
