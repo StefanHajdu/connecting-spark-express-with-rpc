@@ -1,7 +1,7 @@
 import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
 
-import { ApplicationError } from "../../errors/applicationError.js";
+import { ApplicationError } from "../errors/applicationError.js";
 
 export class RpcClient {
   #protoPath = "../protos/sparkapi.proto";
