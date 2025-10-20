@@ -4,8 +4,37 @@ import asyncHandler from "express-async-handler";
 import { stat } from "node:fs/promises";
 
 import { RpcClient } from "./controllers/rpcClient.js";
-import { errorHandler } from "./errors/errorHandler.js";
 import { ApplicationError } from "./errors/applicationError.js";
+
+export const CommonError = {
+  UNKNOWN_ERROR: {
+    code: "UNKNOWN_ERROR",
+    message: "Unknown error",
+    statusCode: 500,
+  },
+};
+
+export function errorHandler(err, req, res, next) {
+  console.log(err.stack);
+
+  if (err instanceof ApplicationError) {
+    const code = err.statusCode || 500;
+    return sendErr(res, code, err);
+  } else if (err instanceof Error) {
+    const newError = new ApplicationError({
+      message: err.details,
+    });
+    const code = newError.statusCode || 500;
+    return sendErr(res, code, newError);
+  } else {
+    const unknownError = new ApplicationError(CommonError.UNKNOWN_ERROR);
+    return sendErr(res, code, unknownError);
+  }
+}
+
+function sendErr(res, code, err) {
+  return res.status(code).json(err.formatError());
+}
 
 const app = express();
 const rpcClient = new RpcClient();
