@@ -1,31 +1,3 @@
-<style>
-.resizer {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 5px;
-  background: rgba(0, 0, 0, 0.5);
-  cursor: col-resize;
-  user-select: none;
-  touch-action: none;
-}
-
-.resizer.isResizing {
-  background: blue;
-  opacity: 1;
-}
-
-@media (hover: hover) {
-  .resizer {
-    opacity: 0;
-  }
-
-  *:hover > .resizer {
-    opacity: 1;
-  }
-}
-</style>
-
 <script lang="ts">
 import {
   Table,
@@ -276,3 +248,31 @@ $inspect(columnSizing);
     </TableBody>
   </Table>
 </div>
+
+<style>
+.resizer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.resizer.isResizing {
+  background: blue;
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .resizer {
+    opacity: 0;
+  }
+
+  *:hover > .resizer {
+    opacity: 1;
+  }
+}
+</style>

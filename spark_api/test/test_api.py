@@ -677,7 +677,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
             {'session_id': u.to_session_id(9), 'json': {'multiline': True, 'path': f'{CURRENT_DIR}/../../data/df2.json'}},
             [
                 {
-                    'columns': [{'name': 'id', 'dtype': 'long'}, {'name': 'name', 'dtype': 'string'}],
+                    'columns': [{'name': 'name', 'dtype': 'string'}, {'name': 'session_id', 'dtype': 'long'}],
                     'session_id': u.to_session_id(9),
                     'node_id': TEST_STATE.root_node_id,
                     'prev_node_id': TEST_STATE.root_node_id,
@@ -707,7 +707,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': TEST_STATE.root_node_id,
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`name`, `session_id`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
@@ -732,7 +732,7 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
                     'prev_node_id': u.to_node_id(1),
                     'invalid_state': {
                         'active': True,
-                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`id`, `name`'} in node: node_0001",  # noqa
+                        'error_msg': "UNRESOLVED_COLUMN.WITH_SUGGESTION with {'objectName': '`domain`', 'proposal': '`name`, `session_id`'} in node: node_0001",  # noqa
                     },
                     'active': True,
                     'title': 'AddColumnNode',
@@ -862,33 +862,11 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_ds', 'dtype': 'string'},
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
-                            ],
-                            'session_id': '',
-                            'node_id': 'node_0005',
-                            'prev_node_id': '0000-0000-0000',
-                            'invalid_state': {'active': False, 'error_msg': ''},
-                            'active': True,
-                            'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
-                        },
-                        {
-                            'columns': [
-                                {'name': 'domain', 'dtype': 'string'},
-                                {'name': 'tld', 'dtype': 'string'},
-                                {'name': 'dnssec', 'dtype': 'string'},
-                                {'name': 'registrar', 'dtype': 'string'},
-                                {'name': 'created_at', 'dtype': 'string'},
-                                {'name': 'records_ns', 'dtype': 'string'},
-                                {'name': 'records_ds', 'dtype': 'string'},
-                                {'name': 'records_dnskey', 'dtype': 'string'},
-                                {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
                                 {'name': 'a2', 'dtype': 'string'},
                             ],
                             'session_id': '',
                             'node_id': 'node_0001',
-                            'prev_node_id': 'node_0005',
+                            'prev_node_id': '0000-0000-0000',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
@@ -905,7 +883,6 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_ds', 'dtype': 'string'},
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
                                 {'name': 'a2', 'dtype': 'string'},
                                 {'name': 'b2', 'dtype': 'string'},
                             ],
@@ -918,7 +895,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': 'session_0001',
+                    'session_id': 'session_0100',
                     'name': 'random_name',
                 }
             ],
@@ -981,41 +958,18 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                                 {'name': 'records_dnskey', 'dtype': 'string'},
                                 {'name': 'analyzed_at', 'dtype': 'string'},
                                 {'name': 'a2', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
-                            ],
-                            'session_id': '',
-                            'node_id': 'node_0005',
-                            'prev_node_id': 'node_0001',
-                            'invalid_state': {'active': False, 'error_msg': ''},
-                            'active': True,
-                            'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
-                        },
-                        {
-                            'columns': [
-                                {'name': 'domain', 'dtype': 'string'},
-                                {'name': 'tld', 'dtype': 'string'},
-                                {'name': 'dnssec', 'dtype': 'string'},
-                                {'name': 'registrar', 'dtype': 'string'},
-                                {'name': 'created_at', 'dtype': 'string'},
-                                {'name': 'records_ns', 'dtype': 'string'},
-                                {'name': 'records_ds', 'dtype': 'string'},
-                                {'name': 'records_dnskey', 'dtype': 'string'},
-                                {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'a2', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
                                 {'name': 'b2', 'dtype': 'string'},
                             ],
                             'session_id': '',
                             'node_id': 'node_0002',
-                            'prev_node_id': 'node_0005',
+                            'prev_node_id': 'node_0001',
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
                     ],
-                    'id': 'session_0002',
+                    'session_id': 'session_0101',
                     'name': 'random_name',
                 },
                 {
@@ -1083,31 +1037,8 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'title': 'AddColumnNode',
                             'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
                         },
-                        {
-                            'columns': [
-                                {'name': 'domain', 'dtype': 'string'},
-                                {'name': 'tld', 'dtype': 'string'},
-                                {'name': 'dnssec', 'dtype': 'string'},
-                                {'name': 'registrar', 'dtype': 'string'},
-                                {'name': 'created_at', 'dtype': 'string'},
-                                {'name': 'records_ns', 'dtype': 'string'},
-                                {'name': 'records_ds', 'dtype': 'string'},
-                                {'name': 'records_dnskey', 'dtype': 'string'},
-                                {'name': 'analyzed_at', 'dtype': 'string'},
-                                {'name': 'a2', 'dtype': 'string'},
-                                {'name': 'b2', 'dtype': 'string'},
-                                {'name': 'x', 'dtype': 'string'},
-                            ],
-                            'session_id': '',
-                            'node_id': 'node_0005',
-                            'prev_node_id': 'node_0002',
-                            'invalid_state': {'active': False, 'error_msg': ''},
-                            'active': True,
-                            'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as x"}}]',
-                        },
                     ],
-                    'id': 'session_0003',
+                    'session_id': 'session_0102',
                     'name': 'random_name',
                 },
             ],
@@ -1123,9 +1054,7 @@ def test_load_sessions(session_requests, expected):
     res = requests.get('http://localhost:4444/rpc/load/sessions')
     assert res.status_code == 200
 
-    res_json = [res.json()[0]]
-    if len(session_requests) > 1:
-        res_json = res.json()[1:3]
+    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))
 
     print(res_json)
     print()

@@ -65,14 +65,14 @@ class SparkTransformResponse(_message.Message):
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., invalid_state: _Optional[_Union[InvalidState, _Mapping]] = ..., active: bool = ..., columns: _Optional[_Iterable[_Union[Column, _Mapping]]] = ..., title: _Optional[str] = ..., user_input: _Optional[str] = ...) -> None: ...
 
 class SessionResponse(_message.Message):
-    __slots__ = ("id", "name", "nodes")
-    ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("session_id", "name", "nodes")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     NODES_FIELD_NUMBER: _ClassVar[int]
-    id: str
+    session_id: str
     name: str
     nodes: _containers.RepeatedCompositeFieldContainer[SparkTransformResponse]
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., nodes: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
+    def __init__(self, session_id: _Optional[str] = ..., name: _Optional[str] = ..., nodes: _Optional[_Iterable[_Union[SparkTransformResponse, _Mapping]]] = ...) -> None: ...
 
 class DatasetResponse(_message.Message):
     __slots__ = ("data",)
@@ -95,12 +95,12 @@ class Empty(_message.Message):
     def __init__(self) -> None: ...
 
 class NewSessionRequest(_message.Message):
-    __slots__ = ("id", "name")
-    ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("session_id", "name")
+    SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
-    id: str
+    session_id: str
     name: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+    def __init__(self, session_id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
 
 class CsvInput(_message.Message):
     __slots__ = ("delimiter", "include_header", "path", "kind")

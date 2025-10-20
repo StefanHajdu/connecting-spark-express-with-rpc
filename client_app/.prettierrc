@@ -1,8 +1,8 @@
 {
-    "svelteSortOrder": "options-styles-scripts-markup",
-    "svelteBracketNewLine": false,
-    "svelteAllowShorthand": false,
-    "svelteIndentScriptAndStyle": false,
-    "printWidth": 120,
-    "tabWidth": 2
+  "svelteSortOrder": "options-scripts-markup-styles",
+  "svelteBracketNewLine": false,
+  "svelteAllowShorthand": false,
+  "svelteIndentScriptAndStyle": false,
+  "printWidth": 120,
+  "tabWidth": 2
 }

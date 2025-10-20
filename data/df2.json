@@ -1,6 +1,18 @@
 [
-  { "id": 1, "name": "Rutabaga" },
-  { "id": 2, "name": "Pirate" },
-  { "id": 3, "name": "Vader" },
-  { "id": 4, "name": "Ninja" }
+  {
+    "session_id": 1,
+    "name": "Rutabaga"
+  },
+  {
+    "session_id": 2,
+    "name": "Pirate"
+  },
+  {
+    "session_id": 3,
+    "name": "Vader"
+  },
+  {
+    "session_id": 4,
+    "name": "Ninja"
+  }
 ]

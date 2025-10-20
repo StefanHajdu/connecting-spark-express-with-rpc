@@ -1,5 +1,5 @@
 <script lang="ts">
-import { CloseButton, TabItem } from "flowbite-svelte";
+import { CloseButton } from "flowbite-svelte";
 import Node from "../Nodes/Node.svelte";
 import { footerPreview } from "../PreviewStore.svelte";
 import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
@@ -31,46 +31,44 @@ function handleResize(event: any) {
 }
 </script>
 
-<TabItem open divClass="h-full" title={globalAnalysesState.analyses[analysisIndex].name}>
-  <div id={globalAnalysesState.analyses[analysisIndex].name} class="h-full">
-    <Splitpanes horizontal={true} style="height: full" on:resize={handleResize}>
-      <Pane minSize={30} maxSize={100}>
-        <div class="overflow-y-auto max-h-full">
+<div id={globalAnalysesState.analyses[analysisIndex].name} class="h-full">
+  <Splitpanes horizontal={true} style="height: full" on:resize={handleResize}>
+    <Pane minSize={30} maxSize={100}>
+      <div class="overflow-y-auto max-h-full">
+        <Node
+          analysisIndex={analysisIndex}
+          nodeIndex={0}
+          preview={(analysisId, nodeId) => {
+            forwardPreview(analysisId, nodeId);
+          }} />
+        {#each globalAnalysesState.analyses[analysisIndex].nodes.slice(1) as node, i (node.node_id)}
           <Node
             analysisIndex={analysisIndex}
-            nodeIndex={0}
+            nodeIndex={i + 1}
             preview={(analysisId, nodeId) => {
               forwardPreview(analysisId, nodeId);
             }} />
-          {#each globalAnalysesState.analyses[analysisIndex].nodes.slice(1) as node, i (node.id)}
-            <Node
-              analysisIndex={analysisIndex}
-              nodeIndex={i + 1}
-              preview={(analysisId, nodeId) => {
-                forwardPreview(analysisId, nodeId);
-              }} />
-          {/each}
-        </div>
-      </Pane>
-      <Pane snapSize={5} size={previewVisible ? 50 : 0}>
-        <div class="mt-2 mb-2 flex h-6 items-center">
-          <div class="m-2">
-            <p>Preview</p>
-            <div class="flex justify-normal">
-              <p class="font-normal text-xs">{footerPreview.data.length} rows,</p>
-              <p class="ml-1 font-semibold text-xs">{footerPreview.columns.length} columns</p>
-            </div>
+        {/each}
+      </div>
+    </Pane>
+    <Pane snapSize={5} size={previewVisible ? 50 : 0}>
+      <div class="mt-2 mb-2 flex h-6 items-center">
+        <div class="m-2">
+          <p>Preview</p>
+          <div class="flex justify-normal">
+            <p class="font-normal text-xs">{footerPreview.data.length} rows,</p>
+            <p class="ml-1 font-semibold text-xs">{footerPreview.columns.length} columns</p>
           </div>
-          <CloseButton
-            on:click={() => {
-              footerPreview.visibilityToggle(false);
-            }}
-            class="dark:text-white" />
         </div>
-        {#key rerenderState}
-          <DataFrameTable previewObject={footerPreview} />
-        {/key}
-      </Pane>
-    </Splitpanes>
-  </div>
-</TabItem>
+        <CloseButton
+          on:click={() => {
+            footerPreview.visibilityToggle(false);
+          }}
+          class="dark:text-white" />
+      </div>
+      {#key rerenderState}
+        <DataFrameTable previewObject={footerPreview} />
+      {/key}
+    </Pane>
+  </Splitpanes>
+</div>
