@@ -68,7 +68,7 @@ export class LoadNode extends Node {
     let user_input = this.getUserInput();
     let body = { ...params, [user_input.kind]: user_input };
 
-    const streamingResponse = await post("rpc/sessionNode/transform/submitLoadDatasetNode", body);
+    const streamingResponse = await post("rpc/node/submitLoadDatasetNode", body);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
     const transforms: SparkTransform[] = JSON.parse(objs);
 
@@ -113,7 +113,7 @@ export class AddColumnNode extends Node {
 
   async submit(params: any): Promise<SparkTransform[]> {
     const body = { ...params, user_input: this.userInput.map((u) => u.pack()) };
-    const streamingResponse = await post("rpc/sessionNode/transform/submitAddColumnNode", body);
+    const streamingResponse = await post("rpc/node/submitAddColumnNode", body);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
     const transforms: SparkTransform[] = JSON.parse(objs);
 

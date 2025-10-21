@@ -132,37 +132,28 @@ const previewDataset = asyncHandler(async (req, res, next) => {
 const directRouter = express.Router();
 directRouter.post("/validatePath", validatePath);
 
-const rpcLoadRouter = express.Router();
-rpcLoadRouter.post("/submitLoadDatasetNode", submitLoadDatasetNode);
-rpcLoadRouter.post("/submitLoadFromSessionNode", submitLoadFromSessionNode);
-rpcLoadRouter.get("/sessions", loadSessions);
-
 const rpcSessionRouter = express.Router();
 rpcSessionRouter.post("/create", createSession);
 rpcSessionRouter.post("/", createSession);
 rpcSessionRouter.post("/status", getSessionStatus);
-rpcSessionRouter.post("/rebuild", rebuildSession);
+rpcSessionRouter.get("/sessions", loadSessions);
 
-const rpcSessionNodeTransformRouter = express.Router();
-rpcSessionNodeTransformRouter.post("/submitLoadDatasetNode", submitLoadDatasetNode);
-rpcSessionNodeTransformRouter.post("/submitLoadFromSessionNode", submitLoadFromSessionNode);
-rpcSessionNodeTransformRouter.post("/submitFilterNode", submitFilterNode);
-rpcSessionNodeTransformRouter.post("/submitAddColumnNode", submitAddColumnNode);
-rpcSessionNodeTransformRouter.post("/submitJoinNode", submitJoinNode);
-rpcSessionNodeTransformRouter.post("/submitTableNode", submitTableNode);
-rpcSessionNodeTransformRouter.post("/submitHistogramNode", submitHistogramNode);
-rpcSessionNodeTransformRouter.post("/removeNode", removeNode);
-rpcSessionNodeTransformRouter.post("/toggleNode", toggleNode);
-
-const rpcSessionNodeActionRouter = express.Router();
-rpcSessionNodeActionRouter.post("/summarize", summarizeDataset);
-rpcSessionNodeActionRouter.post("/preview", previewDataset);
+const rpcSessionNodeRouter = express.Router();
+rpcSessionNodeRouter.post("/submitLoadDatasetNode", submitLoadDatasetNode);
+rpcSessionNodeRouter.post("/submitLoadFromSessionNode", submitLoadFromSessionNode);
+rpcSessionNodeRouter.post("/submitFilterNode", submitFilterNode);
+rpcSessionNodeRouter.post("/submitAddColumnNode", submitAddColumnNode);
+rpcSessionNodeRouter.post("/submitJoinNode", submitJoinNode);
+rpcSessionNodeRouter.post("/submitTableNode", submitTableNode);
+rpcSessionNodeRouter.post("/submitHistogramNode", submitHistogramNode);
+rpcSessionNodeRouter.post("/removeNode", removeNode);
+rpcSessionNodeRouter.post("/toggleNode", toggleNode);
+rpcSessionNodeRouter.post("/summarize", summarizeDataset);
+rpcSessionNodeRouter.post("/preview", previewDataset);
 
 app.use("/direct", directRouter);
-app.use("/rpc/load", rpcLoadRouter);
+app.use("/rpc/node", rpcSessionNodeRouter);
 app.use("/rpc/session", rpcSessionRouter);
-app.use("/rpc/sessionNode/transform", rpcSessionNodeTransformRouter);
-app.use("/rpc/sessionNode/action", rpcSessionNodeActionRouter);
 
 app.use(errorHandler);
 

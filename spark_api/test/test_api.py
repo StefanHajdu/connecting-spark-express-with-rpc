@@ -35,7 +35,7 @@ def add_some_columns(session_id):
 
 def add_column_dependency(session_id):
     _ = requests.post(
-        'http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode',
+        'http://localhost:4444/rpc/node/submitAddColumnNode',
         json={
             'session_id': session_id,
             'node_id': u.to_node_id(5),
@@ -44,7 +44,7 @@ def add_column_dependency(session_id):
         },
     )
     _ = requests.post(
-        'http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode',
+        'http://localhost:4444/rpc/node/submitAddColumnNode',
         json={
             'session_id': session_id,
             'node_id': u.to_node_id(1),
@@ -140,9 +140,7 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(2),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(1),
-                'user_input': [
-                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-                ],
+                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
             },
             [
                 {
@@ -198,9 +196,7 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(3),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(2),
-                'user_input': [
-                    {'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}
-                ],
+                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
             },
             [
                 {
@@ -235,7 +231,7 @@ def test_column_adding(session_id, node_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode', json=node_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=node_request_body)
 
     assert res.status_code == 200
 
@@ -313,7 +309,7 @@ def test_column_removing(session_id, removal_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
 
     assert res.status_code == 200
 
@@ -392,7 +388,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
     add_some_columns(session_id)
     add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
 
     assert res.status_code == 200
 
@@ -484,7 +480,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
 
     assert res.status_code == 200
 
@@ -657,13 +653,13 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
     if add_dependecy:
         add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
     assert res.status_code == 200
     for a, b in zip(res.json(), expected_excluded, strict=True):
         assert json.dumps(a) == json.dumps(b)
 
     toggle_request_body['toggle'] = True
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
     assert res.status_code == 200
     for a, b in zip(res.json(), expected_included, strict=True):
         assert json.dumps(a) == json.dumps(b)
@@ -816,7 +812,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitLoadDatasetNode', json=path_replace_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=path_replace_request_body)
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
@@ -1051,7 +1047,7 @@ def test_load_sessions(session_requests, expected):
         _ = u.submit_loadNode({'session_id': session_request['session_id'], 'parquet': {'path': TEST_STATE.path}})
         add_some_columns(session_request['session_id'])
 
-    res = requests.get('http://localhost:4444/rpc/load/sessions')
+    res = requests.get('http://localhost:4444/rpc/session/sessions')
     assert res.status_code == 200
 
     res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))

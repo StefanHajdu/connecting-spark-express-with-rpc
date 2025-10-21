@@ -64,7 +64,7 @@ function previewNode() {
 }
 
 function summarizeNode() {
-  summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
+  summarizePromise = fetchSparkApi("rpc/node/summarize", {
     session_id: globalAnalysesState.analyses[analysisIndex].session_id,
     node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id,
   });

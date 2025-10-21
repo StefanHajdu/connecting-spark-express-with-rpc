@@ -87,21 +87,6 @@ export class RpcClient {
     );
   }
 
-  rebuildSession(urlParams, httpResponse, next) {
-    return this.client.rebuildSession(
-      { session_id: urlParams.session_id },
-      (err, rpcResponse) => {
-        if (err) {
-          return next(
-            new ApplicationError({ message: err.message, code: 500 })
-          );
-        } else {
-          httpResponse.json(rpcResponse);
-        }
-      }
-    );
-  }
-
   // ADD NODES
   submitLoadDatasetNode(body, httpResponse, next) {
     const stream = this.client.submit_LoadDatasetNode(body);

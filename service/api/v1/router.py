@@ -1,12 +1,8 @@
-"""Aggregate API router for version 1 endpoints."""
-
-from __future__ import annotations
-
 from fastapi import APIRouter
+from modules.filter import routes as filter_routes
+from modules.word_definition import routes as word_definition_routes
 
-from modules.direct.routes import router as direct_router
-from modules.rpc.routes import router as rpc_router
+api_router = APIRouter(prefix='/api')
 
-router = APIRouter()
-router.include_router(direct_router)
-router.include_router(rpc_router)
+api_router.include_router(word_definition_routes.router, prefix='/word-definition')
+api_router.include_router(filter_routes.router, prefix='/filter')

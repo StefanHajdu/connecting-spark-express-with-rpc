@@ -77,7 +77,7 @@ export class AnalysisSession {
       session_id: this.session_id,
       node_id: this.nodes[nodeIndex].node_id,
     };
-    const streamingResponse = await post("rpc/sessionNode/transform/removeNode", params);
+    const streamingResponse = await post("rpc/node/removeNode", params);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
     const recordedTransforms: SparkTransform[] = JSON.parse(objs);
 
@@ -91,7 +91,7 @@ export class AnalysisSession {
       node_id: this.nodes[nodeIndex].node_id,
       toggle: toggle,
     };
-    const streamingResponse = await post("rpc/sessionNode/transform/toggleNode", params);
+    const streamingResponse = await post("rpc/node/toggleNode", params);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
     const recordedTransforms: SparkTransform[] = JSON.parse(objs);
 
@@ -148,7 +148,7 @@ class GlobalAnalysesState {
   }
 
   public async setAnalysisFromAPI(): Promise<void> {
-    const streamingResponse = await fetch("http://localhost:4444/rpc/load/sessions");
+    const streamingResponse = await fetch("http://localhost:4444/rpc/session/sessions");
     const objs = await textBufferSparkStreamingApi(streamingResponse);
     try {
       let analysesSnapshot = JSON.parse(objs);

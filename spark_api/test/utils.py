@@ -23,7 +23,7 @@ def create_session(session_id: str) -> str:
 
 
 def submit_loadNode(json_data: dict) -> None:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitLoadDatasetNode', json=json_data)
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=json_data)
 
     assert res.status_code == 200
 
@@ -33,40 +33,40 @@ def submit_loadFromSessionNode(session_id: str, input_session_id: str) -> None:
         'session_id': session_id,
         'input_session_id': input_session_id,
     }
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitLoadFromSessionNode', json=json_data)
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadFromSessionNode', json=json_data)
 
     assert res.status_code == 200
 
 
 def submit_filterNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitFilterNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/submitFilterNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
 def submit_newColumnNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitAddColumnNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
 def submit_joinNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/submitJoinNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/submitJoinNode', json=kwargs)
 
     assert res.status_code == 200
     return kwargs['node_id']
 
 
 def removeNode(**kwargs):
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/removeNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=kwargs)
 
     assert res.status_code == 200
 
 
 def toggleNode(**kwargs):
-    res = requests.post('http://localhost:4444/rpc/sessionNode/transform/toggleNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=kwargs)
 
     assert res.status_code == 200
 
@@ -76,7 +76,7 @@ def summarize(session_id: str, node_id: str) -> dict:
         'session_id': session_id,
         'node_id': node_id,
     }
-    res = requests.post('http://localhost:4444/rpc/sessionNode/action/summarize', json=json_data)
+    res = requests.post('http://localhost:4444/rpc/node/summarize', json=json_data)
 
     assert res.status_code == 200 or (res.status_code == 500 and nodeMissingException.__str__() in res.json()['error']['message'])
     return res.json()
