@@ -5,10 +5,18 @@
         "test"
     ],
     "python.analysis.extraPaths": [
-        ".${workspaceFolder}/api",
-        ".${workspaceFolder}/core",
-        ".${workspaceFolder}/modules"
+        "${workspaceFolder}/api",
+        "${workspaceFolder}/core",
+        "${workspaceFolder}/modules",
+        "${workspaceFolder}/lib",
     ],
-    "python.analysis.stubPath": ".${workspaceFolder}/core",
+    "python.analysis.exclude": [
+        "**/uv/",
+        "**/.venv/",
+        "**/__pycache__/",
+        "**/.pytest_cache/",
+        "**/lib",
+    ],
+    "python.analysis.stubPath": "${workspaceFolder}/lib",
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
 }

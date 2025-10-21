@@ -42,32 +42,6 @@ const rpcClient = new RpcClient();
 app.use(express.json());
 app.use(cors());
 
-const validatePath = asyncHandler(async (req, res) => {
-  const { path } = req.body ?? {};
-
-  if (!path) {
-    throw new ApplicationError({
-      code: "PATH_VALIDATION_ERROR",
-      message: "Request body must include a path to validate.",
-      statusCode: 400,
-    });
-  }
-
-  try {
-    const stats = await stat(path);
-    res.json({
-      is_file: stats.isFile(),
-      is_dir: stats.isDirectory(),
-      size: stats.size,
-    });
-  } catch (error) {
-    throw new ApplicationError({
-      code: "PATH_VALIDATION_ERROR",
-      message: `Path validation error: ${error.message}`,
-      statusCode: error.code === "ENOENT" ? 404 : 400,
-    });
-  }
-});
 
 const createSession = asyncHandler(async (req, res, next) => {
   rpcClient.createSession(req.body, res, next);
@@ -75,10 +49,6 @@ const createSession = asyncHandler(async (req, res, next) => {
 
 const getSessionStatus = asyncHandler(async (req, res, next) => {
   rpcClient.getSessionStatus(req.body, res, next);
-});
-
-const rebuildSession = asyncHandler(async (req, res, next) => {
-  rpcClient.rebuildSession(req.body, res, next);
 });
 
 const loadSessions = asyncHandler(async (req, res, next) => {
@@ -129,12 +99,9 @@ const previewDataset = asyncHandler(async (req, res, next) => {
   rpcClient.previewDataset(req.body, res, next);
 });
 
-const directRouter = express.Router();
-directRouter.post("/validatePath", validatePath);
-
 const rpcSessionRouter = express.Router();
-rpcSessionRouter.post("/create", createSession);
 rpcSessionRouter.post("/", createSession);
+rpcSessionRouter.post("/create", createSession);
 rpcSessionRouter.post("/status", getSessionStatus);
 rpcSessionRouter.get("/sessions", loadSessions);
 
@@ -151,7 +118,6 @@ rpcSessionNodeRouter.post("/toggleNode", toggleNode);
 rpcSessionNodeRouter.post("/summarize", summarizeDataset);
 rpcSessionNodeRouter.post("/preview", previewDataset);
 
-app.use("/direct", directRouter);
 app.use("/rpc/node", rpcSessionNodeRouter);
 app.use("/rpc/session", rpcSessionRouter);
 

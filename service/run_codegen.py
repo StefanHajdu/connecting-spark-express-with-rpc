@@ -2,17 +2,17 @@ import os
 
 from grpc_tools import protoc
 
-CORE_DIR = './core'
-os.makedirs(CORE_DIR, exist_ok=True)
+LIB_DIR = './lib'
+os.makedirs(LIB_DIR, exist_ok=True)
 
 
 protoc.main(
     (
         '',
         '-I../protos',
-        f'--python_out={CORE_DIR}',
-        f'--pyi_out={CORE_DIR}',
-        f'--grpc_python_out={CORE_DIR}',
+        f'--python_out={LIB_DIR}',
+        f'--pyi_out={LIB_DIR}',
+        f'--grpc_python_out={LIB_DIR}',
         '../protos/sparkapi.proto',
     )
 )

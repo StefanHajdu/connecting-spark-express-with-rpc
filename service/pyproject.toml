@@ -19,11 +19,10 @@ dependencies = [
 
 
 [tool.setuptools]
-package-dir = { "" = "core", "modules" = "modules", "api" = "api" }
+package-dir = { "" = "lib" }
 
 [tool.setuptools.packages.find]
-where = ["core", "modules", "api"]
-
+where = ["lib"]
 
 [tool.ruff]
 target-version = "py311"

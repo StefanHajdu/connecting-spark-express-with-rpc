@@ -13,8 +13,7 @@ class ApplicationError(Exception):
         self,
         *,
         message: str,
-        code: str,
-        status_code: int = 500,
+        code: int,
         errors: Optional[Any] = None,
         meta: Optional[Any] = None,
     ) -> None:
@@ -25,7 +24,6 @@ class ApplicationError(Exception):
         super().__init__(message)
         self.message = message
         self.code = code
-        self.status_code = status_code
         self.errors = errors
         self.meta = meta
         self.stack = ''.join(traceback.format_stack())
