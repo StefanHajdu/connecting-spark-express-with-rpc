@@ -9,10 +9,10 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Start services
-cd spark_api/src
-uv run python main.py &
-echo $! > ../../spark_api.pid
-cd ../../service
+cd spark_api
+uv run python src/main.py &
+echo $! > ../spark_api.pid
+cd ../service
 uv run python main.py &
 echo $! > ../service.pid
 cd ..

@@ -37,14 +37,14 @@ jobs:
           sleep 20
 
       - name: Run tests for use cases
-        run: cd spark_api && uv run pytest test/test_use_cases.py -v
+        run: cd spark_api && uv run pytest tests/test_use_cases.py -v
         env:
           PYTHONPATH: ${{ github.workspace }}/spark_api/src
 
       - name: Run tests for API
-        run: cd spark_api && uv run pytest test/test_api.py -v
+        run: cd spark_api && uv run pytest tests/test_api.py -v
         env:
-          PYTHONPATH: ${{ github.workspace }}/service/src
+          PYTHONPATH: ${{ github.workspace }}/service/
 
       - name: Stop services
         if: always()
