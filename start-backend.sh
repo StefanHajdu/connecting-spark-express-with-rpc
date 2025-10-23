@@ -12,9 +12,11 @@ trap cleanup EXIT INT TERM
 cd spark_api
 uv run python src/main.py &
 echo $! > ../spark_api.pid
-cd ../service
+
+cd ..
+
+cd service
 uv run python main.py &
 echo $! > ../service.pid
-cd ..
 
 wait

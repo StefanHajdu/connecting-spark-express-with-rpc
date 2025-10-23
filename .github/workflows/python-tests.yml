@@ -11,24 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "21"
 
-      - uses: actions/setup-python@v4
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
+          python-version: "3.11.10"
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Install dependencies
-        run: |
-          cd spark_api && uv sync && uv pip install -e .
-          cd ../service && uv sync && uv pip install -e .
+      - name: Install spark_api dependencies
+        run: cd spark_api && uv sync && uv pip install -e .
+      
+      - name: Install service dependencies
+        run: cd service && uv sync && uv pip install -e .
 
       - name: Start services
         run: |
@@ -38,13 +37,9 @@ jobs:
 
       - name: Run tests for API
         run: cd service && uv run pytest tests/test_api.py -s
-        env:
-          PYTHONPATH: ${{ github.workspace }}/service/
 
       - name: Run tests for use cases
         run: cd spark_api && uv run pytest tests/test_use_cases.py -s
-        env:
-          PYTHONPATH: ${{ github.workspace }}/spark_api/src
 
       - name: Stop services
         if: always()
