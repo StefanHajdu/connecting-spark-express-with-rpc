@@ -27,8 +27,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd spark_api && uv pip install -e .
-          cd ../service && uv pip install -e .
+          cd spark_api && uv sync && uv pip install -e .
+          cd ../service && uv sync && uv pip install -e .
 
       - name: Start services
         run: |
