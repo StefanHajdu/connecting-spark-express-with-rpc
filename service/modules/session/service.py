@@ -16,6 +16,7 @@ def load_sessions() -> Iterator[dict[str, Any]]:
         request = sparkapi_pb2.Empty()
         for response in rpc_client.client.loadSessions(request):
             response: sparkapi_pb2.SessionResponse
+            print('Loaded session:', response)
             yield {
                 'session_id': response.session_id,
                 'name': response.name,
@@ -37,6 +38,7 @@ def load_sessions() -> Iterator[dict[str, Any]]:
                 ],
             }
     except grpc.RpcError as e:
+        print('gRPC error while loading sessions:', e)
         raise ApplicationError(message=str(e), code=500) from e
 
 
@@ -47,6 +49,8 @@ def create_session(request_data: dict[str, Any]) -> dict[str, Any]:
         response: sparkapi_pb2.NewSessionResponse = rpc_client.client.createSession(request)
         return {'session_id': response.session_id, 'name': response.msg}
     except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.ALREADY_EXISTS:
+            raise ApplicationError(message='Session already exists.', code=400) from e
         raise ApplicationError(message=str(e), code=500) from e
 
 

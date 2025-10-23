@@ -1,10 +1,10 @@
+from ast import Tuple
 import json
 
 import pytest
 import requests
-from state import CURRENT_DIR, TestState
-
 import utils as u
+from state import CURRENT_DIR, TestState
 
 TEST_STATE = TestState()
 
@@ -236,7 +236,7 @@ def test_column_adding(session_id, node_request_body, expected):
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -314,7 +314,7 @@ def test_column_removing(session_id, removal_request_body, expected):
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -393,7 +393,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -401,7 +401,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
     [
         (
             u.to_session_id(6),
-            {'session_id': u.to_session_id(6), 'node_id': u.to_node_id(1), 'active': False},
+            {'session_id': u.to_session_id(6), 'node_id': u.to_node_id(1), 'toggle': False},
             [
                 {
                     'columns': [
@@ -448,7 +448,7 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
         ),
         (
             u.to_session_id(7),
-            {'session_id': u.to_session_id(7), 'node_id': u.to_node_id(2), 'active': False},
+            {'session_id': u.to_session_id(7), 'node_id': u.to_node_id(2), 'toggle': False},
             [
                 {
                     'columns': [
@@ -485,7 +485,7 @@ def test_node_disable(session_id, toggle_request_body, expected):
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -656,13 +656,13 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
     res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
     assert res.status_code == 200
     for a, b in zip(res.json(), expected_excluded, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
     toggle_request_body['toggle'] = True
     res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
     assert res.status_code == 200
     for a, b in zip(res.json(), expected_included, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -816,7 +816,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
     assert res.status_code == 200
 
     for a, b in zip(res.json(), expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b
 
 
 @pytest.mark.parametrize(
@@ -1057,4 +1057,4 @@ def test_load_sessions(session_requests, expected):
     print(expected)
 
     for a, b in zip(res_json, expected, strict=True):
-        assert json.dumps(a) == json.dumps(b)
+        assert a == b

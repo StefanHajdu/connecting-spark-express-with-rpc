@@ -3,10 +3,9 @@ import os
 import uuid
 
 import pytest
+import test_utils as u
 from exceptions import NodeMissingException
 from state import TestState
-
-import utils as u
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 NODE_MISSING_EXCEPTION = NodeMissingException()
@@ -35,7 +34,7 @@ def test_02_submit_loadFromSessionNode():
     )
     df_session_0 = u.summarize(session_id=session_0, node_id=node_1)
 
-    session_1 = u.create_session(session_id=u.to_session_id(1))
+    session_1 = u.create_session(session_id=str(uuid.uuid4()))
     u.submit_loadFromSessionNode(session_id=session_1, input_session_id=session_0)
 
     df_session_1 = u.summarize(session_id=session_1, node_id=TEST_STATE.root_node_id)
@@ -113,7 +112,7 @@ def test_04_1_parent_session_changed():
     df_session_01 = u.summarize(session_id=session_0, node_id=node_02)
 
     # session 1
-    session_1 = u.create_session(session_id=u.to_session_id(1))
+    session_1 = u.create_session(session_id=str(uuid.uuid4()))
     u.submit_loadFromSessionNode(session_id=session_1, input_session_id=session_0)
 
     df_session_11 = u.summarize(session_id=session_1, node_id=TEST_STATE.root_node_id)
@@ -167,7 +166,7 @@ def test_04_2_parent_session_changed_multi_level():
     df_session_01 = u.summarize(session_id=session_0, node_id=node_01)
 
     # session 1
-    session_1 = u.create_session(session_id=u.to_session_id(1))
+    session_1 = u.create_session(session_id=str(uuid.uuid4()))
     u.submit_loadFromSessionNode(session_id=session_1, input_session_id=session_0)
     node_11 = u.submit_filterNode(
         **{
@@ -185,7 +184,7 @@ def test_04_2_parent_session_changed_multi_level():
     df_session_11 = u.summarize(session_id=session_1, node_id=node_11)
 
     # session 2
-    session_2 = u.create_session(session_id=u.to_session_id(2))
+    session_2 = u.create_session(session_id=str(uuid.uuid4()))
     u.submit_loadFromSessionNode(session_id=session_2, input_session_id=session_1)
     node_21 = u.submit_filterNode(
         **{

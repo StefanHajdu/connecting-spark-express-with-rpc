@@ -41,3 +41,17 @@ class ApplicationError(Exception):
         if include_stack:
             payload['stack'] = self.stack
         return {'error': payload}
+
+
+class DuplicateSessionException(Exception):
+    """Raised when attempting to create a session that already exists."""
+
+    def __init__(self, message='Duplicate sessions'):
+        super().__init__(message)
+
+
+class NodeMissingException(Exception):
+    """Raised when a node with the given node_id is missing."""
+
+    def __init__(self, message='Node with given node_id is missing'):
+        super().__init__(message)

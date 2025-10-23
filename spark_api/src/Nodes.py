@@ -243,6 +243,7 @@ class FilterNode(TransformNode):
         self.prev_node_id = prev_node_id
         self.expressions = expressions
         self.matching = matching
+        self.user_input = {'expressions': expressions, 'matching': matching}
         self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property
@@ -306,6 +307,7 @@ class JoinNode(TransformNode):
         self.prev_node_id = prev_node_id
         self.other_df = NodeExtensions.OtherDataframe(input_metadata)
         self.join_params = MessageToDict(join_params)
+        self.user_input = {}
         self.df = self.run_transform(spark=spark, df=prev_df)
 
     @property

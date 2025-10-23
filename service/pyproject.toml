@@ -15,6 +15,8 @@ dependencies = [
     "protobuf",
     "googleapis-common-protos",
     "pydantic>=2",
+    "requests",
+    "pytest",
 ]
 
 

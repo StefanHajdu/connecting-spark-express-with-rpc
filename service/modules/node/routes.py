@@ -26,21 +26,21 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=['node'])
 
 
-def json_stream_response(generator: Iterator[dict[str, Any]]) -> StreamingResponse:
+def json_stream_response(generator: Iterator[Any], media_type: str = 'application/json') -> StreamingResponse:
     """Helper to convert a dict generator to a JSON streaming response."""
 
     def generate():
         for item in generator:
             yield json.dumps(item) + '\n'
 
-    return StreamingResponse(generate(), media_type='application/json')
+    return StreamingResponse(generate(), media_type=media_type)
 
 
 @router.post('/submitLoadDatasetNode')
 def submit_load_dataset_node_route(request: Request):
     """Submit load dataset node."""
     request_data = run(request.json())
-    return json_stream_response(submit_load_dataset_node(request_data))
+    return list(submit_load_dataset_node(request_data))
 
 
 @router.post('/submitLoadFromSessionNode')
@@ -63,7 +63,7 @@ def submit_filter_node_route(request: Request):
 def submit_add_column_node_route(request: Request):
     """Submit add column node."""
     request_data = run(request.json())
-    return json_stream_response(submit_add_column_node(request_data))
+    return list(submit_add_column_node(request_data))
 
 
 @router.post('/submitJoinNode')
@@ -94,14 +94,14 @@ def submit_histogram_node_route(request: Request):
 def remove_node_route(request: Request):
     """Remove node."""
     request_data = run(request.json())
-    return json_stream_response(remove_node(request_data))
+    return list(remove_node(request_data))
 
 
 @router.post('/toggleNode')
 def toggle_node_route(request: Request):
     """Toggle node."""
     request_data = run(request.json())
-    return json_stream_response(toggle_node(request_data))
+    return list(toggle_node(request_data))
 
 
 @router.post('/summarize')
@@ -116,4 +116,4 @@ def summarize_route(request: Request):
 def preview_route(request: Request):
     """Preview dataset."""
     request_data = run(request.json())
-    return StreamingResponse(preview_dataset(request_data), media_type='text/plain')
+    return json_stream_response(preview_dataset(request_data), media_type='text/plain')
