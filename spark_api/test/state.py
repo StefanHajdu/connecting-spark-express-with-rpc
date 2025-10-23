@@ -9,7 +9,7 @@ class TestState:
     __test__ = False
 
     def __init__(self):
-        self.path = (f'{CURRENT_DIR}/../../data/domains_small.parquet',)
+        self.path = f'{CURRENT_DIR}/../../data/domains_small.parquet'
         self.type = 'parquet'
         self.total_rows = 499_999
         self.root_node_id = PLAN_NODE_ROOT_ID

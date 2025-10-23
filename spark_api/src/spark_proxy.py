@@ -150,11 +150,11 @@ class SparkRpcApi(SparkApiServicer):
 
         return sparkapi_pb2.StatusResponse(session_id=req.session_id, **session.get_session_status())
 
-    def summarizeDataset(self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context) -> sparkapi_pb2.SparkActionlResponse:
+    def summarizeDataset(self, req: sparkapi_pb2.SummarizeDatasetRequest, unused_context) -> sparkapi_pb2.SparkActionResponse:
         session = clientSessionTable.get_session(req.session_id)
         summary = session.summarize(req.node_id)
 
-        return sparkapi_pb2.SparkActionlResponse(
+        return sparkapi_pb2.SparkActionResponse(
             session_id=req.session_id,
             msg=f'Node {req.node_id} summarized',
             columns=summary['columns'],

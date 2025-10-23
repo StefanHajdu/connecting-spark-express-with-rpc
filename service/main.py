@@ -1,9 +1,11 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from api.v1.router import api_router
+from core.exceptions import ApplicationError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -11,6 +13,15 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(title='API', version='1.0.0')
+
+
+@app.exception_handler(ApplicationError)
+async def application_error_handler(request: Request, exc: ApplicationError):
+    """Handle ApplicationError exceptions and return appropriate JSON response."""
+    return JSONResponse(
+        status_code=exc.code,
+        content=exc.to_response(include_stack=False),
+    )
 
 
 logger.info('Starting API server')

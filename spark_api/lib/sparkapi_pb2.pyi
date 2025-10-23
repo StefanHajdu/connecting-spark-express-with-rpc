@@ -14,7 +14,7 @@ class NewSessionResponse(_message.Message):
     msg: str
     def __init__(self, session_id: _Optional[str] = ..., msg: _Optional[str] = ...) -> None: ...
 
-class SparkActionlResponse(_message.Message):
+class SparkActionResponse(_message.Message):
     __slots__ = ("session_id", "msg", "columns", "schema", "count")
     SESSION_ID_FIELD_NUMBER: _ClassVar[int]
     MSG_FIELD_NUMBER: _ClassVar[int]
