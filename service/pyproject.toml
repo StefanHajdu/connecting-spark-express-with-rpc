@@ -19,12 +19,11 @@ dependencies = [
     "pytest",
 ]
 
-[tool.setuptools.packages.find]
-where = [".", "lib"]
-include = ["api*", "core*", "modules*"]
+[tool.setuptools]
+package-dir = { "" = "lib" }
 
-[tool.setuptools.package-data]
-"*" = ["lib/*.py", "lib/*.pyi"]
+[tool.setuptools.packages.find]
+where = ["lib"]
 
 [tool.ruff]
 target-version = "py311"

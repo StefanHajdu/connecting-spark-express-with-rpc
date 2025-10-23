@@ -34,7 +34,7 @@ jobs:
         run: |
           chmod +x start-backend.sh
           ./start-backend.sh &
-          sleep 40
+          sleep 20
 
       - name: Run tests for API
         run: cd service && uv run pytest tests/test_api.py -v
