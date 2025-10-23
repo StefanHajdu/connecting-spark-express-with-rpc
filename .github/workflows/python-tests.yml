@@ -34,17 +34,17 @@ jobs:
         run: |
           chmod +x start-backend.sh
           ./start-backend.sh &
-          sleep 20
+          sleep 40
+
+      - name: Run tests for API
+        run: cd service && uv run pytest tests/test_api.py -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}/service/
 
       - name: Run tests for use cases
         run: cd spark_api && uv run pytest tests/test_use_cases.py -v
         env:
           PYTHONPATH: ${{ github.workspace }}/spark_api/src
-
-      - name: Run tests for API
-        run: cd spark_api && uv run pytest tests/test_api.py -v
-        env:
-          PYTHONPATH: ${{ github.workspace }}/service/
 
       - name: Stop services
         if: always()
