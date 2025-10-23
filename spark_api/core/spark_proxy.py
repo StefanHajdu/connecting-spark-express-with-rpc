@@ -3,9 +3,9 @@ from collections.abc import Generator
 import sparkapi_pb2
 from sparkapi_pb2_grpc import SparkApiServicer
 
-from Client import ClientSession
-from PipelinePlan import SessionPlanner
-from spark_session_init import clientSessionTable, spark
+from core.Client import ClientSession
+from core.PipelinePlan import SessionPlanner
+from core.spark_session_init import clientSessionTable, spark
 
 
 class SparkRpcApi(SparkApiServicer):

@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import sparkapi_pb2
 
-import Nodes
-import PipelinePlan
-from api_logging import log_plan_execution
-from misc_types import SparkActionMetadata
-from spark_session_init import spark
+from core import Nodes, PipelinePlan
+from core.api_logging import log_plan_execution
+from core.misc_types import SparkActionMetadata
+from core.spark_session_init import spark
 
 
 class UpdateStatus:

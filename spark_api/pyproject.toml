@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = { "" = "lib" }
+package-dir = { "" = "lib" } # Only find packages in these directories
 
 [tool.setuptools.packages.find]
 where = ["lib"]

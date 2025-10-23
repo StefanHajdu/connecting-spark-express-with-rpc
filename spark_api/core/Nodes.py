@@ -5,17 +5,16 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import sparkapi_pb2
-from constants import PLAN_NODE_ROOT_ID
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import Message
 from pyspark.sql import DataFrame
 
-import NodeExtensions
-import PipelinePlan
-from misc_types import SparkActionMetadata
-from NodeQuery import node_query_factory
-from spark_session_init import spark
-from utils import load_data_for_spark
+from core import NodeExtensions, PipelinePlan
+from core.constants import PLAN_NODE_ROOT_ID
+from core.misc_types import SparkActionMetadata
+from core.NodeQuery import node_query_factory
+from core.spark_session_init import spark
+from core.utils import load_data_for_spark
 
 
 class SparkNode(ABC):

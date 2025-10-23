@@ -10,7 +10,7 @@ trap cleanup EXIT INT TERM
 
 # Start services
 cd spark_api
-uv run python src/main.py &
+uv run python main.py &
 echo $! > ../spark_api.pid
 
 cd ..

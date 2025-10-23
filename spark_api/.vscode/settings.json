@@ -5,16 +5,15 @@
         "tests"
     ],
     "python.analysis.extraPaths": [
+        "${workspaceFolder}/core",
         "${workspaceFolder}/lib",
-        "${workspaceFolder}/src",
-        "${workspaceFolder}/tests",
     ],
     "python.analysis.exclude": [
         "**/uv/",
         "**/.venv/",
         "**/__pycache__/",
         "**/.pytest_cache/",
-        "**/*_pb2*.py"
+        "**/lib",
     ],
     "python.analysis.stubPath": "${workspaceFolder}/lib",
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",

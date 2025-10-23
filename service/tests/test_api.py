@@ -1,6 +1,3 @@
-from ast import Tuple
-import json
-
 import pytest
 import requests
 import utils as u

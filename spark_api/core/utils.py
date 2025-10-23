@@ -1,8 +1,8 @@
 import sparkapi_pb2
-from exceptions import InvalidSparkInputException
 from google.protobuf.message import Message
 
-from spark_session_init import spark
+from core.exceptions import InvalidSparkInputException
+from core.spark_session_init import spark
 
 
 def load_data_for_spark(input_metadata: Message):

@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 
-from ClientSessionTable import ClientSessionTable
+from core.ClientSessionTable import ClientSessionTable
 
 clientSessionTable = ClientSessionTable()
 

@@ -3,11 +3,11 @@ from __future__ import annotations
 from collections import deque
 
 import sparkapi_pb2
-from exceptions import LoadNodeRemovalException, NodeMissingException
 from pyspark.errors import PySparkException
 from pyspark.sql import SparkSession
 
-import Nodes
+from core import Nodes
+from core.exceptions import LoadNodeRemovalException, NodeMissingException
 
 
 class SessionPlanner:

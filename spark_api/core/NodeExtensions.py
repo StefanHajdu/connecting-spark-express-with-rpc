@@ -3,8 +3,8 @@ from enum import Enum
 
 import sparkapi_pb2
 
-import spark_session_init
-from utils import load_data_for_spark
+from core import spark_session_init
+from core.utils import load_data_for_spark
 
 
 class InputType(Enum):

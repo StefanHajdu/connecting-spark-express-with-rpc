@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from exceptions import DuplicateSessionException
-
-import Client
+from core import Client
+from core.exceptions import DuplicateSessionException
 
 
 class ClientSessionTable:

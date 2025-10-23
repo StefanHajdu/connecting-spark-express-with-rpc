@@ -1,6 +1,13 @@
+import sys
+from pathlib import Path
+
 import requests
 
-from core.exceptions import DuplicateSessionException, NodeMissingException
+# Add the service directory to Python path
+service_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(service_dir))
+
+from core.exceptions import DuplicateSessionException, NodeMissingException  # noqa: E402
 
 nodeMissingException = NodeMissingException()
 duplicateSessionException = DuplicateSessionException()
