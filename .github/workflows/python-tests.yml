@@ -22,14 +22,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install dependencies
         run: |
-          cd spark_api && pip install -e .
-          cd ../web_api && npm install
+          cd spark_api && uv pip install -e .
+          cd ../service && uv pip install -e .
 
       - name: Start services
         run: |
@@ -46,4 +45,4 @@ jobs:
         if: always()
         run: |
           [ -f spark_api.pid ] && kill $(cat spark_api.pid) || true
-          [ -f web_api.pid ] && kill $(cat web_api.pid) || true
+          [ -f service.pid ] && kill $(cat service.pid) || true
