@@ -25,16 +25,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=['node'])
 
 
-def json_stream_response(generator: Iterator[Any], media_type: str = 'application/json') -> StreamingResponse:
-    """Helper to convert a dict generator to a JSON streaming response."""
-
-    def generate():
-        for item in generator:
-            yield json.dumps(item) + '\n'
-
-    return StreamingResponse(generate(), media_type=media_type)
-
-
 @router.post('/submitLoadDatasetNode')
 async def submit_load_dataset_node_route(request: Request):
     """Submit load dataset node."""
@@ -115,4 +105,4 @@ async def summarize_route(request: Request):
 async def preview_route(request: Request):
     """Preview dataset."""
     request_data = await request.json()
-    return json_stream_response(preview_dataset(request_data), media_type='text/plain')
+    return StreamingResponse(preview_dataset(request_data), media_type='text/plain')
