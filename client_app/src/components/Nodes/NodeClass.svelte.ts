@@ -161,10 +161,12 @@ class JoinNode extends Node {
 
 class TableNode extends Node {
   userInput: any;
+  tablePreview: any = $state(null);
 
   constructor(params: any) {
     super(params);
-    this.nodeType = "sql";
+    this.nodeType = "table";
+    this.tablePreview = params.tablePreview || null;
   }
 
   setUserInput(params: any): void {}
@@ -174,6 +176,18 @@ class TableNode extends Node {
   }
 
   async submit(params: any): Promise<SparkTransform[]> {
-    return [];
+    const streamingResponse = await post("rpc/node/submitTableNode", params);
+    const objs = await textBufferSparkStreamingApi(streamingResponse);
+    const transforms: SparkTransform[] = JSON.parse(objs);
+    
+    return transforms;
+  }
+
+  async loadTableData(analysisId: string, prevNodeId: string): Promise<void> {
+    if (!this.tablePreview) {
+      const { Preview } = await import("../PreviewStore.svelte");
+      this.tablePreview = new Preview();
+    }
+    await this.tablePreview.run(analysisId, prevNodeId, 1000);
   }
 }

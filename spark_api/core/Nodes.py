@@ -382,6 +382,9 @@ class VisualizationNode(SparkNode):
     def visualization_df(self, val: DataFrame):
         self._visualization_df = val
 
+    def user_input_to_json(self) -> str:
+        return '{}'
+
     def preview(self, limit: int, prev_df: DataFrame) -> str:
         visualization_df = spark.sql(self.visualization_query, df=prev_df)
         df_subset = visualization_df.limit(limit).toPandas()
