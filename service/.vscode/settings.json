@@ -2,21 +2,24 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "-s"
     ],
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/api",
-        "${workspaceFolder}/core",
-        "${workspaceFolder}/modules",
-        "${workspaceFolder}/lib",
+        "../api",
+        "../core",
+        "../modules",
+        "../lib",
     ],
     "python.analysis.exclude": [
         "**/uv/",
         "**/.venv/",
         "**/__pycache__/",
         "**/.pytest_cache/",
-        "**/lib",
     ],
-    "python.analysis.stubPath": "${workspaceFolder}/lib",
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.ignore": [
+        "**/lib/**",
+        "**/*_pb2.py",
+        "**/*_pb2_grpc.py"
+    ],
 }
