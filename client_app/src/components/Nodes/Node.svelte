@@ -136,7 +136,7 @@ function summarizeNode() {
         color="light"
         disabled={!activeNodeStatus || globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
         on:click={summarizeNode}>Summarize</Button>
-      {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
+      {#if !["LoadNode", "TableNode"].includes(globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title)}
         <div>
           <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
         </div>

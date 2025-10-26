@@ -37,12 +37,12 @@ let previewPromise = $derived.by(async () => {
   </div>
 {:then preview}
   {#if preview.data.length > 0}
-    <div class="mt-4 flex flex-col items-center">
+    <div class="mt-4 flex flex-col items-center w-full">
       <div class="mb-2 flex gap-2">
         <p class="font-normal text-xs">{preview.data.length} rows,</p>
         <p class="font-semibold text-xs">{preview.columns.length} columns</p>
       </div>
-      <div class="max-h-96 overflow-auto border rounded">
+      <div class="max-h-96 max-w-full overflow-auto border rounded">
         <DataFrameTable previewObject={preview} />
       </div>
     </div>
