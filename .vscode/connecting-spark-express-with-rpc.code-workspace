@@ -19,6 +19,7 @@
     ],
     "settings": {
         "files.exclude": {
+            "spark_api": true,
             "service": true,
             "client_app": true,
             "protos": true,
