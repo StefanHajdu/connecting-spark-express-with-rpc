@@ -1,1 +1,6 @@
-{}
+{
+    "editor.formatOnSave": true,
+    "python.analysis.diagnosticMode": "workspace",
+    "ruff.format.backend": "uv",
+    "python.analysis.typeCheckingMode": "basic",
+}
