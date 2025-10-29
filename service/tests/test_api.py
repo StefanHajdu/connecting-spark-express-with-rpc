@@ -16,7 +16,24 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': TEST_STATE.root_node_id,
-            'user_input': [{'expression': {'compiled': 'upper(domain) as a2', 'method_name': 'upper', 'params': []}}],
+            'user_input': [
+                {
+                    'expression': {
+                        'method_name': 'upper',
+                        'return_value_type': 'text',
+                        'params': [
+                            {
+                                'name': 'column',
+                                'dtype': 'single_col',
+                                'valueField': {'value': 'domain', 'customInputUsed': False},
+                                'value_json': '{"value":"domain","customInputUsed":false}',
+                            }
+                        ],
+                        'compiled': 'upper(domain) as a2',
+                    },
+                    'new_column_name': 'a2',
+                }
+            ],
         }
     )
 
@@ -25,7 +42,24 @@ def add_some_columns(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(2),
             'prev_node_id': node_id_1,
-            'user_input': [{'expression': {'compiled': 'upper(tld) as b2', 'method_name': 'upper', 'params': []}}],
+            'user_input': [
+                {
+                    'expression': {
+                        'method_name': 'upper',
+                        'return_value_type': 'text',
+                        'params': [
+                            {
+                                'name': 'column',
+                                'dtype': 'single_col',
+                                'valueField': {'value': 'tld', 'customInputUsed': False},
+                                'value_json': '{"value":"tld","customInputUsed":false}',
+                            }
+                        ],
+                        'compiled': 'upper(tld) as b2',
+                    },
+                    'new_column_name': 'b2',
+                }
+            ],
         }
     )
 
@@ -37,7 +71,24 @@ def add_column_dependency(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(5),
             'prev_node_id': TEST_STATE.root_node_id,
-            'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': []}}],
+            'user_input': [
+                {
+                    'expression': {
+                        'method_name': 'upper',
+                        'return_value_type': 'text',
+                        'params': [
+                            {
+                                'name': 'column',
+                                'dtype': 'single_col',
+                                'valueField': {'value': 'domain', 'customInputUsed': False},
+                                'value_json': '{"value":"domain","customInputUsed":false}',
+                            }
+                        ],
+                        'compiled': 'upper(domain) as x',
+                    },
+                    'new_column_name': 'x',
+                }
+            ],
         },
     )
     _ = requests.post(
@@ -46,7 +97,24 @@ def add_column_dependency(session_id):
             'session_id': session_id,
             'node_id': u.to_node_id(1),
             'prev_node_id': u.to_node_id(5),
-            'user_input': [{'expression': {'compiled': 'upper(x) as a2', 'method_name': 'upper', 'params': []}}],
+            'user_input': [
+                {
+                    'expression': {
+                        'method_name': 'upper',
+                        'return_value_type': 'text',
+                        'params': [
+                            {
+                                'name': 'column',
+                                'dtype': 'single_col',
+                                'valueField': {'value': 'x', 'customInputUsed': False},
+                                'value_json': '{"value":"x","customInputUsed":false}',
+                            }
+                        ],
+                        'compiled': 'upper(x) as a2',
+                    },
+                    'new_column_name': 'a2',
+                }
+            ],
         },
     )
 
@@ -60,7 +128,24 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(1),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': TEST_STATE.root_node_id,
-                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': []}}],
+                'user_input': [
+                    {
+                        'expression': {
+                            'method_name': 'upper',
+                            'return_value_type': 'text',
+                            'params': [
+                                {
+                                    'name': 'column',
+                                    'dtype': 'single_col',
+                                    'valueField': {'value': 'domain', 'customInputUsed': False},
+                                    'value_json': '{"value":"domain","customInputUsed":false}',
+                                }
+                            ],
+                            'compiled': 'upper(domain) as x',
+                        },
+                        'new_column_name': 'x',
+                    }
+                ],
             },
             [
                 {
@@ -137,7 +222,24 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(2),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(1),
-                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
+                'user_input': [
+                    {
+                        'expression': {
+                            'method_name': 'upper',
+                            'return_value_type': 'text',
+                            'params': [
+                                {
+                                    'name': 'column',
+                                    'dtype': 'single_col',
+                                    'valueField': {'value': 'domain', 'customInputUsed': False},
+                                    'value_json': '{"value":"domain","customInputUsed":false}',
+                                }
+                            ],
+                            'compiled': 'upper(domain) as x',
+                        },
+                        'new_column_name': 'x',
+                    }
+                ],
             },
             [
                 {
@@ -193,7 +295,24 @@ def add_column_dependency(session_id):
                 'session_id': u.to_session_id(3),
                 'node_id': u.to_node_id(5),
                 'prev_node_id': u.to_node_id(2),
-                'user_input': [{'expression': {'compiled': 'upper(domain) as x', 'method_name': 'upper', 'params': [], 'new_column_name': 'x'}}],
+                'user_input': [
+                    {
+                        'expression': {
+                            'method_name': 'upper',
+                            'return_value_type': 'text',
+                            'params': [
+                                {
+                                    'name': 'column',
+                                    'dtype': 'single_col',
+                                    'valueField': {'value': 'domain', 'customInputUsed': False},
+                                    'value_json': '{"value":"domain","customInputUsed":false}',
+                                }
+                            ],
+                            'compiled': 'upper(domain) as x',
+                        },
+                        'new_column_name': 'x',
+                    }
+                ],
             },
             [
                 {
