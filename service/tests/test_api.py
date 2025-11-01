@@ -982,7 +982,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"domain\\",\\"customInputUsed\\":false}"}], "compiled": "upper(domain) as a2"}, "newColumnName": "a2"}]',
                         },
                         {
                             'columns': [
@@ -1004,7 +1004,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"tld\\",\\"customInputUsed\\":false}"}], "compiled": "upper(tld) as b2"}, "newColumnName": "b2"}]',
                         },
                     ],
                     'session_id': 'session_0100',
@@ -1056,7 +1056,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"domain\\",\\"customInputUsed\\":false}"}], "compiled": "upper(domain) as a2"}, "newColumnName": "a2"}]',
                         },
                         {
                             'columns': [
@@ -1078,7 +1078,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"tld\\",\\"customInputUsed\\":false}"}], "compiled": "upper(tld) as b2"}, "newColumnName": "b2"}]',
                         },
                     ],
                     'session_id': 'session_0101',
@@ -1125,7 +1125,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(domain) as a2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"domain\\",\\"customInputUsed\\":false}"}], "compiled": "upper(domain) as a2"}, "newColumnName": "a2"}]',
                         },
                         {
                             'columns': [
@@ -1147,7 +1147,7 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
                             'invalid_state': {'active': False, 'error_msg': ''},
                             'active': True,
                             'title': 'AddColumnNode',
-                            'user_input': '[{"expression": {"methodName": "upper", "compiled": "upper(tld) as b2"}}]',
+                            'user_input': '[{"expression": {"methodName": "upper", "returnValueType": "text", "params": [{"name": "column", "dtype": "single_col", "valueJson": "{\\"value\\":\\"tld\\",\\"customInputUsed\\":false}"}], "compiled": "upper(tld) as b2"}, "newColumnName": "b2"}]',
                         },
                     ],
                     'session_id': 'session_0102',
@@ -1172,5 +1172,21 @@ def test_load_sessions(session_requests, expected):
     print()
     print(expected)
 
+    # Simple difference detection using dict comprehension
+    if res_json != expected:
+        print("\n🔍 DIFFERENCES FOUND:")
+        for i, (actual, exp) in enumerate(zip(res_json, expected)):
+            if actual != exp:
+                print(f"\nItem {i} differs:")
+                # Find differing keys
+                if isinstance(actual, dict) and isinstance(exp, dict):
+                    diff_keys = {k: (actual.get(k), exp.get(k)) 
+                                for k in set(actual.keys()) | set(exp.keys()) 
+                                if actual.get(k) != exp.get(k)}
+                    print(f"  Different keys: {diff_keys}")
+                else:
+                    print(f"  Actual:   {actual}")
+                    print(f"  Expected: {exp}")
+    
     for a, b in zip(res_json, expected, strict=True):
         assert a == b

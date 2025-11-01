@@ -66,7 +66,14 @@ def submit_add_column_node(request_data: dict[str, Any]) -> Iterator[dict[str, A
                         method_name=user_input['expression'].get('method_name', ''),
                         return_value_type=user_input['expression'].get('return_value_type', ''),
                         compiled=user_input['expression'].get('compiled', ''),
-                        params=[sparkapi_pb2.Param(**params) for params in user_input['expression'].get('params', [])],
+                        params=[
+                            sparkapi_pb2.Param(
+                                name=params.get('name', ''),
+                                dtype=params.get('dtype', ''),
+                                value_json=params.get('value_json', ''),
+                            )
+                            for params in user_input['expression'].get('params', [])
+                        ],
                     ),
                 )
                 for user_input in request_data.get('user_input', [])
