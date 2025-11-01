@@ -6,6 +6,7 @@ import sparkapi_pb2
 
 from core.exceptions import ApplicationError
 from core.rpc_client import RpcClient
+from core.utils import MessageToDict
 
 rpc_client = RpcClient()
 
@@ -28,13 +29,7 @@ def summarize_dataset(request_data: dict[str, Any]) -> dict[str, Any]:
     try:
         request = sparkapi_pb2.SummarizeDatasetRequest(**request_data)
         response: sparkapi_pb2.SparkActionResponse = rpc_client.client.summarizeDataset(request)
-        return {
-            'session_id': response.session_id,
-            'msg': response.msg,
-            'columns': response.columns,
-            'schema': response.schema,
-            'count': response.count,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -51,19 +46,7 @@ def submit_load_dataset_node(request_data: dict[str, Any]) -> Iterator[dict[str,
 
         for response in rpc_client.client.submit_LoadDatasetNode(request):
             response: sparkapi_pb2.SparkTransformResponse
-            yield {
-                'session_id': response.session_id,
-                'node_id': response.node_id,
-                'prev_node_id': response.prev_node_id,
-                'invalid_state': {
-                    'active': response.invalid_state.active,
-                    'error_msg': response.invalid_state.error_msg,
-                },
-                'active': response.active,
-                'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-                'title': response.title,
-                'user_input': response.user_input,
-            }
+            yield MessageToDict(response)
 
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
@@ -92,19 +75,7 @@ def submit_add_column_node(request_data: dict[str, Any]) -> Iterator[dict[str, A
 
         for response in rpc_client.client.submit_AddColumnNode(request):
             response: sparkapi_pb2.SparkTransformResponse
-            yield {
-                'session_id': response.session_id,
-                'node_id': response.node_id,
-                'prev_node_id': response.prev_node_id,
-                'invalid_state': {
-                    'active': response.invalid_state.active,
-                    'error_msg': response.invalid_state.error_msg,
-                },
-                'active': response.active,
-                'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-                'title': response.title,
-                'user_input': response.user_input,
-            }
+            yield MessageToDict(response)
 
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
@@ -116,19 +87,7 @@ def toggle_node(request_data: dict[str, Any]) -> Iterator[dict[str, Any]]:
         request = sparkapi_pb2.NodeToggleRequest(**request_data)
         for response in rpc_client.client.toggleNode(request):
             response: sparkapi_pb2.SparkTransformResponse
-            yield {
-                'session_id': response.session_id,
-                'node_id': response.node_id,
-                'prev_node_id': response.prev_node_id,
-                'invalid_state': {
-                    'active': response.invalid_state.active,
-                    'error_msg': response.invalid_state.error_msg,
-                },
-                'active': response.active,
-                'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-                'title': response.title,
-                'user_input': response.user_input,
-            }
+            yield MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -139,19 +98,7 @@ def remove_node(request_data: dict[str, Any]) -> Iterator[dict[str, Any]]:
         request = sparkapi_pb2.NodeRemovalRequest(**request_data)
         for response in rpc_client.client.removeNode(request):
             response: sparkapi_pb2.SparkTransformResponse
-            yield {
-                'session_id': response.session_id,
-                'node_id': response.node_id,
-                'prev_node_id': response.prev_node_id,
-                'invalid_state': {
-                    'active': response.invalid_state.active,
-                    'error_msg': response.invalid_state.error_msg,
-                },
-                'active': response.active,
-                'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-                'title': response.title,
-                'user_input': response.user_input,
-            }
+            yield MessageToDict(response)
 
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
@@ -162,19 +109,7 @@ def submit_load_from_session_node(request_data: dict[str, Any]) -> dict[str, Any
     try:
         request = sparkapi_pb2.LoadFromSessionNodeRequest(**request_data)
         response: sparkapi_pb2.SparkTransformResponse = rpc_client.client.submit_LoadFromSessionNode(request)
-        return {
-            'session_id': response.session_id,
-            'node_id': response.node_id,
-            'prev_node_id': response.prev_node_id,
-            'invalid_state': {
-                'active': response.invalid_state.active,
-                'error_msg': response.invalid_state.error_msg,
-            },
-            'active': response.active,
-            'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-            'title': response.title,
-            'user_input': response.user_input,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -190,19 +125,7 @@ def submit_filter_node(request_data: dict[str, Any]) -> dict[str, Any]:
             expressions=[expr for expr in request_data.get('expressions', [])],
         )
         response: sparkapi_pb2.SparkTransformResponse = rpc_client.client.submit_FilterNode(request)
-        return {
-            'session_id': response.session_id,
-            'node_id': response.node_id,
-            'prev_node_id': response.prev_node_id,
-            'invalid_state': {
-                'active': response.invalid_state.active,
-                'error_msg': response.invalid_state.error_msg,
-            },
-            'active': response.active,
-            'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-            'title': response.title,
-            'user_input': response.user_input,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -228,19 +151,7 @@ def submit_join_node(request_data: dict[str, Any]) -> dict[str, Any]:
             ),
         )
         response: sparkapi_pb2.SparkTransformResponse = rpc_client.client.submit_JoinNode(request)
-        return {
-            'session_id': response.session_id,
-            'node_id': response.node_id,
-            'prev_node_id': response.prev_node_id,
-            'invalid_state': {
-                'active': response.invalid_state.active,
-                'error_msg': response.invalid_state.error_msg,
-            },
-            'active': response.active,
-            'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-            'title': response.title,
-            'user_input': response.user_input,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -250,19 +161,7 @@ def submit_table_node(request_data: dict[str, Any]) -> dict[str, Any]:
     try:
         request = sparkapi_pb2.AddTableNodeRequest(**request_data)
         response: sparkapi_pb2.SparkTransformResponse = rpc_client.client.submit_TableNode(request)
-        return {
-            'session_id': response.session_id,
-            'node_id': response.node_id,
-            'prev_node_id': response.prev_node_id,
-            'invalid_state': {
-                'active': response.invalid_state.active,
-                'error_msg': response.invalid_state.error_msg,
-            },
-            'active': response.active,
-            'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-            'title': response.title,
-            'user_input': response.user_input,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
 
@@ -272,18 +171,6 @@ def submit_histogram_node(request_data: dict[str, Any]) -> dict[str, Any]:
     try:
         request = sparkapi_pb2.AddHistogramNodeRequest(**request_data)
         response: sparkapi_pb2.SparkTransformResponse = rpc_client.client.submit_HistogramNode(request)
-        return {
-            'session_id': response.session_id,
-            'node_id': response.node_id,
-            'prev_node_id': response.prev_node_id,
-            'invalid_state': {
-                'active': response.invalid_state.active,
-                'error_msg': response.invalid_state.error_msg,
-            },
-            'active': response.active,
-            'columns': [{'name': col.name, 'dtype': col.dtype} for col in response.columns],
-            'title': response.title,
-            'user_input': response.user_input,
-        }
+        return MessageToDict(response)
     except grpc.RpcError as e:
         raise ApplicationError(message=str(e), code=500) from e
