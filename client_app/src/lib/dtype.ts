@@ -16,7 +16,7 @@ export interface InvalidState {
   error_msg: string;
 }
 
-export type SparkActionlResponse = {
+export type SparkActionResponse = {
   session_id: string;
   msg: string;
   columns: string;

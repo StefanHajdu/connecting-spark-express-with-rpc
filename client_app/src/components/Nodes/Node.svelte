@@ -5,6 +5,7 @@ import { fetchSparkApi } from "$lib/clientApi";
 import { globalAnalysesState } from "../../components/Analysis/AnalysisSessionClass.svelte";
 import LoadNode from "./LoadNode/LoadNode.svelte";
 import AddColumnNode from "./AddColumn/AddColumnNode.svelte";
+import TableNode from "./TableNode/TableNode.svelte";
 
 interface Props {
   analysisIndex: number;
@@ -30,6 +31,11 @@ let activeNodeStatus = $state(globalAnalysesState.analyses[analysisIndex].nodes[
 let opacity = $derived.by(() => {
   return activeNodeStatus ? "opacity-100" : "opacity-40";
 });
+let cardMaxWidth = $derived(
+  globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title === "TableNode"
+    ? "w-fit max-w-[80%] min-w-[50%]"
+    : "max-w-[50%]",
+);
 
 $effect(() => {
   if (nodeIdDOM !== "") {
@@ -64,7 +70,7 @@ function previewNode() {
 }
 
 function summarizeNode() {
-  summarizePromise = fetchSparkApi("rpc/sessionNode/action/summarize", {
+  summarizePromise = fetchSparkApi("rpc/node/summarize", {
     session_id: globalAnalysesState.analyses[analysisIndex].session_id,
     node_id: globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id,
   });
@@ -74,7 +80,7 @@ function summarizeNode() {
 <div
   class={"flex min-w-80 justify-center " + opacity}
   id={globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].node_id}>
-  <Card class="border-gray-500 max-w-5xl">
+  <Card class={"border-gray-500 " + cardMaxWidth}>
     <div class="flex justify-end">
       <DotsHorizontalOutline />
       <Dropdown class="w-36" bind:open={optionsOpen}>
@@ -111,20 +117,26 @@ function summarizeNode() {
     {:else if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title === "AddColumnNode"}<AddColumnNode
         analysisIndex={analysisIndex}
         nodeIndex={nodeIndex} />
+    {:else if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title === "TableNode"}<TableNode
+        analysisIndex={analysisIndex}
+        nodeIndex={nodeIndex} />
     {/if}
 
     <div class="mt-2">
-      <Button
-        size="xs"
-        color="light"
-        disabled={!activeNodeStatus || globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
-        on:click={previewNode}>Preview</Button>
+      {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title !== "TableNode"}
+        <Button
+          size="xs"
+          color="light"
+          disabled={!activeNodeStatus ||
+            globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
+          on:click={previewNode}>Preview</Button>
+      {/if}
       <Button
         size="xs"
         color="light"
         disabled={!activeNodeStatus || globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].invalidState.active}
         on:click={summarizeNode}>Summarize</Button>
-      {#if globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title !== "LoadNode"}
+      {#if !["LoadNode", "TableNode"].includes(globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex].title)}
         <div>
           <Toggle size="small" class="pt-1" bind:checked={activeNodeStatus} onclick={toggleNode} />
         </div>

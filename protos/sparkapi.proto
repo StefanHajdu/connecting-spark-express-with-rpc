@@ -3,33 +3,23 @@ syntax = "proto3";
 package sparkapi;
 
 service SparkApi {
-    rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     rpc loadSessions(Empty) returns (stream SessionResponse) {}
-    
-    rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
-    rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionlResponse) {}
+    rpc createSession(NewSessionRequest) returns (NewSessionResponse) {}
     rpc getSessionStatus(SessionStatusRequest) returns (StatusResponse) {}
 
-    // load node
+    rpc previewDataset(PreviewDatasetRequest) returns (stream DatasetResponse) {}
+    rpc summarizeDataset(SummarizeDatasetRequest) returns (SparkActionResponse) {}
+    
     rpc submit_LoadDatasetNode(LoadDatasetNodeRequest) returns (stream SparkTransformResponse) {}
-    rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
-    
-    // filter node
-    rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
-    
-    // add column node
     rpc submit_AddColumnNode(AddColumnNodeRequest) returns (stream SparkTransformResponse) {}
-    
-    // join node
+    rpc toggleNode(NodeToggleRequest) returns (stream SparkTransformResponse) {}
+    rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
+
+    rpc submit_LoadFromSessionNode(LoadFromSessionNodeRequest) returns (SparkTransformResponse) {}
+    rpc submit_FilterNode(FilterNodeRequest) returns (SparkTransformResponse) {}
     rpc submit_JoinNode(JoinNodeRequest) returns (SparkTransformResponse) {}
-    
-    // table node
     rpc submit_TableNode(AddTableNodeRequest) returns (SparkTransformResponse) {}
     rpc submit_HistogramNode(AddHistogramNodeRequest) returns (SparkTransformResponse) {}
-    
-    // all nodes
-    rpc removeNode(NodeRemovalRequest) returns (stream SparkTransformResponse) {}
-    rpc toggleNode(NodeToggleRequest) returns (stream SparkTransformResponse) {}
 }
 
 
@@ -40,7 +30,7 @@ message NewSessionResponse {
     string msg = 2;
 }
 
-message SparkActionlResponse {
+message SparkActionResponse {
     string session_id = 1;
     string msg = 2;
     string columns = 3;

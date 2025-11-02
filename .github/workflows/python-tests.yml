@@ -11,25 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "21"
 
-      - uses: actions/setup-python@v4
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
+          python-version: "3.11.10"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install dependencies
-        run: |
-          cd spark_api && pip install -e .
-          cd ../web_api && npm install
+      - name: Install spark_api dependencies
+        run: cd spark_api && uv sync && uv pip install -e .
+      
+      - name: Install service dependencies
+        run: cd service && uv sync && uv pip install -e .
 
       - name: Start services
         run: |
@@ -37,13 +35,14 @@ jobs:
           ./start-backend.sh &
           sleep 20
 
-      - name: Run tests
-        run: cd spark_api && pytest test/test_api.py test/test_use_cases.py -v
-        env:
-          PYTHONPATH: ${{ github.workspace }}/spark_api/src
+      - name: Run tests for API
+        run: cd service && uv run pytest tests/test_api.py -s
+
+      - name: Run tests for use cases
+        run: cd spark_api && uv run pytest tests/test_use_cases.py -s
 
       - name: Stop services
         if: always()
         run: |
           [ -f spark_api.pid ] && kill $(cat spark_api.pid) || true
-          [ -f web_api.pid ] && kill $(cat web_api.pid) || true
+          [ -f service.pid ] && kill $(cat service.pid) || true

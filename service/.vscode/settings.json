@@ -1,0 +1,25 @@
+{
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests",
+        "-s"
+    ],
+    "python.analysis.extraPaths": [
+        "../api",
+        "../core",
+        "../modules",
+        "../lib",
+    ],
+    "python.analysis.exclude": [
+        "**/uv/",
+        "**/.venv/",
+        "**/__pycache__/",
+        "**/.pytest_cache/",
+    ],
+    "python.analysis.ignore": [
+        "**/lib/**",
+        "**/*_pb2.py",
+        "**/*_pb2_grpc.py"
+    ],
+}

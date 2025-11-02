@@ -64,7 +64,7 @@ export class Preview {
   }
 
   public async run(analysisId: string, nodeId: string, limit: number = 1000): Promise<void> {
-    const streamingResponse = await post("rpc/sessionNode/action/preview", {
+    const streamingResponse = await post("rpc/node/preview", {
       session_id: analysisId,
       node_id: nodeId,
       limit: limit,

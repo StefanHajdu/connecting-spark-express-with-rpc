@@ -42,6 +42,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Sveltekit cache directory
+.svelte-kit/
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -311,7 +314,7 @@ cython_debug/
 # scratchpad
 playground
 
-/.vscode
-/.conda
+.vscode/
+.conda/
 data/domains.csv
 docs/spark_dataframe_api.md
