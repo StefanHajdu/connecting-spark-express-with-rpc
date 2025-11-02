@@ -314,7 +314,7 @@ cython_debug/
 # scratchpad
 playground
 
-.vscode/
+# .vscode/
 .conda/
 data/domains.csv
 docs/spark_dataframe_api.md
