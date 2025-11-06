@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import type { Column, SparkTransform, InvalidState, ICsvMetadata, IJsonMetadata, IParquetMetadata } from "$lib/dtype";
-import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import { post, textBufferSparkStreamingApi, parseJsonStream } from "$lib/clientApi";
 import { AddColumnExpression } from "../Expression/Expression.svelte";
 
 const MASTER_NODE_ID = "0000-0000-0000";
@@ -70,7 +70,7 @@ export class LoadNode extends Node {
 
     const streamingResponse = await post("rpc/node/submitLoadDatasetNode", body);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const transforms: SparkTransform[] = JSON.parse(objs);
+    const transforms: SparkTransform[] = parseJsonStream<SparkTransform>(objs);
 
     this.columnsOnNodeOutput = transforms[0].columns;
 
@@ -115,7 +115,7 @@ export class AddColumnNode extends Node {
     const body = { ...params, user_input: this.userInput.map((u) => u.pack()) };
     const streamingResponse = await post("rpc/node/submitAddColumnNode", body);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const transforms: SparkTransform[] = JSON.parse(objs);
+    const transforms: SparkTransform[] = parseJsonStream<SparkTransform>(objs);
 
     return transforms;
   }
@@ -178,7 +178,7 @@ class TableNode extends Node {
   async submit(params: any): Promise<SparkTransform[]> {
     const streamingResponse = await post("rpc/node/submitTableNode", params);
     const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const transforms: SparkTransform[] = JSON.parse(objs);
+    const transforms: SparkTransform[] = parseJsonStream<SparkTransform>(objs);
     
     return transforms;
   }

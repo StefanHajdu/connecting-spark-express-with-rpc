@@ -38,7 +38,7 @@ export async function textBufferSparkStreamingApi(streamingResponse: Response): 
   while (true) {
     let chunk = await reader?.read();
     if (chunk?.done) {
-      return jsonText;
+      return jsonText + decoder.decode();
     }
     jsonText += decoder.decode(chunk?.value, { stream: true });
   }
@@ -57,4 +57,21 @@ export async function objectBufferSparkStreamingApi(streamingResponse: Response)
     // objects += decoder.decode(chunk?.value, { stream: true });
     objects.push(JSON.parse(decoder.decode(chunk?.value, { stream: true })));
   }
+}
+
+export function parseJsonStream<T>(payload: string): T[] {
+  const trimmed = payload.trim();
+
+  if (!trimmed) {
+    return [];
+  }
+
+  const lines = trimmed.split(/\r?\n/).filter((line) => line.length > 0);
+
+  if (lines.length === 1) {
+    const parsed = JSON.parse(lines[0]);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  }
+
+  return lines.map((line) => JSON.parse(line));
 }
