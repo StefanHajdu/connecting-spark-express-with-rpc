@@ -1,3 +1,4 @@
+import json
 import logging
 
 from fastapi import APIRouter, Request
@@ -22,11 +23,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=['node'])
 
 
+async def async_json_stream(sync_iterator):
+    """Async generator that wraps a synchronous iterator for streaming JSON."""
+    for item in sync_iterator:
+        yield json.dumps(item, separators=(',', ':'), ensure_ascii=False) + '\n'
+
+
 @router.post('/submitLoadDatasetNode')
 async def submit_load_dataset_node_route(request: Request):
     """Submit load dataset node."""
     request_data = await request.json()
-    return list(submit_load_dataset_node(request_data))
+    return StreamingResponse(async_json_stream(submit_load_dataset_node(request_data)), media_type='application/x-ndjson')
 
 
 @router.post('/submitLoadFromSessionNode')
@@ -49,7 +56,10 @@ async def submit_filter_node_route(request: Request):
 async def submit_add_column_node_route(request: Request):
     """Submit add column node."""
     request_data = await request.json()
-    return list(submit_add_column_node(request_data))
+    return StreamingResponse(
+        async_json_stream(submit_add_column_node(request_data)),
+        media_type='application/x-ndjson',  # More accurate media type for newline-delimited JSON
+    )
 
 
 @router.post('/submitJoinNode')
@@ -80,14 +90,14 @@ async def submit_histogram_node_route(request: Request):
 async def remove_node_route(request: Request):
     """Remove node."""
     request_data = await request.json()
-    return list(remove_node(request_data))
+    return StreamingResponse(async_json_stream(remove_node(request_data)), media_type='application/x-ndjson')
 
 
 @router.post('/toggleNode')
 async def toggle_node_route(request: Request):
     """Toggle node."""
     request_data = await request.json()
-    return list(toggle_node(request_data))
+    return StreamingResponse(async_json_stream(toggle_node(request_data)), media_type='application/x-ndjson')
 
 
 @router.post('/summarize')

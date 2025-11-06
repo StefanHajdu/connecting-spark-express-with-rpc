@@ -49,7 +49,10 @@ class Expression {
           return `${param.valueField.value}`;
         }
       } else if (param.dtype === "text") {
-        return `'${param.valueField.value}'`;
+        const escapedValue = String(param.valueField.value)
+          .replace(/\\/g, '\\\\') 
+          .replace(/'/g, "''");
+        return `'${escapedValue}'`;
       } else if (param.dtype === "multi_col" && param.valueField.value instanceof Array) {
         return `${param.valueField.value.join(",")}`;
       } else {

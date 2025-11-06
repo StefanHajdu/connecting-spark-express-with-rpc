@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -11,6 +12,18 @@ from core.exceptions import DuplicateSessionException, NodeMissingException  # n
 
 nodeMissingException = NodeMissingException()
 duplicateSessionException = DuplicateSessionException()
+
+
+def parse_streaming_json_response(response: requests.Response):
+    """Parse streaming JSON response from FastAPI StreamingResponse."""
+    result = []
+    for line in response.iter_lines():
+        if line:
+            try:
+                result.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+    return result
 
 
 def to_session_id(session_id: int):
@@ -29,10 +42,11 @@ def create_session(session_id: str) -> str:
     return session_id
 
 
-def submit_loadNode(json_data: dict) -> None:
-    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=json_data)
+def submit_loadNode(json_data: dict) -> list:
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=json_data, stream=True)
 
     assert res.status_code == 200
+    return parse_streaming_json_response(res)
 
 
 def submit_loadFromSessionNode(session_id: str, input_session_id: str) -> None:
@@ -53,9 +67,13 @@ def submit_filterNode(**kwargs) -> str:
 
 
 def submit_newColumnNode(**kwargs) -> str:
-    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=kwargs, stream=True)
 
     assert res.status_code == 200
+    # Wait for the streaming response to complete to ensure node is fully created
+    result = parse_streaming_json_response(res)
+
+    assert 'node_id' in result[0], f'Failed to create node: {result}'
     return kwargs['node_id']
 
 
@@ -67,15 +85,17 @@ def submit_joinNode(**kwargs) -> str:
 
 
 def removeNode(**kwargs):
-    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=kwargs, stream=True)
 
     assert res.status_code == 200
+    return parse_streaming_json_response(res)
 
 
 def toggleNode(**kwargs):
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=kwargs)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=kwargs, stream=True)
 
     assert res.status_code == 200
+    return parse_streaming_json_response(res)
 
 
 def summarize(session_id: str, node_id: str) -> dict:

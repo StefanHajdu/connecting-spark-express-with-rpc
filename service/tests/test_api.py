@@ -254,34 +254,12 @@ def add_column_dependency(session_id):
                         {'name': 'records_dnskey', 'dtype': 'string'},
                         {'name': 'analyzed_at', 'dtype': 'string'},
                         {'name': 'a2', 'dtype': 'string'},
+                        {'name': 'b2', 'dtype': 'string'},
                         {'name': 'x', 'dtype': 'string'},
                     ],
                     'session_id': u.to_session_id(2),
                     'node_id': u.to_node_id(5),
-                    'prev_node_id': u.to_node_id(1),
-                    'invalid_state': {'active': False, 'error_msg': ''},
-                    'active': True,
-                    'title': 'AddColumnNode',
-                    'user_input': '',
-                },
-                {
-                    'columns': [
-                        {'name': 'domain', 'dtype': 'string'},
-                        {'name': 'tld', 'dtype': 'string'},
-                        {'name': 'dnssec', 'dtype': 'string'},
-                        {'name': 'registrar', 'dtype': 'string'},
-                        {'name': 'created_at', 'dtype': 'string'},
-                        {'name': 'records_ns', 'dtype': 'string'},
-                        {'name': 'records_ds', 'dtype': 'string'},
-                        {'name': 'records_dnskey', 'dtype': 'string'},
-                        {'name': 'analyzed_at', 'dtype': 'string'},
-                        {'name': 'a2', 'dtype': 'string'},
-                        {'name': 'x', 'dtype': 'string'},
-                        {'name': 'b2', 'dtype': 'string'},
-                    ],
-                    'session_id': u.to_session_id(2),
-                    'node_id': u.to_node_id(2),
-                    'prev_node_id': u.to_node_id(5),
+                    'prev_node_id': u.to_node_id(2),
                     'invalid_state': {'active': False, 'error_msg': ''},
                     'active': True,
                     'title': 'AddColumnNode',
@@ -347,11 +325,12 @@ def test_column_adding(session_id, node_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=node_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=node_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -425,11 +404,12 @@ def test_column_removing(session_id, removal_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -504,11 +484,12 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
     add_some_columns(session_id)
     add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -596,11 +577,12 @@ def test_node_disable(session_id, toggle_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -769,15 +751,17 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
     if add_dependecy:
         add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
     assert res.status_code == 200
-    for a, b in zip(res.json(), expected_excluded, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected_excluded, strict=True):
         assert a == b
 
     toggle_request_body['toggle'] = True
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
     assert res.status_code == 200
-    for a, b in zip(res.json(), expected_included, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected_included, strict=True):
         assert a == b
 
 
@@ -928,10 +912,11 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=path_replace_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=path_replace_request_body, stream=True)
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -1168,25 +1153,5 @@ def test_load_sessions(session_requests, expected):
 
     res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))
 
-    print(res_json)
-    print()
-    print(expected)
-
-    # Simple difference detection using dict comprehension
-    if res_json != expected:
-        print("\n🔍 DIFFERENCES FOUND:")
-        for i, (actual, exp) in enumerate(zip(res_json, expected)):
-            if actual != exp:
-                print(f"\nItem {i} differs:")
-                # Find differing keys
-                if isinstance(actual, dict) and isinstance(exp, dict):
-                    diff_keys = {k: (actual.get(k), exp.get(k)) 
-                                for k in set(actual.keys()) | set(exp.keys()) 
-                                if actual.get(k) != exp.get(k)}
-                    print(f"  Different keys: {diff_keys}")
-                else:
-                    print(f"  Actual:   {actual}")
-                    print(f"  Expected: {exp}")
-    
     for a, b in zip(res_json, expected, strict=True):
         assert a == b
