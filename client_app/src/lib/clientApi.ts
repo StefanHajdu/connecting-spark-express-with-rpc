@@ -65,13 +65,11 @@ export function parseJsonStream<T>(payload: string): T[] {
   if (!trimmed) {
     return [];
   }
-
-  const lines = trimmed.split(/\r?\n/).filter((line) => line.length > 0);
-
-  if (lines.length === 1) {
-    const parsed = JSON.parse(lines[0]);
+  try {
+    const parsed = JSON.parse(trimmed);
     return Array.isArray(parsed) ? parsed : [parsed];
+  } catch (error) {
+    const lines = trimmed.split(/\r?\n/).filter((line) => line.length > 0);
+    return lines.map((line) => JSON.parse(line));
   }
-
-  return lines.map((line) => JSON.parse(line));
 }

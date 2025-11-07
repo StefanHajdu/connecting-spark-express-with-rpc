@@ -2,6 +2,7 @@ import json
 import logging
 
 from fastapi import APIRouter, Request
+from fastapi.concurrency import iterate_in_threadpool, run_in_threadpool
 from fastapi.responses import StreamingResponse
 
 from .service import (
@@ -24,8 +25,8 @@ router = APIRouter(tags=['node'])
 
 
 async def async_json_stream(sync_iterator):
-    """Async generator that wraps a synchronous iterator for streaming JSON."""
-    for item in sync_iterator:
+    """Async generator that wraps a synchronous iterator for streaming JSON without blocking the event loop."""
+    async for item in iterate_in_threadpool(sync_iterator):
         yield json.dumps(item, separators=(',', ':'), ensure_ascii=False) + '\n'
 
 
@@ -40,7 +41,7 @@ async def submit_load_dataset_node_route(request: Request):
 async def submit_load_from_session_node_route(request: Request):
     """Submit load from session node."""
     request_data = await request.json()
-    response = submit_load_from_session_node(request_data)
+    response = await run_in_threadpool(submit_load_from_session_node, request_data)
     return response
 
 
@@ -48,7 +49,7 @@ async def submit_load_from_session_node_route(request: Request):
 async def submit_filter_node_route(request: Request):
     """Submit filter node."""
     request_data = await request.json()
-    response = submit_filter_node(request_data)
+    response = await run_in_threadpool(submit_filter_node, request_data)
     return response
 
 
@@ -66,7 +67,7 @@ async def submit_add_column_node_route(request: Request):
 async def submit_join_node_route(request: Request):
     """Submit join node."""
     request_data = await request.json()
-    response = submit_join_node(request_data)
+    response = await run_in_threadpool(submit_join_node, request_data)
     return response
 
 
@@ -74,7 +75,7 @@ async def submit_join_node_route(request: Request):
 async def submit_table_node_route(request: Request):
     """Submit table node."""
     request_data = await request.json()
-    response = submit_table_node(request_data)
+    response = await run_in_threadpool(submit_table_node, request_data)
     return response
 
 
@@ -82,7 +83,7 @@ async def submit_table_node_route(request: Request):
 async def submit_histogram_node_route(request: Request):
     """Submit histogram node."""
     request_data = await request.json()
-    response = submit_histogram_node(request_data)
+    response = await run_in_threadpool(submit_histogram_node, request_data)
     return response
 
 
@@ -104,7 +105,7 @@ async def toggle_node_route(request: Request):
 async def summarize_route(request: Request):
     """Summarize dataset."""
     request_data = await request.json()
-    response = summarize_dataset(request_data)
+    response = await run_in_threadpool(summarize_dataset, request_data)
     return response
 
 
@@ -112,4 +113,4 @@ async def summarize_route(request: Request):
 async def preview_route(request: Request):
     """Preview dataset."""
     request_data = await request.json()
-    return StreamingResponse(preview_dataset(request_data), media_type='text/plain')
+    return StreamingResponse(iterate_in_threadpool(preview_dataset(request_data)), media_type='text/plain')
