@@ -1170,10 +1170,13 @@ def test_load_sessions(session_requests, expected):
         _ = u.submit_loadNode({'session_id': session_request['session_id'], 'parquet': {'path': TEST_STATE.path}})
         add_some_columns(session_request['session_id'])
 
-    res = requests.get('http://localhost:4444/rpc/session/sessions')
+    res = requests.get('http://localhost:4444/rpc/session/sessions', stream=True)
     assert res.status_code == 200
 
-    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))
+    sessions_response = u.parse_streaming_json_response(res)
+    res.close()
+
+    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], sessions_response))
 
     for a, b in zip(res_json, expected, strict=True):
         assert a == b
