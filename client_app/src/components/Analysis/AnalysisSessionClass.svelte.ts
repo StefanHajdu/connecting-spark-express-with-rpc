@@ -54,33 +54,23 @@ export class AnalysisSession {
       prevNodeId: this.nodes[prevNodeIndex].node_id,
       columnsOnNodeInput: this.nodes[prevNodeIndex].columnsOnNodeOutput,
     });
+  
+    // current node = nodeIndex, inserted node = nodeIndex + 1
+    if (this.nodes[nodeIndex + 1]) {
+      this.nodes[nodeIndex + 1].prevNodeId = node.node_id;
+    }
+
     return node;
   }
 
   public async insertNode(node: Node, nodeIndex: number): Promise<void> {
-    const previousNodeId = this.nodes[nodeIndex]?.node_id;
-    const nextNode = this.nodes[nodeIndex + 1];
-    const nextNodePrevNodeId = nextNode ? nextNode.prevNodeId : undefined;
-
+    let recordedTransforms = await node.submit({
+      session_id: this.session_id,
+      node_id: node.node_id,
+      prev_node_id: node.prevNodeId,
+    });
+    this.updateNodes(recordedTransforms);
     this.nodes = this.nodes.toSpliced(nodeIndex + 1, 0, node);
-    if (nextNode) {
-      nextNode.prevNodeId = node.node_id;
-    }
-
-    try {
-      const recordedTransforms = await node.submit({
-        session_id: this.session_id,
-        node_id: node.node_id,
-        prev_node_id: node.prevNodeId,
-      });
-      this.updateNodes(recordedTransforms);
-    } catch (error) {
-      this.nodes = this.nodes.filter((existingNode) => existingNode.node_id !== node.node_id);
-      if (nextNode) {
-        nextNode.prevNodeId = nextNodePrevNodeId ?? previousNodeId ?? nextNode.prevNodeId;
-      }
-      throw error;
-    }
   }
 
   public async removeNode(nodeIndex: number): Promise<void> {
