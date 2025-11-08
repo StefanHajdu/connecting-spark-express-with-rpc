@@ -31,7 +31,8 @@ class Expression {
       ? funcParams.params
       : // @ts-ignore
         sparkColumnFunctions[this.returnValueType].exprs[this.methodName].params.map((p: any) => {
-          return { name: p.name, dtype: p.type, valueField: { value: "", customInputUsed: false } };
+          const initialValue = p.type === "multi_col" ? [] : "";
+          return { name: p.name, dtype: p.type, valueField: { value: initialValue, customInputUsed: false } };
         });
 
     // @ts-ignore

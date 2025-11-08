@@ -61,7 +61,7 @@ let { exprs = $bindable(), idx, columnsOnNodeInput }: Props = $props();
             items={columnsOnNodeInput.map((col: any) => {
               return { value: col.name, name: col.name };
             })}
-            bind:value={exprs[idx].params[jdx].valueField.value} />
+            bind:value={exprs[idx].params[jdx].valueField.value as (string | number)[]} />
         </Label>
       {:else}
         <Label class="text-black-600/75"

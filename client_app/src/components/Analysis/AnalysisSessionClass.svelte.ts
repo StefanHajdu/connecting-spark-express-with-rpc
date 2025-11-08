@@ -110,21 +110,32 @@ export class AnalysisSession {
   }
 
   public async submitNode(node: Node, params: any): Promise<void> {
-    const recordedTransforms = await node.submit(params);
-    this.updateNodes(recordedTransforms);
-    footerPreview.run(this.session_id, node.node_id);
+    try {
+      const recordedTransforms = await node.submit(params);
+      this.updateNodes(recordedTransforms);
+      footerPreview.run(this.session_id, node.node_id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   public updateNodes(transforms: SparkTransform[]): void {
     for (let i = 0; i < transforms.length; i++) {
       let nodeIndex = this.nodes.map((n) => n.node_id).indexOf(transforms[i].node_id);
+      if (nodeIndex === -1) {
+        continue;
+      }
+
+      let node = this.nodes[nodeIndex];
       if (nodeIndex > 0) {
-        let node = this.nodes[nodeIndex];
         let prevNode = this.nodes[nodeIndex - 1];
         node.columnsOnNodeInput = prevNode.columnsOnNodeOutput;
-        node.columnsOnNodeOutput = transforms[i].columns;
-        node.prevNodeId = transforms[i].prev_node_id;
-        node.invalidState = transforms[i].invalid_state;
+      }
+      node.columnsOnNodeOutput = transforms[i].columns;
+      node.prevNodeId = transforms[i].prev_node_id;
+      node.invalidState = transforms[i].invalid_state;
+      if (typeof transforms[i].active === "boolean") {
+        node.active = transforms[i].active;
       }
     }
   }

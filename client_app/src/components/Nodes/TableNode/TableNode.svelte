@@ -1,7 +1,7 @@
 <script lang="ts">
 import { Spinner } from "flowbite-svelte";
-import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import { Preview } from "../../PreviewStore.svelte";
+import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import DataFrameTable from "../../DataFrameTable.svelte";
 
 interface Props {
@@ -12,16 +12,23 @@ interface Props {
 let { analysisIndex, nodeIndex }: Props = $props();
 
 let node = $derived(globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex]);
-let tablePreview = $state(new Preview());
 
 let previewPromise = $derived.by(async () => {
+  const analysis = globalAnalysesState.analyses[analysisIndex];
+
   if (!node.prevNodeId) {
     throw new Error("No previous node to display");
   }
+  const upstreamNode = analysis.nodes.find((candidate) => candidate.node_id === node.prevNodeId);
+  if (!upstreamNode) {
+    throw new Error("Upstream node not found");
+  }
+  upstreamNode.columnsOnNodeOutput;
 
-  await tablePreview.run(globalAnalysesState.analyses[analysisIndex].session_id, node.prevNodeId, 1000);
+  const preview = new Preview();
+  await preview.run(analysis.session_id, upstreamNode.node_id, 1000);
 
-  return tablePreview;
+  return preview;
 });
 </script>
 
