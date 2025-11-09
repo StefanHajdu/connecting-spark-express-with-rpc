@@ -1,4 +1,4 @@
-import { post, textBufferSparkStreamingApi, parseJsonStream } from "$lib/clientApi";
+import { post, jsonStreamSparkStreamingApi } from "$lib/clientApi";
 import type { SparkTransform } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
@@ -79,8 +79,7 @@ export class AnalysisSession {
       node_id: this.nodes[nodeIndex].node_id,
     };
     const streamingResponse = await post("rpc/node/removeNode", params);
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const recordedTransforms: SparkTransform[] = parseJsonStream<SparkTransform>(objs);
+    const recordedTransforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
 
     this.nodes.splice(nodeIndex, 1);
     this.updateNodes(recordedTransforms);
@@ -93,8 +92,7 @@ export class AnalysisSession {
       toggle: toggle,
     };
     const streamingResponse = await post("rpc/node/toggleNode", params);
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const recordedTransforms: SparkTransform[] = parseJsonStream<SparkTransform>(objs);
+    const recordedTransforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
 
     this.updateNodes(recordedTransforms);
   }
@@ -161,9 +159,9 @@ class GlobalAnalysesState {
 
   public async setAnalysisFromAPI(): Promise<void> {
     const streamingResponse = await fetch("http://localhost:4444/rpc/session/sessions");
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
+    const jsonObjects = await jsonStreamSparkStreamingApi<any>(streamingResponse);
     try {
-      let analysesSnapshot = parseJsonStream<any>(objs);
+      let analysesSnapshot = jsonObjects;
       this.analyses = analysesSnapshot.map((analysisSnapshot: any) => {
         return new AnalysisSession({
           ...analysisSnapshot,
