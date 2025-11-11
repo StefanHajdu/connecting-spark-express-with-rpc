@@ -11,20 +11,23 @@ interface Props {
 
 let { analysisIndex, nodeIndex }: Props = $props();
 
-let node = $derived(globalAnalysesState.analyses[analysisIndex].nodes[nodeIndex]);
+let analysis = $derived(globalAnalysesState.analyses?.[analysisIndex]);
+let upstreamNode = $derived(analysis.nodes[nodeIndex - 1]);
+
 let tablePreview = $state(new Preview());
 
 let previewPromise = $derived.by(async () => {
-  let upstreamNode = globalAnalysesState.analyses[analysisIndex].nodes.find(
-    (candidate) => candidate.node_id === node.prevNodeId,
-  );
-  if (!node.prevNodeId || !upstreamNode) {
+  if (!analysis) {
+    throw new Error("Analysis not found");
+  }
+
+  if (!upstreamNode) {
     throw new Error("No previous node to display");
   }
 
   upstreamNode.columnsOnNodeOutput;
 
-  await tablePreview.run(globalAnalysesState.analyses[analysisIndex].session_id, upstreamNode.node_id, 1000);
+  await tablePreview.run(analysis.session_id, upstreamNode.node_id, 1000);
   return tablePreview;
 });
 </script>
