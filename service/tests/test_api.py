@@ -347,11 +347,12 @@ def test_column_adding(session_id, node_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=node_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitAddColumnNode', json=node_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -425,11 +426,12 @@ def test_column_removing(session_id, removal_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -504,11 +506,12 @@ def test_columns_removal_and_check_invalid_status(session_id, removal_request_bo
     add_some_columns(session_id)
     add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/removeNode', json=removal_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -596,11 +599,12 @@ def test_node_disable(session_id, toggle_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
 
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -769,15 +773,17 @@ def test_node_toggle(session_id, add_dependecy, toggle_request_body, expected_ex
     if add_dependecy:
         add_column_dependency(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
     assert res.status_code == 200
-    for a, b in zip(res.json(), expected_excluded, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected_excluded, strict=True):
         assert a == b
 
     toggle_request_body['toggle'] = True
-    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/toggleNode', json=toggle_request_body, stream=True)
     assert res.status_code == 200
-    for a, b in zip(res.json(), expected_included, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected_included, strict=True):
         assert a == b
 
 
@@ -928,10 +934,11 @@ def test_input_path_replace(session_id, path_replace_request_body, expected):
     _ = u.submit_loadNode({'session_id': session_id, 'parquet': {'path': TEST_STATE.path}})
     add_some_columns(session_id)
 
-    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=path_replace_request_body)
+    res = requests.post('http://localhost:4444/rpc/node/submitLoadDatasetNode', json=path_replace_request_body, stream=True)
     assert res.status_code == 200
 
-    for a, b in zip(res.json(), expected, strict=True):
+    result = u.parse_streaming_json_response(res)
+    for a, b in zip(result, expected, strict=True):
         assert a == b
 
 
@@ -1163,30 +1170,13 @@ def test_load_sessions(session_requests, expected):
         _ = u.submit_loadNode({'session_id': session_request['session_id'], 'parquet': {'path': TEST_STATE.path}})
         add_some_columns(session_request['session_id'])
 
-    res = requests.get('http://localhost:4444/rpc/session/sessions')
+    res = requests.get('http://localhost:4444/rpc/session/sessions', stream=True)
     assert res.status_code == 200
 
-    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], res.json()))
+    sessions_response = u.parse_streaming_json_response(res)
+    res.close()
 
-    print(res_json)
-    print()
-    print(expected)
+    res_json = list(filter(lambda x: x['session_id'] in [req['session_id'] for req in session_requests], sessions_response))
 
-    # Simple difference detection using dict comprehension
-    if res_json != expected:
-        print("\n🔍 DIFFERENCES FOUND:")
-        for i, (actual, exp) in enumerate(zip(res_json, expected)):
-            if actual != exp:
-                print(f"\nItem {i} differs:")
-                # Find differing keys
-                if isinstance(actual, dict) and isinstance(exp, dict):
-                    diff_keys = {k: (actual.get(k), exp.get(k)) 
-                                for k in set(actual.keys()) | set(exp.keys()) 
-                                if actual.get(k) != exp.get(k)}
-                    print(f"  Different keys: {diff_keys}")
-                else:
-                    print(f"  Actual:   {actual}")
-                    print(f"  Expected: {exp}")
-    
     for a, b in zip(res_json, expected, strict=True):
         assert a == b

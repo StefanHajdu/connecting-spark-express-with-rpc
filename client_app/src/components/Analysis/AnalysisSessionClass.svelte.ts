@@ -1,4 +1,4 @@
-import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import { post, jsonStreamSparkStreamingApi } from "$lib/clientApi";
 import type { SparkTransform } from "$lib/dtype";
 import { nodeFactory, Node } from "../Nodes/NodeClass.svelte";
 import { v4 as uuidv4 } from "uuid";
@@ -54,21 +54,22 @@ export class AnalysisSession {
       prevNodeId: this.nodes[prevNodeIndex].node_id,
       columnsOnNodeInput: this.nodes[prevNodeIndex].columnsOnNodeOutput,
     });
-
+  
     // current node = nodeIndex, inserted node = nodeIndex + 1
     if (this.nodes[nodeIndex + 1]) {
       this.nodes[nodeIndex + 1].prevNodeId = node.node_id;
     }
+
     return node;
   }
 
   public async insertNode(node: Node, nodeIndex: number): Promise<void> {
-    // submit empty node, empty node returns 'select * from df'
-    let _ = await node.submit({
+    let recordedTransforms = await node.submit({
       session_id: this.session_id,
       node_id: node.node_id,
       prev_node_id: node.prevNodeId,
     });
+    this.updateNodes(recordedTransforms);
     this.nodes = this.nodes.toSpliced(nodeIndex + 1, 0, node);
   }
 
@@ -78,8 +79,7 @@ export class AnalysisSession {
       node_id: this.nodes[nodeIndex].node_id,
     };
     const streamingResponse = await post("rpc/node/removeNode", params);
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const recordedTransforms: SparkTransform[] = JSON.parse(objs);
+    const recordedTransforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
 
     this.nodes.splice(nodeIndex, 1);
     this.updateNodes(recordedTransforms);
@@ -92,28 +92,38 @@ export class AnalysisSession {
       toggle: toggle,
     };
     const streamingResponse = await post("rpc/node/toggleNode", params);
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
-    const recordedTransforms: SparkTransform[] = JSON.parse(objs);
+    const recordedTransforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
 
     this.updateNodes(recordedTransforms);
   }
 
   public async submitNode(node: Node, params: any): Promise<void> {
-    const recordedTransforms = await node.submit(params);
-    this.updateNodes(recordedTransforms);
-    footerPreview.run(this.session_id, node.node_id);
+    try {
+      const recordedTransforms = await node.submit(params);
+      this.updateNodes(recordedTransforms);
+      footerPreview.run(this.session_id, node.node_id);
+    } catch (error) {
+      throw error;
+    }
   }
 
   public updateNodes(transforms: SparkTransform[]): void {
     for (let i = 0; i < transforms.length; i++) {
       let nodeIndex = this.nodes.map((n) => n.node_id).indexOf(transforms[i].node_id);
+      if (nodeIndex === -1) {
+        continue;
+      }
+
+      let node = this.nodes[nodeIndex];
       if (nodeIndex > 0) {
-        let node = this.nodes[nodeIndex];
         let prevNode = this.nodes[nodeIndex - 1];
         node.columnsOnNodeInput = prevNode.columnsOnNodeOutput;
-        node.columnsOnNodeOutput = transforms[i].columns;
-        node.prevNodeId = transforms[i].prev_node_id;
-        node.invalidState = transforms[i].invalid_state;
+      }
+      node.columnsOnNodeOutput = transforms[i].columns;
+      node.prevNodeId = transforms[i].prev_node_id;
+      node.invalidState = transforms[i].invalid_state;
+      if (typeof transforms[i].active === "boolean") {
+        node.active = transforms[i].active;
       }
     }
   }
@@ -149,9 +159,9 @@ class GlobalAnalysesState {
 
   public async setAnalysisFromAPI(): Promise<void> {
     const streamingResponse = await fetch("http://localhost:4444/rpc/session/sessions");
-    const objs = await textBufferSparkStreamingApi(streamingResponse);
+    const jsonObjects = await jsonStreamSparkStreamingApi<any>(streamingResponse);
     try {
-      let analysesSnapshot = JSON.parse(objs);
+      let analysesSnapshot = jsonObjects;
       this.analyses = analysesSnapshot.map((analysisSnapshot: any) => {
         return new AnalysisSession({
           ...analysisSnapshot,

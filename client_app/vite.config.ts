@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [sveltekit(), tailwindcss()],
   optimizeDeps: {
     noDiscovery: false,
-    include: []
+    include: [],
+    exclude: [
+      'uuid',
+      'svelte-splitpanes',
+      '@tanstack/table-core',
+      '@iconify/svelte'
+    ]
   }
 });

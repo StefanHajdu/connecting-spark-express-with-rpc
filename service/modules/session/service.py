@@ -32,10 +32,10 @@ def create_session(request_data: dict[str, Any]) -> dict[str, Any]:
         raise ApplicationError(message=str(e), code=500) from e
 
 
-def fetch_session_status(session_id: str) -> dict[str, Any]:
+def fetch_session_status(request_data: dict[str, Any]) -> dict[str, Any]:
     """Get session status."""
     try:
-        request = sparkapi_pb2.SessionStatusRequest(session_id=session_id)
+        request = sparkapi_pb2.SessionStatusRequest(session_id=request_data.get('session_id', ''))
         response: sparkapi_pb2.StatusResponse = rpc_client.client.getSessionStatus(request)
         return MessageToDict(response)
     except grpc.RpcError as e:

@@ -1,6 +1,6 @@
 import type { PreviewColumn } from "$lib/dtype";
 import { v4 as uuidv4 } from "uuid";
-import { post, textBufferSparkStreamingApi } from "$lib/clientApi";
+import { post, readStreamBody } from "$lib/clientApi";
 import {
   type SortingState,
   type ColumnPinningState,
@@ -70,7 +70,7 @@ export class Preview {
       limit: limit,
     });
 
-    const responseJson = await textBufferSparkStreamingApi(streamingResponse);
+    const responseJson = await readStreamBody(streamingResponse);
     const responseParsed: Preview = JSON.parse(responseJson);
     this.columns = responseParsed.columns;
     this.data = responseParsed.data;

@@ -31,7 +31,8 @@ class Expression {
       ? funcParams.params
       : // @ts-ignore
         sparkColumnFunctions[this.returnValueType].exprs[this.methodName].params.map((p: any) => {
-          return { name: p.name, dtype: p.type, valueField: { value: "", customInputUsed: false } };
+          const initialValue = p.type === "multi_col" ? [] : "";
+          return { name: p.name, dtype: p.type, valueField: { value: initialValue, customInputUsed: false } };
         });
 
     // @ts-ignore
@@ -49,7 +50,10 @@ class Expression {
           return `${param.valueField.value}`;
         }
       } else if (param.dtype === "text") {
-        return `'${param.valueField.value}'`;
+        const escapedValue = String(param.valueField.value)
+          .replace(/\\/g, '\\\\') 
+          .replace(/'/g, "''");
+        return `'${escapedValue}'`;
       } else if (param.dtype === "multi_col" && param.valueField.value instanceof Array) {
         return `${param.valueField.value.join(",")}`;
       } else {

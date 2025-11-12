@@ -3,7 +3,7 @@
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [
         "tests",
-        "-s"
+        "-vv"
     ],
     "python.analysis.extraPaths": [
         "../api",

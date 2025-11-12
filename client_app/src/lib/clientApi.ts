@@ -30,31 +30,30 @@ export async function get(transformRoute: string): Promise<Response> {
   return response;
 }
 
-export async function textBufferSparkStreamingApi(streamingResponse: Response): Promise<string> {
+export async function readStreamBody(streamingResponse: Response): Promise<string> {
   const reader = streamingResponse.body?.getReader();
+  if (!reader) {
+    return "";
+  }
   let decoder = new TextDecoder();
   let jsonText = "";
 
   while (true) {
-    let chunk = await reader?.read();
+    let chunk = await reader.read();
     if (chunk?.done) {
-      return jsonText;
+      return jsonText + decoder.decode();
     }
-    jsonText += decoder.decode(chunk?.value, { stream: true });
+    jsonText += decoder.decode(chunk.value, { stream: true });
   }
 }
 
-export async function objectBufferSparkStreamingApi(streamingResponse: Response): Promise<any[]> {
-  const reader = streamingResponse.body?.getReader();
-  let decoder = new TextDecoder();
-  let objects: any = [];
+export async function jsonStreamSparkStreamingApi<T>(streamingResponse: Response): Promise<T[]> {
+  const payload = await readStreamBody(streamingResponse);
+  const trimmed = payload.trim();
 
-  while (true) {
-    let chunk = await reader?.read();
-    if (chunk?.done) {
-      return objects;
-    }
-    // objects += decoder.decode(chunk?.value, { stream: true });
-    objects.push(JSON.parse(decoder.decode(chunk?.value, { stream: true })));
+  if (!trimmed) {
+    return [];
   }
+
+  return trimmed.split("\n").map((line) => JSON.parse(line) as T);
 }
