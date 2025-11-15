@@ -1,39 +1,10 @@
-type Group = "math" | "date" | "string" | "misc" | "array";
-
-type Selector = "multi" | "single";
-type SparkType =
-  | "short"
-  | "integer"
-  | "long"
-  | "float"
-  | "double"
-  | "decimal"
-  | "array<.*>"
-  | "date"
-  | "timestamp"
-  | "string";
-type InputType = "column" | "input";
-type CustomInput = "text" | "nan" | "checkbox" | "any" | "number";
-
-interface Arg {
-  name: string;
-  selector: Selector;
-  type: InputType;
-  spark_types: SparkType[];
-  custom_input: CustomInput;
-}
-
-interface Expression {
-  doc: string;
-  group: Group;
-  args: Arg[];
-}
+import type { Expression } from "./Expression.svelte";
 
 interface NamedExpression {
   [name: string]: Expression;
 }
 
-const exprs: NamedExpression = {
+export const exprs: NamedExpression = {
   abs: {
     doc: '\n    Mathematical Function: Computes the absolute value of the given column or expression.\n\n    .. versionadded:: 1.3.0\n\n    .. versionchanged:: 3.4.0\n        Supports Spark Connect.\n\n    Parameters\n    ----------\n    col : :class:`~pyspark.sql.Column` or column name\n        The target column or expression to compute the absolute value on.\n\n    Returns\n    -------\n    :class:`~pyspark.sql.Column`\n        A new column object representing the absolute value of the input.\n\n    Examples\n    --------\n    Example 1: Compute the absolute value of a long column\n\n    >>> from pyspark.sql import functions as sf\n    >>> df = spark.createDataFrame([(-1,), (-2,), (-3,), (None,)], ["value"])\n    >>> df.select("*", sf.abs(df.value)).show()\n    +-----+----------+\n    |value|abs(value)|\n    +-----+----------+\n    |   -1|         1|\n    |   -2|         2|\n    |   -3|         3|\n    | NULL|      NULL|\n    +-----+----------+\n\n    Example 2: Compute the absolute value of a double column\n\n    >>> from pyspark.sql import functions as sf\n    >>> df = spark.createDataFrame([(-1.5,), (-2.5,), (None,), (float("nan"),)], ["value"])\n    >>> df.select("*", sf.abs(df.value)).show()\n    +-----+----------+\n    |value|abs(value)|\n    +-----+----------+\n    | -1.5|       1.5|\n    | -2.5|       2.5|\n    | NULL|      NULL|\n    |  NaN|       NaN|\n    +-----+----------+\n\n    Example 3: Compute the absolute value of an expression\n\n    >>> from pyspark.sql import functions as sf\n    >>> df = spark.createDataFrame([(1, 1), (2, -2), (3, 3)], ["id", "value"])\n    >>> df.select("*", sf.abs(df.id - df.value)).show()\n    +---+-----+-----------------+\n    | id|value|abs((id - value))|\n    +---+-----+-----------------+\n    |  1|    1|                0|\n    |  2|   -2|                4|\n    |  3|    3|                0|\n    +---+-----+-----------------+\n    ',
     group: "math",

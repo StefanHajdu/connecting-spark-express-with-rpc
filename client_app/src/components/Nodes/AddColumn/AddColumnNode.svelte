@@ -6,6 +6,7 @@ import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte"
 import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
 import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { AddColumnExpression } from "../../Expression/Expression.svelte";
+import { exprs } from "../../Expression/ExpressionLib";
 
 interface Props {
   analysisIndex: number;
@@ -25,18 +26,14 @@ $effect(() => {
 
 let exprSelectionOpen = $state(false);
 
-function addExpression(returnValueType: string, methodName: string) {
-  expressions.push(
-    new AddColumnExpression({
-      returnValueType: returnValueType,
-      methodName: methodName,
-    }),
-  );
+function addExpression(name: string) {
+  expressions.push(new AddColumnExpression({ name: name }));
   exprSelectionOpen = false;
 }
 
 function duplicateExpr(exprId: number) {
   const exprClone = expressions[exprId].clone();
+  console.log(exprClone);
   expressions.splice(exprId + 1, 0, exprClone);
 }
 
@@ -89,59 +86,9 @@ async function submit() {
   <Button outline color="dark" class="px-5 py-0.25"
     >Add expression<ChevronDownOutline class="h-5 w-5 text-alternate dark:text-white" /></Button>
 
-  <Dropdown bind:open={exprSelectionOpen}>
-    <DropdownHeader class="outline">
-      <div class="flex items-stretch">
-        <Icon icon="material-symbols-light:123-rounded" style="font-size: 24px" />
-        <p class="dark:text-white ml-2">Numeric</p>
-      </div>
-    </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["numeric"].exprs) as fname}
-      <DropdownItem onclick={() => addExpression("numeric", fname)}>{fname}</DropdownItem>
-    {/each}
-    <DropdownDivider />
-
-    <DropdownHeader class="outline">
-      <div class="flex items-stretch">
-        <Icon icon="material-symbols-light:text-fields" style="font-size: 24px" />
-        <p class="dark:text-white ml-2">Text</p>
-      </div>
-    </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["string"].exprs) as fname}
-      <DropdownItem onclick={() => addExpression("string", fname)}>{fname}</DropdownItem>
-    {/each}
-    <DropdownDivider />
-
-    <DropdownHeader class="outline">
-      <div class="flex items-stretch">
-        <Icon icon="material-symbols-light:calendar-clock-outline-rounded" style="font-size: 24px" />
-        <p class="dark:text-white ml-2">Date/Time</p>
-      </div>
-    </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["date"].exprs) as fname}
-      <DropdownItem onclick={() => addExpression("date", fname)}>{fname}</DropdownItem>
-    {/each}
-    <DropdownDivider />
-
-    <DropdownHeader class="outline">
-      <div class="flex items-stretch">
-        <Icon icon="material-symbols-light:data-array" style="font-size: 24px" />
-        <p class="dark:text-white ml-2">Array</p>
-      </div>
-    </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["array"].exprs) as fname}
-      <DropdownItem onclick={() => addExpression("array", fname)}>{fname}</DropdownItem>
-    {/each}
-    <DropdownDivider />
-
-    <DropdownHeader class="outline">
-      <div class="flex items-stretch">
-        <Icon icon="material-symbols-light:regular-expression-rounded" style="font-size: 24px" />
-        <p class="dark:text-white">Miscellaneous</p>
-      </div>
-    </DropdownHeader>
-    {#each Object.keys(sparkColumnFunctions["misc"].exprs) as fname}
-      <DropdownItem onclick={() => addExpression("misc", fname)}>{fname}</DropdownItem>
+  <Dropdown bind:open={exprSelectionOpen} class="h-48 w-48 overflow-y-auto py-1">
+    {#each Object.keys(exprs) as exprName}
+      <DropdownItem onclick={() => addExpression(exprName)}>{exprName}</DropdownItem>
     {/each}
   </Dropdown>
 </div>

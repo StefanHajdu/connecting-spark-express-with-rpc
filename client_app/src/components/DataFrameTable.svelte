@@ -114,8 +114,6 @@ const table = createSvelteTable({
     },
   },
 });
-
-$inspect(columnSizing);
 </script>
 
 <div class="h-full overflow-y-auto overflow-x-scroll pb-4">
