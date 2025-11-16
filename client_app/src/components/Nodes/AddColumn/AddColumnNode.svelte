@@ -4,7 +4,6 @@ import { ChevronDownOutline, CloseOutline, FileCopyOutline } from "flowbite-svel
 import Icon from "@iconify/svelte";
 import { globalAnalysesState } from "../../Analysis/AnalysisSessionClass.svelte";
 import ExpressionFrom from "../../Expression/AddColumnExpressionFrom.svelte";
-import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { AddColumnExpression } from "../../Expression/Expression.svelte";
 import { exprs } from "../../Expression/ExpressionLib";
 

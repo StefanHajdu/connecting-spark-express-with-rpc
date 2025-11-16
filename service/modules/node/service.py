@@ -63,22 +63,23 @@ def submit_add_column_node(request_data: dict[str, Any]) -> Iterator[dict[str, A
                 sparkapi_pb2.AddColumnExpression(
                     new_column_name=user_input.get('new_column_name', ''),
                     expression=sparkapi_pb2.Expression(
-                        method_name=user_input['expression'].get('method_name', ''),
-                        return_value_type=user_input['expression'].get('return_value_type', ''),
+                        name=user_input['expression'].get('name', ''),
                         compiled=user_input['expression'].get('compiled', ''),
-                        params=[
-                            sparkapi_pb2.Param(
-                                name=params.get('name', ''),
-                                dtype=params.get('dtype', ''),
-                                value_json=params.get('value_json', ''),
+                        args=[
+                            sparkapi_pb2.Arg(
+                                name=arg.get('name', ''),
+                                custom_input=arg.get('custom_input', ''),
+                                value_json=arg.get('value_json', ''),
                             )
-                            for params in user_input['expression'].get('params', [])
+                            for arg in user_input['expression'].get('args', [])
                         ],
                     ),
                 )
                 for user_input in request_data.get('user_input', [])
             ],
         )
+
+        print(request)
 
         for response in rpc_client.client.submit_AddColumnNode(request):
             response: sparkapi_pb2.SparkTransformResponse

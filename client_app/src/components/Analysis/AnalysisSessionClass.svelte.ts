@@ -54,7 +54,7 @@ export class AnalysisSession {
       prevNodeId: this.nodes[prevNodeIndex].node_id,
       columnsOnNodeInput: this.nodes[prevNodeIndex].columnsOnNodeOutput,
     });
-  
+
     // current node = nodeIndex, inserted node = nodeIndex + 1
     if (this.nodes[nodeIndex + 1]) {
       this.nodes[nodeIndex + 1].prevNodeId = node.node_id;
@@ -147,6 +147,7 @@ class GlobalAnalysesState {
         active: nodeTransforms[i].active,
         invalidState: nodeTransforms[i].invalid_state,
       });
+      console.log(nodeTransforms[i].user_input);
       node.setUserInput(JSON.parse(nodeTransforms[i].user_input));
       nodes.push(node);
       if (i > 0) {

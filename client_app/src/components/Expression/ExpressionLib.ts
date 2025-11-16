@@ -1,4 +1,10 @@
-import type { Expression } from "./Expression.svelte";
+import type { Group, Arg } from "./Expression.svelte";
+
+export interface Expression {
+  doc: string;
+  group: Group;
+  args: Arg[];
+}
 
 interface NamedExpression {
   [name: string]: Expression;

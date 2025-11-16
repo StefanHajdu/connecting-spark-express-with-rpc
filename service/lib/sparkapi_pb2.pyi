@@ -210,27 +210,25 @@ class AddHistogramNodeRequest(_message.Message):
     expression: str
     def __init__(self, session_id: _Optional[str] = ..., node_id: _Optional[str] = ..., prev_node_id: _Optional[str] = ..., y_axis_col: _Optional[str] = ..., order_by: _Optional[str] = ..., sort_by: _Optional[str] = ..., expression: _Optional[str] = ...) -> None: ...
 
-class Param(_message.Message):
-    __slots__ = ("name", "dtype", "value_json")
+class Arg(_message.Message):
+    __slots__ = ("name", "custom_input", "value_json")
     NAME_FIELD_NUMBER: _ClassVar[int]
-    DTYPE_FIELD_NUMBER: _ClassVar[int]
+    CUSTOM_INPUT_FIELD_NUMBER: _ClassVar[int]
     VALUE_JSON_FIELD_NUMBER: _ClassVar[int]
     name: str
-    dtype: str
+    custom_input: str
     value_json: str
-    def __init__(self, name: _Optional[str] = ..., dtype: _Optional[str] = ..., value_json: _Optional[str] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., custom_input: _Optional[str] = ..., value_json: _Optional[str] = ...) -> None: ...
 
 class Expression(_message.Message):
-    __slots__ = ("method_name", "return_value_type", "params", "compiled")
-    METHOD_NAME_FIELD_NUMBER: _ClassVar[int]
-    RETURN_VALUE_TYPE_FIELD_NUMBER: _ClassVar[int]
-    PARAMS_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("name", "args", "compiled")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    ARGS_FIELD_NUMBER: _ClassVar[int]
     COMPILED_FIELD_NUMBER: _ClassVar[int]
-    method_name: str
-    return_value_type: str
-    params: _containers.RepeatedCompositeFieldContainer[Param]
+    name: str
+    args: _containers.RepeatedCompositeFieldContainer[Arg]
     compiled: str
-    def __init__(self, method_name: _Optional[str] = ..., return_value_type: _Optional[str] = ..., params: _Optional[_Iterable[_Union[Param, _Mapping]]] = ..., compiled: _Optional[str] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., args: _Optional[_Iterable[_Union[Arg, _Mapping]]] = ..., compiled: _Optional[str] = ...) -> None: ...
 
 class AddColumnExpression(_message.Message):
     __slots__ = ("expression", "new_column_name")

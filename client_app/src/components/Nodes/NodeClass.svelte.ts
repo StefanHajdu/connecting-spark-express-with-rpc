@@ -112,6 +112,7 @@ export class AddColumnNode extends Node {
 
   async submit(params: any): Promise<SparkTransform[]> {
     const body = { ...params, user_input: this.userInput.map((u) => u.pack()) };
+    console.log(body);
     const streamingResponse = await post("rpc/node/submitAddColumnNode", body);
     const transforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
 
@@ -176,7 +177,7 @@ class TableNode extends Node {
   async submit(params: any): Promise<SparkTransform[]> {
     const streamingResponse = await post("rpc/node/submitTableNode", params);
     const transforms = await jsonStreamSparkStreamingApi<SparkTransform>(streamingResponse);
-    
+
     return transforms;
   }
 

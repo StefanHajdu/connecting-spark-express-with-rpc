@@ -1,4 +1,3 @@
-import { sparkColumnFunctions } from "$lib/sparkColumnFunction";
 import { v4 as uuidv4 } from "uuid";
 import { exprs } from "./ExpressionLib";
 
@@ -37,13 +36,8 @@ interface ExpressionWithValue {
   group: Group;
   args: ArgWithValue[];
 }
-export interface Expression {
-  doc: string;
-  group: Group;
-  args: Arg[];
-}
 
-class Expression_2 implements ExpressionWithValue {
+class Expression implements ExpressionWithValue {
   uuid: string = $state("");
   name: string = $state("");
   doc: string = $state("");
@@ -83,18 +77,7 @@ class Expression_2 implements ExpressionWithValue {
   }
 }
 
-type CustomInputType = "number" | "text";
-interface ValueField {
-  value: string | number | string[] | number[];
-  customInputUsed: boolean;
-}
-interface Param {
-  name: string;
-  dtype: string;
-  valueField: ValueField;
-}
-
-export class AddColumnExpression extends Expression_2 {
+export class AddColumnExpression extends Expression {
   newColumnName: string = $state("");
 
   constructor(funcParams: any) {
@@ -119,20 +102,20 @@ export class AddColumnExpression extends Expression_2 {
     return `${this.name}(${compiledArgs.join(", ")}) as ${this.newColumnName}`;
   }
 
-  // public pack(): any {
-  //   return {
-  //     expression: {
-  //       method_name: this.methodName,
-  //       return_value_type: this.returnValueType,
-  //       params: this.params.map((param) => {
-  //         return {
-  //           ...param,
-  //           value_json: JSON.stringify(param.valueField),
-  //         };
-  //       }),
-  //       compiled: this.toString(),
-  //     },
-  //     new_column_name: this.newColumnName,
-  //   };
-  // }
+  public pack(): any {
+    return {
+      expression: {
+        name: this.name,
+        group: this.group,
+        args: this.args.map((arg) => {
+          return {
+            ...arg.arg,
+            value_json: JSON.stringify(arg.valueField),
+          };
+        }),
+        compiled: this.toString(),
+      },
+      new_column_name: this.newColumnName,
+    };
+  }
 }

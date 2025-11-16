@@ -153,17 +153,16 @@ message AddHistogramNodeRequest {
     string expression = 7;
 }
 
-message Param {
+message Arg {
     string name = 1;
-    string dtype = 2;
+    string custom_input = 2;
     string value_json = 3;
 }
 
 message Expression {
-    string method_name = 1;
-    string return_value_type = 2;
-    repeated Param params = 3;
-    string compiled = 4;
+    string name = 1;
+    repeated Arg args = 2;
+    string compiled = 3;
 }
 
 message AddColumnExpression {
