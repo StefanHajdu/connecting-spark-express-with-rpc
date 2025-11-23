@@ -18,7 +18,7 @@ async function initNewAnalysis() {
   });
   if (createSessionResponse) {
     globalAnalysesState.analyses.push(newAnalysis);
-    await goto("http://localhost:5173/analyses");
+    await goto("http://localhost:4444/analyses");
   }
 }
 </script>

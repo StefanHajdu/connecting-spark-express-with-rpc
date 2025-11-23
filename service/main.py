@@ -1,8 +1,10 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from api.v1.router import api_router
 from core.exceptions import ApplicationError
@@ -13,6 +15,20 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(title='API', version='1.0.0')
+
+
+class SPAStaticFiles(StaticFiles):
+    """Serve frontend assets and fall back to index.html for SPA routes."""
+
+    async def get_response(self, path, scope):  # type: ignore[override]
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            return await super().get_response('index.html', scope)
+        return response
+
+
+FRONTEND_DIST = Path(__file__).resolve().parent / 'static' / 'client' / 'build'
+FRONTEND_INDEX = FRONTEND_DIST / 'index.html'
 
 
 COMMON_ERROR = {'UNKNOWN_ERROR': {'code': 'UNKNOWN_ERROR', 'message': 'Unknown error', 'statusCode': 500}}
@@ -48,6 +64,13 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router)
+
+
+if FRONTEND_INDEX.exists():
+    logger.info(f'Serving frontend from {FRONTEND_DIST}')
+    app.mount('/', SPAStaticFiles(directory=FRONTEND_DIST, html=True), name='frontend')
+else:
+    logger.warning('Frontend build directory not found. Run "npm run build" in client_app to generate static assets.')
 
 
 if __name__ == '__main__':

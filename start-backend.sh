@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 cleanup() {
     kill $(cat spark_api.pid 2>/dev/null) 2>/dev/null || true
     kill $(cat service.pid 2>/dev/null) 2>/dev/null || true
@@ -7,6 +9,11 @@ cleanup() {
 }
 
 trap cleanup EXIT INT TERM
+
+# Build frontend assets for FastAPI
+cd client_app
+npm run build
+cd ..
 
 # Start services
 cd spark_api
