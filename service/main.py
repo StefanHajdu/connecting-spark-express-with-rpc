@@ -27,7 +27,7 @@ class SPAStaticFiles(StaticFiles):
         return response
 
 
-FRONTEND_DIST = Path(__file__).resolve().parent / 'static' / 'client' / 'build'
+FRONTEND_DIST = Path(__file__).resolve().parent.parent / 'client_app' / 'build'
 FRONTEND_INDEX = FRONTEND_DIST / 'index.html'
 
 
