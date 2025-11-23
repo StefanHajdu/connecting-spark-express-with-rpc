@@ -76,7 +76,7 @@ function checkboxAnalyses(analyses: AnalysisSession[], flag: boolean): void {
             color="blue"
             disabled={false}
             onclick={() => {
-              void goto("http://localhost:4444/analyses");
+              void goto("/analyses");
             }}>Open</Button>
         </TableHeadCell>
       </TableBodyRow>

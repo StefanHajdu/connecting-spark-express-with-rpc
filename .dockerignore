@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+client_app/node_modules
+client_app/.svelte-kit
+client_app/build
+.spark_api.pid
+service.pid
+spark_api.pid
+.env
+.env.*
+.DS_Store

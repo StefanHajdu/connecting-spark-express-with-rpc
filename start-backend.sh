@@ -10,11 +10,6 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
-# Build frontend assets for FastAPI
-cd client_app
-npm run build
-cd ..
-
 # Start services
 cd spark_api
 uv run python main.py &
